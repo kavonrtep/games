@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Sequence Alignment Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Interactive Sequence Alignment Trainer</h1>
+        </header>
+        
+        <div class="game-container">
+            <!-- Main Panel (70% width) -->
+            <div class="main-panel">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1:</label>
+                        <input type="text" id="sequence1" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2:</label>
+                        <input type="text" id="sequence2" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
+                    </div>
+                    <div class="input-controls">
+                        <button id="load-example">Load Example</button>
+                        <button id="start-alignment">Start Alignment</button>
+                    </div>
+                </section>
+
+                <!-- Interactive Alignment Editor -->
+                <section class="alignment-editor" id="alignment-editor" tabindex="0">
+                    <h2>Alignment Editor</h2>
+                    <div class="alignment-container">
+                        <div class="sequence-display" id="sequence1-display"></div>
+                        <div class="match-line" id="match-line"></div>
+                        <div class="sequence-display" id="sequence2-display"></div>
+                    </div>
+                    <div class="editor-instructions">
+                        <p>Use arrow keys to navigate • Space/- to insert gaps • Delete/Backspace to remove gaps</p>
+                        <div class="editor-controls">
+                            <button id="remove-gap-columns" class="editor-btn">Remove Gap-Only Columns</button>
+                            <button id="reset-alignment" class="editor-btn">Reset Alignment</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Scoring Controls -->
+                <section class="scoring-controls">
+                    <h2>Scoring Parameters</h2>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="match-score">Match Score: <span id="match-value">+2</span></label>
+                            <input type="range" id="match-score" min="1" max="5" value="2">
+                        </div>
+                        <div class="control-group">
+                            <label for="mismatch-penalty">Mismatch Penalty: <span id="mismatch-value">-1</span></label>
+                            <input type="range" id="mismatch-penalty" min="-5" max="-1" value="-1">
+                        </div>
+                        <div class="control-group">
+                            <label for="gap-open">Gap Opening: <span id="gap-open-value">-2</span></label>
+                            <input type="range" id="gap-open" min="-10" max="-1" value="-2">
+                        </div>
+                        <div class="control-group">
+                            <label for="gap-extend">Gap Extension: <span id="gap-extend-value">-0.5</span></label>
+                            <input type="range" id="gap-extend" min="-5" max="-0.5" step="0.5" value="-0.5">
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Side Panel (30% width) -->
+            <div class="side-panel">
+                <!-- Dotplot Visualization -->
+                <section class="dotplot-section">
+                    <h2>Dotplot Visualization</h2>
+                    <canvas id="dotplot-canvas" width="300" height="300"></canvas>
+                    <div class="dotplot-controls">
+                        <label for="window-size">Window Size: <span id="window-value">1</span></label>
+                        <input type="range" id="window-size" min="1" max="3" value="1">
+                        <label for="threshold">Threshold: <span id="threshold-value">0.5</span></label>
+                        <input type="range" id="threshold" min="0" max="1" step="0.1" value="0.5">
+                    </div>
+                </section>
+
+                <!-- Statistics Panel -->
+                <section class="statistics-panel">
+                    <h2>Alignment Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Current Score:</span>
+                            <span class="stat-value" id="current-score">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Alignment Length:</span>
+                            <span class="stat-value" id="alignment-length">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Identity:</span>
+                            <span class="stat-value" id="identity-percent">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Gaps:</span>
+                            <span class="stat-value" id="gaps-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Matches:</span>
+                            <span class="stat-value" id="matches-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Mismatches:</span>
+                            <span class="stat-value" id="mismatches-count">0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/scoringSystem.js"></script>
+    <script src="js/alignmentEditor.js"></script>
+    <script src="js/dotplotVisualizer.js"></script>
+    <script src="js/statisticsCalculator.js"></script>
+    <script src="js/gameController.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
