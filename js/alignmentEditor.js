@@ -266,8 +266,6 @@ class AlignmentEditor {
     }
 
     onAlignmentChange() {
-        console.log('AlignmentEditor.onAlignmentChange called');
-        console.log('onChangeCallback exists:', !!this.onChangeCallback);
         if (this.onChangeCallback) {
             const alignmentData = {
                 alignedSeq1: this.alignedSeq1,
@@ -276,10 +274,7 @@ class AlignmentEditor {
                 originalSeq2: this.originalSeq2,
                 sequenceType: this.sequenceType
             };
-            console.log('Calling onChangeCallback with:', alignmentData);
             this.onChangeCallback(alignmentData);
-        } else {
-            console.log('No onChangeCallback set');
         }
     }
 

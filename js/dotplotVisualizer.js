@@ -138,6 +138,7 @@ class DotplotVisualizer {
         this.drawAxes(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
         this.drawCheckersGrid(margin, plotWidth, plotHeight, seq1Clean.length, seq2Clean.length);
         this.drawMatches(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
+        this.drawAlignmentDots(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
     }
 
     drawAxes(margin, plotWidth, plotHeight, seq1, seq2) {
@@ -256,6 +257,75 @@ class DotplotVisualizer {
         }
     }
 
+    drawAlignmentDots(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
+        // Only draw if we have the aligned sequences with gaps
+        if (!this.seq1 || !this.seq2) return;
+        
+        const alignedSeq1 = this.seq1; // This includes gaps
+        const alignedSeq2 = this.seq2; // This includes gaps
+        
+        // Get the alignment pairs
+        const alignmentPairs = this.getAlignmentPairs(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean);
+        
+        if (alignmentPairs.length === 0) return;
+        
+        const cellWidth = plotWidth / seq1Clean.length;
+        const cellHeight = plotHeight / seq2Clean.length;
+        
+        // Draw red dots for each aligned pair
+        this.ctx.fillStyle = '#dc2626'; // Red color
+        
+        for (const pair of alignmentPairs) {
+            const x = margin + (pair.seq1Pos + 0.5) * cellWidth;
+            const y = margin + (pair.seq2Pos + 0.5) * cellHeight;
+            
+            this.ctx.beginPath();
+            this.ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
+            this.ctx.fill();
+        }
+    }
+
+    getAlignmentPairs(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean) {
+        const pairs = [];
+        let seq1CleanPos = 0;
+        let seq2CleanPos = 0;
+        
+        // Go through each position in the aligned sequences
+        for (let i = 0; i < Math.min(alignedSeq1.length, alignedSeq2.length); i++) {
+            const char1 = alignedSeq1[i];
+            const char2 = alignedSeq2[i];
+            
+            // Skip positions where both sequences have gaps
+            if (char1 === '-' && char2 === '-') {
+                continue;
+            }
+            
+            // Only add pairs where both sequences have actual characters (aligned against each other)
+            if (char1 !== '-' && char2 !== '-') {
+                if (seq1CleanPos < seq1Clean.length && seq2CleanPos < seq2Clean.length) {
+                    pairs.push({
+                        seq1Pos: seq1CleanPos,
+                        seq2Pos: seq2CleanPos,
+                        char1: char1,
+                        char2: char2,
+                        isMatch: char1 === char2
+                    });
+                }
+                seq1CleanPos++;
+                seq2CleanPos++;
+            } 
+            // Gap in sequence 1 (insertion in sequence 2) - advance seq2 position only
+            else if (char1 === '-' && char2 !== '-') {
+                seq2CleanPos++;
+            }
+            // Gap in sequence 2 (insertion in sequence 1) - advance seq1 position only
+            else if (char1 !== '-' && char2 === '-') {
+                seq1CleanPos++;
+            }
+        }
+        
+        return pairs;
+    }
 
     drawEmptyState() {
         this.ctx.fillStyle = '#a0aec0';

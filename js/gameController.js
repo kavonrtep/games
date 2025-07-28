@@ -205,6 +205,7 @@ class GameController {
             sequences.type
         );
         
+        // Initialize dotplot with original sequences (no gaps initially)
         this.dotplotVisualizer.updateDotplot(
             sequences.sequence1, 
             sequences.sequence2, 
@@ -229,7 +230,6 @@ class GameController {
     }
 
     onAlignmentChange(alignment) {
-        console.log('onAlignmentChange called with:', alignment);
         this.currentAlignment = alignment;
         this.updateStatistics();
         this.updateDotplotFromAlignment();
@@ -237,30 +237,25 @@ class GameController {
 
     updateStatistics() {
         if (!this.currentAlignment) {
-            console.log('No current alignment, clearing statistics');
             this.statisticsCalculator.clearStatistics();
             return;
         }
 
-        console.log('Updating statistics for alignment:', this.currentAlignment);
-        
         const scoreData = this.scoringSystem.calculateAlignmentScore(
             this.currentAlignment.alignedSeq1,
             this.currentAlignment.alignedSeq2
         );
         
-        console.log('Score data calculated:', scoreData);
-        
         this.statisticsCalculator.updateStatistics(scoreData);
-        console.log('Statistics updated');
     }
 
     updateDotplotFromAlignment() {
         if (!this.currentAlignment) return;
         
+        // Pass the aligned sequences (with gaps) so the dotplot can show the alignment path
         this.dotplotVisualizer.updateDotplot(
-            this.currentAlignment.originalSeq1,
-            this.currentAlignment.originalSeq2,
+            this.currentAlignment.alignedSeq1,
+            this.currentAlignment.alignedSeq2,
             this.currentAlignment.sequenceType
         );
     }

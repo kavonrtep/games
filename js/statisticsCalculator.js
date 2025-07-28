@@ -11,15 +11,11 @@ class StatisticsCalculator {
     }
 
     updateStatistics(scoreData) {
-        console.log('StatisticsCalculator.updateStatistics called with:', scoreData);
-        
         if (!scoreData) {
-            console.log('No score data, clearing statistics');
             this.clearStatistics();
             return;
         }
 
-        console.log('Updating statistics elements...');
         this.updateElement('currentScore', scoreData.totalScore);
         this.updateElement('alignmentLength', scoreData.alignmentLength);
         this.updateElement('identityPercent', `${scoreData.identity}%`);
@@ -28,17 +24,13 @@ class StatisticsCalculator {
         this.updateElement('mismatchesCount', scoreData.mismatches);
         
         this.updateScoreColor(scoreData.totalScore);
-        console.log('Statistics elements updated');
     }
 
     updateElement(elementName, value) {
         const element = this.elements[elementName];
-        console.log(`Updating ${elementName} to ${value}, element found:`, !!element);
         if (element) {
             element.textContent = value;
             this.animateUpdate(element);
-        } else {
-            console.error(`Element not found for ${elementName}`);
         }
     }
 
