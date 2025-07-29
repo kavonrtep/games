@@ -305,6 +305,20 @@ class AlignmentEditor {
         this.onAlignmentChange();
     }
 
+    setAlignment(alignedSeq1, alignedSeq2) {
+        if (!alignedSeq1 || !alignedSeq2) return;
+        
+        this.alignedSeq1 = alignedSeq1;
+        this.alignedSeq2 = alignedSeq2;
+        
+        // Reset cursor to beginning
+        this.currentPosition = 0;
+        this.activeSequence = 1;
+        
+        this.updateDisplay();
+        this.onAlignmentChange();
+    }
+
     removeGapOnlyColumns() {
         if (!this.alignedSeq1 || !this.alignedSeq2) return;
         

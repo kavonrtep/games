@@ -9,6 +9,9 @@ class GameController {
             this.scoringSystem = new ScoringSystem();
             console.log('ScoringSystem created');
             
+            this.needlemanWunsch = new NeedlemanWunsch();
+            console.log('NeedlemanWunsch created');
+            
             this.alignmentEditor = new AlignmentEditor('alignment-editor', this.scoringSystem);
             console.log('AlignmentEditor created');
             
@@ -43,6 +46,7 @@ class GameController {
             sequence2Input: document.getElementById('sequence2'),
             loadExampleBtn: document.getElementById('load-example'),
             startAlignmentBtn: document.getElementById('start-alignment'),
+            needlemanWunschBtn: document.getElementById('needleman-wunsch'),
             removeGapColumnsBtn: document.getElementById('remove-gap-columns'),
             resetAlignmentBtn: document.getElementById('reset-alignment'),
             
@@ -66,6 +70,7 @@ class GameController {
     setupEventListeners() {
         this.elements.loadExampleBtn.addEventListener('click', () => this.loadExample());
         this.elements.startAlignmentBtn.addEventListener('click', () => this.startAlignment());
+        this.elements.needlemanWunschBtn.addEventListener('click', () => this.calculateOptimalAlignment());
         this.elements.removeGapColumnsBtn.addEventListener('click', () => this.removeGapOnlyColumns());
         this.elements.resetAlignmentBtn.addEventListener('click', () => this.resetAlignment());
         
@@ -76,6 +81,7 @@ class GameController {
         this.setupDotplotControls();
         
         // Initially disable editor buttons
+        this.elements.needlemanWunschBtn.disabled = true;
         this.elements.removeGapColumnsBtn.disabled = true;
         this.elements.resetAlignmentBtn.disabled = true;
     }
@@ -223,6 +229,7 @@ class GameController {
         this.isGameActive = true;
         
         // Enable editor buttons
+        this.elements.needlemanWunschBtn.disabled = false;
         this.elements.removeGapColumnsBtn.disabled = false;
         this.elements.resetAlignmentBtn.disabled = false;
         
@@ -361,6 +368,7 @@ class GameController {
         this.isGameActive = false;
         
         // Disable editor buttons
+        this.elements.needlemanWunschBtn.disabled = true;
         this.elements.removeGapColumnsBtn.disabled = true;
         this.elements.resetAlignmentBtn.disabled = true;
         
@@ -443,5 +451,54 @@ class GameController {
         }
         
         this.showNotification(message, 'info');
+    }
+
+    calculateOptimalAlignment() {
+        if (!this.isGameActive || !this.currentAlignment) {
+            this.showNotification('No active alignment to optimize', 'warning');
+            return;
+        }
+
+        try {
+            // Get current scoring parameters
+            const scoringParams = this.scoringSystem.getParameters();
+            
+            // Calculate current score for comparison
+            const currentScore = this.scoringSystem.calculateAlignmentScore(
+                this.currentAlignment.alignedSeq1,
+                this.currentAlignment.alignedSeq2
+            ).totalScore;
+
+            // Calculate optimal alignment using Needleman-Wunsch
+            const result = this.needlemanWunsch.calculateOptimalAlignment(
+                this.currentAlignment.originalSeq1,
+                this.currentAlignment.originalSeq2,
+                scoringParams
+            );
+
+            if (!result.alignedSeq1 || !result.alignedSeq2) {
+                this.showNotification('Failed to calculate optimal alignment', 'error');
+                return;
+            }
+
+            // Update the alignment editor with the optimal alignment
+            this.alignmentEditor.setAlignment(result.alignedSeq1, result.alignedSeq2);
+
+            // Show notification with score improvement
+            const improvement = result.score - currentScore;
+            const improvementText = improvement > 0 ? `+${improvement.toFixed(1)}` : improvement.toFixed(1);
+            
+            if (improvement > 0) {
+                this.showNotification(`Optimal alignment found! Score improved by ${improvementText} (${result.score})`, 'success');
+            } else if (improvement === 0) {
+                this.showNotification(`Already optimal! Current score: ${result.score}`, 'info');
+            } else {
+                this.showNotification(`Optimal alignment applied. Score: ${result.score} (was ${currentScore.toFixed(1)})`, 'info');
+            }
+
+        } catch (error) {
+            console.error('Error calculating optimal alignment:', error);
+            this.showNotification('Error calculating optimal alignment', 'error');
+        }
     }
 }
