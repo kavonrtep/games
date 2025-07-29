@@ -8,6 +8,8 @@ class DotplotVisualizer {
         this.threshold = 0.5;
         this.sequenceType = '';
         this.dotData = [];
+        this.showScores = false;
+        this.scoreMatrix = null;
         
         this.setupCanvas();
         this.setupEventListeners();
@@ -43,6 +45,15 @@ class DotplotVisualizer {
     updateParameters(windowSize, threshold) {
         this.windowSize = windowSize;
         this.threshold = threshold;
+        
+        if (this.seq1 && this.seq2) {
+            this.updateDotplot(this.seq1, this.seq2, this.sequenceType);
+        }
+    }
+
+    setShowScores(showScores, scoreMatrix = null) {
+        this.showScores = showScores;
+        this.scoreMatrix = scoreMatrix;
         
         if (this.seq1 && this.seq2) {
             this.updateDotplot(this.seq1, this.seq2, this.sequenceType);
@@ -139,6 +150,11 @@ class DotplotVisualizer {
         this.drawCheckersGrid(margin, plotWidth, plotHeight, seq1Clean.length, seq2Clean.length);
         this.drawMatches(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
         this.drawAlignmentDots(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
+        
+        // Draw scores if enabled
+        if (this.showScores && this.scoreMatrix) {
+            this.drawScores(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
+        }
     }
 
     drawAxes(margin, plotWidth, plotHeight, seq1, seq2) {
@@ -154,15 +170,15 @@ class DotplotVisualizer {
         this.ctx.lineTo(margin + plotWidth, margin + plotHeight);
         this.ctx.stroke();
 
-        // Draw sequence 1 letters (horizontal axis)
+        // Draw sequence 1 letters (horizontal axis - top)
         for (let i = 0; i < seq1.length; i++) {
             const x = margin + (i + 0.5) / seq1.length * plotWidth;
-            this.ctx.fillText(seq1[i], x - 4, margin + plotHeight + 15);
+            this.ctx.fillText(seq1[i], x - 4, margin - 5);
         }
 
-        // Draw sequence 2 letters (vertical axis)
+        // Draw sequence 2 letters (vertical axis - left, top to bottom)
         for (let j = 0; j < seq2.length; j++) {
-            const y = margin + plotHeight - (j + 0.5) / seq2.length * plotHeight;
+            const y = margin + (j + 0.5) / seq2.length * plotHeight;
             this.ctx.fillText(seq2[j], margin - 15, y + 4);
         }
 
@@ -173,7 +189,7 @@ class DotplotVisualizer {
         this.ctx.fillText('Seq 2', -15, 0);
         this.ctx.restore();
 
-        this.ctx.fillText('Seq 1', margin + plotWidth / 2 - 15, margin + plotHeight + 30);
+        this.ctx.fillText('Seq 1', margin + plotWidth / 2 - 15, margin - 20);
     }
 
     drawCheckersGrid(margin, plotWidth, plotHeight, seq1Length, seq2Length) {
@@ -233,12 +249,12 @@ class DotplotVisualizer {
                 // Check if characters match
                 let fillColor = null;
                 if (char1 === char2) {
-                    // Exact match - dark blue
-                    fillColor = '#2d3748';
+                    // Exact match - dark blue, pale if scores shown
+                    fillColor = this.showScores ? '#2d374860' : '#2d3748';
                 } else if (this.sequenceType === 'PROTEIN' && 
                           this.isConservativeSubstitution(char1, char2)) {
-                    // Conservative substitution - lighter blue
-                    fillColor = '#4a5568';
+                    // Conservative substitution - lighter blue, pale if scores shown
+                    fillColor = this.showScores ? '#4a556860' : '#4a5568';
                 }
                 
                 if (fillColor) {
@@ -264,36 +280,115 @@ class DotplotVisualizer {
         const alignedSeq1 = this.seq1; // This includes gaps
         const alignedSeq2 = this.seq2; // This includes gaps
         
-        // Get the alignment pairs
-        const alignmentPairs = this.getAlignmentPairs(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean);
+        // Get the alignment pairs and gaps
+        const alignmentData = this.getAlignmentData(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean);
         
-        if (alignmentPairs.length === 0) return;
+        // Debug logging
+        if (alignmentData.gaps.length > 0) {
+            console.log('Alignment:', alignedSeq1, 'vs', alignedSeq2);
+            console.log('Clean seqs:', seq1Clean, 'vs', seq2Clean);
+            console.log('Gaps found:', alignmentData.gaps);
+        }
         
         const cellWidth = plotWidth / seq1Clean.length;
         const cellHeight = plotHeight / seq2Clean.length;
         
-        // Draw red dots for each aligned pair
-        this.ctx.fillStyle = '#dc2626'; // Red color
+        // Draw red diagonal lines for each aligned pair
+        this.ctx.strokeStyle = this.showScores ? '#dc262660' : '#dc2626'; // Red color, pale if scores shown
+        this.ctx.lineWidth = 4;
         
-        for (const pair of alignmentPairs) {
-            const x = margin + (pair.seq1Pos + 0.5) * cellWidth;
-            const y = margin + (pair.seq2Pos + 0.5) * cellHeight;
+        for (const pair of alignmentData.pairs) {
+            const centerX = margin + (pair.seq1Pos + 0.5) * cellWidth;
+            const centerY = margin + (pair.seq2Pos + 0.5) * cellHeight;
             
+            // Draw diagonal line from top-left to bottom-right of cell
             this.ctx.beginPath();
-            this.ctx.arc(x, y, 4, 0, 2 * Math.PI); // Larger dots (4px radius)
-            this.ctx.fill();
+            this.ctx.moveTo(centerX - cellWidth * 0.3, centerY - cellHeight * 0.3);
+            this.ctx.lineTo(centerX + cellWidth * 0.3, centerY + cellHeight * 0.3);
+            this.ctx.stroke();
+        }
+        
+        // Draw gap lines in green
+        this.ctx.strokeStyle = this.showScores ? '#22c55e60' : '#22c55e'; // Green color for gaps, pale if scores shown
+        this.ctx.lineWidth = 4;
+        
+        // Draw gaps as lines
+        for (const gap of alignmentData.gaps) {
+            if (gap.axis === 'seq1') {
+                // Gap in seq1 - draw vertical line
+                // Only draw if within bounds
+                if (gap.seq1CleanPos < seq1Clean.length && gap.seq2CleanPos < seq2Clean.length) {
+                    const centerX = margin + (gap.seq1CleanPos + 0.5) * cellWidth;
+                    const centerY = margin + (gap.seq2CleanPos + 0.5) * cellHeight;
+                    
+                    // Draw vertical line
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(centerX, centerY - cellHeight * 0.3);
+                    this.ctx.lineTo(centerX, centerY + cellHeight * 0.3);
+                    this.ctx.stroke();
+                }
+            } else {
+                // Gap in seq2 - draw horizontal line
+                // Only draw if within bounds
+                if (gap.seq1CleanPos < seq1Clean.length && gap.seq2CleanPos < seq2Clean.length) {
+                    const centerX = margin + (gap.seq1CleanPos + 0.5) * cellWidth;
+                    const centerY = margin + (gap.seq2CleanPos + 0.5) * cellHeight;
+                    
+                    // Draw horizontal line
+                    this.ctx.beginPath();
+                    this.ctx.moveTo(centerX - cellWidth * 0.3, centerY);
+                    this.ctx.lineTo(centerX + cellWidth * 0.3, centerY);
+                    this.ctx.stroke();
+                }
+            }
         }
     }
 
-    getAlignmentPairs(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean) {
+    drawScores(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
+        if (!this.scoreMatrix || !this.scoreMatrix.score) return;
+        
+        const cellWidth = plotWidth / seq1Clean.length;
+        const cellHeight = plotHeight / seq2Clean.length;
+        
+        // Set up text rendering for scores
+        this.ctx.fillStyle = '#1e3a8a'; // Very dark blue color for scores
+        this.ctx.font = `bold ${Math.min(cellWidth, cellHeight) * 0.35}px monospace`;
+        this.ctx.textAlign = 'center';
+        this.ctx.textBaseline = 'middle';
+        
+        // Draw scores in each cell - ensure we don't exceed matrix bounds
+        const maxI = Math.min(seq1Clean.length, this.scoreMatrix.score.length - 1);
+        const maxJ = Math.min(seq2Clean.length, this.scoreMatrix.score[0].length - 1);
+        
+        for (let i = 1; i <= maxI; i++) {
+            for (let j = 1; j <= maxJ; j++) {
+                const score = this.scoreMatrix.score[i][j];
+                const x = margin + (i - 0.5) * cellWidth;
+                const y = margin + (j - 0.5) * cellHeight;
+                
+                // Only draw scores that fit well in the cell
+                const scoreText = score.toString();
+                if (scoreText.length <= 4) { // Limit text length for readability
+                    this.ctx.fillText(scoreText, x, y);
+                }
+            }
+        }
+        
+        // Reset text alignment
+        this.ctx.textAlign = 'left';
+        this.ctx.textBaseline = 'alphabetic';
+    }
+
+    getAlignmentData(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean) {
         const pairs = [];
+        const gaps = [];
         let seq1CleanPos = 0;
         let seq2CleanPos = 0;
         
         // Go through each position in the aligned sequences
-        for (let i = 0; i < Math.min(alignedSeq1.length, alignedSeq2.length); i++) {
-            const char1 = alignedSeq1[i];
-            const char2 = alignedSeq2[i];
+        for (let i = 0; i < Math.max(alignedSeq1.length, alignedSeq2.length); i++) {
+            const char1 = i < alignedSeq1.length ? alignedSeq1[i] : '';
+            const char2 = i < alignedSeq2.length ? alignedSeq2[i] : '';
             
             // Skip positions where both sequences have gaps
             if (char1 === '-' && char2 === '-') {
@@ -301,7 +396,7 @@ class DotplotVisualizer {
             }
             
             // Only add pairs where both sequences have actual characters (aligned against each other)
-            if (char1 !== '-' && char2 !== '-') {
+            if (char1 !== '-' && char2 !== '-' && char1 !== '' && char2 !== '') {
                 if (seq1CleanPos < seq1Clean.length && seq2CleanPos < seq2Clean.length) {
                     pairs.push({
                         seq1Pos: seq1CleanPos,
@@ -315,16 +410,34 @@ class DotplotVisualizer {
                 seq2CleanPos++;
             } 
             // Gap in sequence 1 (insertion in sequence 2) - advance seq2 position only
-            else if (char1 === '-' && char2 !== '-') {
+            else if (char1 === '-' && char2 !== '-' && char2 !== '') {
+                gaps.push({
+                    axis: 'seq1', // Gap is in seq1
+                    seq1CleanPos: Math.max(0, seq1CleanPos - 1), // Position of base BEFORE the gap
+                    seq2CleanPos: seq2CleanPos, // Position in seq2 that aligns with this gap
+                    gapChar: char1,
+                    realChar: char2
+                });
                 seq2CleanPos++;
             }
             // Gap in sequence 2 (insertion in sequence 1) - advance seq1 position only
-            else if (char1 !== '-' && char2 === '-') {
+            else if (char1 !== '-' && char1 !== '' && char2 === '-') {
+                gaps.push({
+                    axis: 'seq2', // Gap is in seq2
+                    seq1CleanPos: seq1CleanPos, // Position in seq1 that aligns with this gap
+                    seq2CleanPos: Math.max(0, seq2CleanPos - 1), // Position of base BEFORE the gap
+                    gapChar: char2,
+                    realChar: char1
+                });
                 seq1CleanPos++;
             }
         }
         
-        return pairs;
+        return { pairs, gaps };
+    }
+
+    getAlignmentPairs(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean) {
+        return this.getAlignmentData(alignedSeq1, alignedSeq2, seq1Clean, seq2Clean).pairs;
     }
 
     drawEmptyState() {

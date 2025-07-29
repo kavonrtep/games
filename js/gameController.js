@@ -63,7 +63,8 @@ class GameController {
             windowSize: document.getElementById('window-size'),
             threshold: document.getElementById('threshold'),
             windowValue: document.getElementById('window-value'),
-            thresholdValue: document.getElementById('threshold-value')
+            thresholdValue: document.getElementById('threshold-value'),
+            showScores: document.getElementById('show-scores')
         };
     }
 
@@ -79,6 +80,7 @@ class GameController {
         
         this.setupScoringControls();
         this.setupDotplotControls();
+        this.setupScoreDisplayControl();
         
         // Initially disable editor buttons
         this.elements.needlemanWunschBtn.disabled = true;
@@ -233,6 +235,11 @@ class GameController {
         this.elements.removeGapColumnsBtn.disabled = false;
         this.elements.resetAlignmentBtn.disabled = false;
         
+        // Update score display if it's currently enabled
+        if (this.elements.showScores.checked) {
+            this.updateScoreDisplay(true);
+        }
+        
         this.showNotification('Alignment started! Use arrow keys to navigate and space/-/delete to edit gaps.', 'success');
     }
 
@@ -279,6 +286,10 @@ class GameController {
         
         if (this.isGameActive) {
             this.updateStatistics();
+            // Update score display if it's currently showing
+            if (this.elements.showScores.checked) {
+                this.updateScoreDisplay(true);
+            }
         }
     }
 
@@ -287,6 +298,28 @@ class GameController {
         const threshold = parseFloat(this.elements.threshold.value);
         
         this.dotplotVisualizer.updateParameters(windowSize, threshold);
+    }
+
+    setupScoreDisplayControl() {
+        this.elements.showScores.addEventListener('change', (e) => {
+            this.updateScoreDisplay(e.target.checked);
+        });
+    }
+
+    updateScoreDisplay(showScores) {
+        if (showScores && this.isGameActive && this.currentAlignment) {
+            // Calculate the Needleman-Wunsch matrix for the current sequences
+            const scoringParams = this.scoringSystem.getParameters();
+            const result = this.needlemanWunsch.calculateOptimalAlignment(
+                this.currentAlignment.originalSeq1,
+                this.currentAlignment.originalSeq2,
+                scoringParams
+            );
+            
+            this.dotplotVisualizer.setShowScores(true, result.matrix);
+        } else {
+            this.dotplotVisualizer.setShowScores(false);
+        }
     }
 
     onDotplotClick(data) {
