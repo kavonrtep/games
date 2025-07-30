@@ -4,7 +4,6 @@ class DotplotVisualizer {
         this.ctx = this.canvas.getContext('2d');
         this.seq1 = '';
         this.seq2 = '';
-        this.windowSize = 1;
         this.threshold = 0.5;
         this.sequenceType = '';
         this.dotData = [];
@@ -42,8 +41,7 @@ class DotplotVisualizer {
         });
     }
 
-    updateParameters(windowSize, threshold) {
-        this.windowSize = windowSize;
+    updateParameters(threshold) {
         this.threshold = threshold;
         
         if (this.seq1 && this.seq2) {
@@ -77,40 +75,34 @@ class DotplotVisualizer {
         
         if (!seq1Clean || !seq2Clean) return;
 
-        for (let i = 0; i <= seq1Clean.length - this.windowSize; i++) {
-            for (let j = 0; j <= seq2Clean.length - this.windowSize; j++) {
-                const window1 = seq1Clean.substring(i, i + this.windowSize);
-                const window2 = seq2Clean.substring(j, j + this.windowSize);
+        for (let i = 0; i < seq1Clean.length; i++) {
+            for (let j = 0; j < seq2Clean.length; j++) {
+                const char1 = seq1Clean[i];
+                const char2 = seq2Clean[j];
                 
-                const similarity = this.calculateSimilarity(window1, window2);
+                const similarity = this.calculateSimilarity(char1, char2);
                 
                 if (similarity >= this.threshold) {
                     this.dotData.push({
                         x: i,
                         y: j,
                         similarity: similarity,
-                        window1: window1,
-                        window2: window2
+                        char1: char1,
+                        char2: char2
                     });
                 }
             }
         }
     }
 
-    calculateSimilarity(window1, window2) {
-        if (window1.length !== window2.length) return 0;
-        
-        let matches = 0;
-        for (let i = 0; i < window1.length; i++) {
-            if (window1[i] === window2[i]) {
-                matches++;
-            } else if (this.sequenceType === 'PROTEIN' && 
-                      this.isConservativeSubstitution(window1[i], window2[i])) {
-                matches += 0.5;
-            }
+    calculateSimilarity(char1, char2) {
+        if (char1 === char2) {
+            return 1.0; // Exact match
+        } else if (this.sequenceType === 'PROTEIN' && 
+                  this.isConservativeSubstitution(char1, char2)) {
+            return 0.5; // Conservative substitution
         }
-        
-        return matches / window1.length;
+        return 0.0; // No match
     }
 
     isConservativeSubstitution(char1, char2) {

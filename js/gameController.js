@@ -60,9 +60,7 @@ class GameController {
             gapOpenValue: document.getElementById('gap-open-value'),
             gapExtendValue: document.getElementById('gap-extend-value'),
             
-            windowSize: document.getElementById('window-size'),
             threshold: document.getElementById('threshold'),
-            windowValue: document.getElementById('window-value'),
             thresholdValue: document.getElementById('threshold-value'),
             showScores: document.getElementById('show-scores')
         };
@@ -115,12 +113,6 @@ class GameController {
     }
 
     setupDotplotControls() {
-        this.elements.windowSize.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            this.elements.windowValue.textContent = value;
-            this.updateDotplotParameters();
-        });
-
         this.elements.threshold.addEventListener('input', (e) => {
             const value = parseFloat(e.target.value);
             this.elements.thresholdValue.textContent = value;
@@ -294,10 +286,9 @@ class GameController {
     }
 
     updateDotplotParameters() {
-        const windowSize = parseInt(this.elements.windowSize.value);
         const threshold = parseFloat(this.elements.threshold.value);
         
-        this.dotplotVisualizer.updateParameters(windowSize, threshold);
+        this.dotplotVisualizer.updateParameters(threshold);
     }
 
     setupScoreDisplayControl() {
