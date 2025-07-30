@@ -114,7 +114,56 @@ class SmithWaterman {
             }
         }
         
-        return alignments;
+        // Filter out alignments that are completely contained within higher-scoring alignments
+        const filteredAlignments = this.filterOverlappingAlignments(alignments);
+        
+        return filteredAlignments;
+    }
+
+    filterOverlappingAlignments(alignments) {
+        // Sort alignments by score (highest first)
+        alignments.sort((a, b) => b.score - a.score);
+        
+        const filtered = [];
+        
+        for (const alignment of alignments) {
+            let isContained = false;
+            
+            // Check if this alignment is completely contained within any higher-scoring alignment
+            for (const existing of filtered) {
+                if (this.isAlignmentContained(alignment, existing)) {
+                    isContained = true;
+                    break;
+                }
+            }
+            
+            // Only add if not contained within a higher-scoring alignment
+            if (!isContained) {
+                filtered.push(alignment);
+            }
+        }
+        
+        return filtered;
+    }
+
+    isAlignmentContained(innerAlignment, outerAlignment) {
+        // Check if innerAlignment is completely contained within outerAlignment
+        // An alignment is contained if both its start and end positions in both sequences
+        // are within the bounds of the outer alignment
+        
+        const inner1Start = innerAlignment.startPos1;
+        const inner1End = innerAlignment.endPos1;
+        const inner2Start = innerAlignment.startPos2;
+        const inner2End = innerAlignment.endPos2;
+        
+        const outer1Start = outerAlignment.startPos1;
+        const outer1End = outerAlignment.endPos1;
+        const outer2Start = outerAlignment.startPos2;
+        const outer2End = outerAlignment.endPos2;
+        
+        // Inner alignment is contained if it's completely within outer alignment bounds
+        return (inner1Start >= outer1Start && inner1End <= outer1End &&
+                inner2Start >= outer2Start && inner2End <= outer2End);
     }
 
     traceback(matrix, seq1, seq2, startI, startJ, used) {
