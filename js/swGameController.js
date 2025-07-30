@@ -249,19 +249,8 @@ class SwGameController {
         this.localAlignments.forEach((alignment, index) => {
             const stats = this.smithWaterman.getAlignmentStatistics(alignment.alignedSeq1, alignment.alignedSeq2);
             
-            // Create match line
-            let matchLine = '';
-            for (let i = 0; i < alignment.alignedSeq1.length; i++) {
-                const char1 = alignment.alignedSeq1[i];
-                const char2 = alignment.alignedSeq2[i];
-                if (char1 === '-' || char2 === '-') {
-                    matchLine += ' ';
-                } else if (char1 === char2) {
-                    matchLine += '|';
-                } else {
-                    matchLine += ' ';
-                }
-            }
+            // Format alignment with positions - ensure proper alignment regardless of digit count
+            const formattedAlignment = this.formatAlignmentWithPositions(alignment);
             
             html += `
                 <div class="alignment-item">
@@ -270,19 +259,58 @@ class SwGameController {
                         <span class="alignment-score">${alignment.score}</span>
                     </div>
                     <div class="alignment-coords">
-                        Seq1: ${alignment.startPos1 + 1}-${alignment.endPos1 + 1} | 
-                        Seq2: ${alignment.startPos2 + 1}-${alignment.endPos2 + 1} | 
                         Length: ${alignment.alignedSeq1.length} | 
                         Identity: ${stats.identity}%
                     </div>
-                    <div class="alignment-display">${alignment.alignedSeq1}
-${matchLine}
-${alignment.alignedSeq2}</div>
+                    <div class="alignment-display">${formattedAlignment}</div>
                 </div>
             `;
         });
         
         container.innerHTML = html;
+    }
+
+    formatAlignmentWithPositions(alignment) {
+        // Calculate positions (1-based for display)
+        const startPos1 = alignment.startPos1 + 1;
+        const endPos1 = alignment.endPos1 + 1;
+        const startPos2 = alignment.startPos2 + 1;
+        const endPos2 = alignment.endPos2 + 1;
+        
+        // Find the maximum width needed for position numbers
+        const maxPosWidth = Math.max(
+            startPos1.toString().length,
+            endPos1.toString().length,
+            startPos2.toString().length,
+            endPos2.toString().length
+        );
+        
+        // Create match line
+        let matchLine = '';
+        for (let i = 0; i < alignment.alignedSeq1.length; i++) {
+            const char1 = alignment.alignedSeq1[i];
+            const char2 = alignment.alignedSeq2[i];
+            if (char1 === '-' || char2 === '-') {
+                matchLine += ' ';
+            } else if (char1 === char2) {
+                matchLine += '|';
+            } else {
+                matchLine += ' ';
+            }
+        }
+        
+        // Format with proper spacing
+        const seq1StartPadded = startPos1.toString().padStart(maxPosWidth);
+        const seq1EndPadded = endPos1.toString().padEnd(maxPosWidth);
+        const seq2StartPadded = startPos2.toString().padStart(maxPosWidth);
+        const seq2EndPadded = endPos2.toString().padEnd(maxPosWidth);
+        
+        // Create spacing for match line
+        const matchLineSpacing = ' '.repeat(maxPosWidth + 1);
+        
+        return `${seq1StartPadded} ${alignment.alignedSeq1} ${seq1EndPadded}
+${matchLineSpacing}${matchLine}
+${seq2StartPadded} ${alignment.alignedSeq2} ${seq2EndPadded}`;
     }
 
     clearAlignments() {

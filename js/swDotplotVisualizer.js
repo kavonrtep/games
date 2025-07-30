@@ -174,12 +174,12 @@ class SwDotplotVisualizer {
                 // Check if characters match
                 let fillColor = null;
                 if (char1 === char2) {
-                    // Exact match - use normal color (no more pale mode)
-                    fillColor = '#2d3748';
+                    // Exact match - use light gray for better score visibility
+                    fillColor = '#d1d5db';
                 } else if (this.sequenceType === 'PROTEIN' && 
                           this.isConservativeSubstitution(char1, char2)) {
-                    // Conservative substitution - use normal color
-                    fillColor = '#4a5568';
+                    // Conservative substitution - use darker gray
+                    fillColor = '#9ca3af';
                 }
                 
                 if (fillColor) {
@@ -190,7 +190,7 @@ class SwDotplotVisualizer {
                     this.ctx.fillRect(x + 1, y + 1, cellWidth - 2, cellHeight - 2);
                     
                     // Add a subtle border for better visibility
-                    this.ctx.strokeStyle = '#1a202c';
+                    this.ctx.strokeStyle = '#9ca3af';
                     this.ctx.lineWidth = 1;
                     this.ctx.strokeRect(x + 1, y + 1, cellWidth - 2, cellHeight - 2);
                 }
