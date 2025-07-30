@@ -3,135 +3,172 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Sequence Alignment Trainer</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Bioinformatics Games Portal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .portal-container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        .portal-title {
+            font-size: 3em;
+            margin-bottom: 20px;
+            font-weight: 300;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .portal-subtitle {
+            font-size: 1.2em;
+            margin-bottom: 50px;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .game-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .game-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .game-title {
+            font-size: 1.8em;
+            margin-bottom: 15px;
+            color: #fff;
+        }
+
+        .game-description {
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 25px;
+            opacity: 0.9;
+        }
+
+        .game-features {
+            list-style: none;
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .game-features li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+
+        .game-features li:before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #64ffda;
+            font-weight: bold;
+        }
+
+        .play-button {
+            background: linear-gradient(45deg, #64ffda, #00bcd4);
+            color: #333;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .play-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(100, 255, 218, 0.3);
+        }
+
+        .footer {
+            margin-top: 60px;
+            opacity: 0.7;
+            font-size: 0.9em;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <header>
-            <h1>Interactive Sequence Alignment Trainer</h1>
-        </header>
-        
-        <div class="game-container">
-            <!-- Main Panel (70% width) -->
-            <div class="main-panel">
-                <!-- Sequence Input Area -->
-                <section class="sequence-input">
-                    <h2>Sequence Input</h2>
-                    <div class="input-group">
-                        <label for="sequence1">Sequence 1:</label>
-                        <input type="text" id="sequence1" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
-                    </div>
-                    <div class="input-group">
-                        <label for="sequence2">Sequence 2:</label>
-                        <input type="text" id="sequence2" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
-                    </div>
-                    <div class="input-controls">
-                        <button id="load-example">Load Example</button>
-                        <button id="start-alignment">Start Alignment</button>
-                    </div>
-                </section>
+    <div class="portal-container">
+        <h1 class="portal-title">Bioinformatics Games</h1>
+        <p class="portal-subtitle">
+            Interactive educational tools for learning sequence alignment algorithms.<br>
+            Explore global and local alignment techniques through hands-on visualization.
+        </p>
 
-                <!-- Interactive Alignment Editor -->
-                <section class="alignment-editor" id="alignment-editor" tabindex="0">
-                    <h2>Alignment Editor</h2>
-                    <div class="alignment-container">
-                        <div class="sequence-display" id="sequence1-display"></div>
-                        <div class="match-line" id="match-line"></div>
-                        <div class="sequence-display" id="sequence2-display"></div>
-                    </div>
-                    <div class="editor-instructions">
-                        <p>Use arrow keys to navigate • Space/- to insert gaps • Delete/Backspace to remove gaps</p>
-                        <div class="editor-controls">
-                            <button id="needleman-wunsch" class="editor-btn">Needleman-Wunsch</button>
-                            <button id="remove-gap-columns" class="editor-btn">Remove Gap-Only Columns</button>
-                            <button id="reset-alignment" class="editor-btn">Reset Alignment</button>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Scoring Controls -->
-                <section class="scoring-controls">
-                    <h2>Scoring Parameters</h2>
-                    <div class="controls-grid">
-                        <div class="control-group">
-                            <label for="match-score">Match Score: <span id="match-value">+2</span></label>
-                            <input type="range" id="match-score" min="1" max="5" value="2">
-                        </div>
-                        <div class="control-group">
-                            <label for="mismatch-penalty">Mismatch Penalty: <span id="mismatch-value">-1</span></label>
-                            <input type="range" id="mismatch-penalty" min="-5" max="-1" value="-1">
-                        </div>
-                        <div class="control-group">
-                            <label for="gap-open">Gap Opening: <span id="gap-open-value">-2</span></label>
-                            <input type="range" id="gap-open" min="-10" max="-1" value="-2">
-                        </div>
-                        <div class="control-group">
-                            <label for="gap-extend">Gap Extension: <span id="gap-extend-value">-0.5</span></label>
-                            <input type="range" id="gap-extend" min="-5" max="-0.5" step="0.5" value="-0.5">
-                        </div>
-                    </div>
-                </section>
+        <div class="games-grid">
+            <div class="game-card">
+                <h2 class="game-title">Global Alignment Trainer</h2>
+                <p class="game-description">
+                    Learn the Needleman-Wunsch algorithm for global sequence alignment. 
+                    Practice manual alignment editing and explore scoring parameters.
+                </p>
+                <ul class="game-features">
+                    <li>Interactive alignment editor</li>
+                    <li>Needleman-Wunsch algorithm visualization</li>
+                    <li>Real-time scoring and statistics</li>
+                    <li>Dotplot with gap visualization</li>
+                    <li>Score matrix display</li>
+                </ul>
+                <a href="needleman-wunsch.html" class="play-button">Play Global Alignment</a>
             </div>
 
-            <!-- Side Panel (30% width) -->
-            <div class="side-panel">
-                <!-- Dotplot Visualization -->
-                <section class="dotplot-section">
-                    <h2>Dotplot Visualization</h2>
-                    <canvas id="dotplot-canvas" width="400" height="400"></canvas>
-                    <div class="dotplot-controls">
-                        <label for="threshold">Threshold: <span id="threshold-value">0.5</span></label>
-                        <input type="range" id="threshold" min="0" max="1" step="0.1" value="0.5">
-                        <div class="checkbox-control">
-                            <input type="checkbox" id="show-scores" name="show-scores">
-                            <label for="show-scores">Show Score Calculation</label>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Statistics Panel -->
-                <section class="statistics-panel">
-                    <h2>Alignment Statistics</h2>
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <span class="stat-label">Current Score:</span>
-                            <span class="stat-value" id="current-score">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Alignment Length:</span>
-                            <span class="stat-value" id="alignment-length">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Identity:</span>
-                            <span class="stat-value" id="identity-percent">0%</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Gaps:</span>
-                            <span class="stat-value" id="gaps-count">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Matches:</span>
-                            <span class="stat-value" id="matches-count">0</span>
-                        </div>
-                        <div class="stat-item">
-                            <span class="stat-label">Mismatches:</span>
-                            <span class="stat-value" id="mismatches-count">0</span>
-                        </div>
-                    </div>
-                </section>
+            <div class="game-card">
+                <h2 class="game-title">Local Alignment Trainer</h2>
+                <p class="game-description">
+                    Discover the Smith-Waterman algorithm for local sequence alignment. 
+                    Find and analyze optimal local alignments within sequences.
+                </p>
+                <ul class="game-features">
+                    <li>Smith-Waterman algorithm</li>
+                    <li>Local alignment highlighting</li>
+                    <li>Multiple alignment detection</li>
+                    <li>Coordinate display</li>
+                    <li>Score threshold filtering</li>
+                </ul>
+                <a href="smith-waterman.html" class="play-button">Play Local Alignment</a>
             </div>
         </div>
-    </div>
 
-    <!-- JavaScript Modules -->
-    <script src="js/sequenceValidator.js"></script>
-    <script src="js/scoringSystem.js"></script>
-    <script src="js/needlemanWunsch.js"></script>
-    <script src="js/alignmentEditor.js"></script>
-    <script src="js/dotplotVisualizer.js"></script>
-    <script src="js/statisticsCalculator.js"></script>
-    <script src="js/gameController.js"></script>
-    <script src="js/app.js"></script>
+        <div class="footer">
+            <p>Educational tools for bioinformatics sequence analysis</p>
+        </div>
+    </div>
 </body>
 </html>

@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smith-Waterman Local Alignment Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Smith-Waterman Local Alignment Trainer</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+        </header>
+        
+        <div class="game-container">
+            <!-- Main Panel (45% width) -->
+            <div class="main-panel">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1:</label>
+                        <input type="text" id="sequence1" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2:</label>
+                        <input type="text" id="sequence2" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
+                    </div>
+                    <div class="input-controls">
+                        <button id="load-example">Load Example</button>
+                        <button id="start-alignment">Start Analysis</button>
+                    </div>
+                </section>
+
+                <!-- Scoring Controls -->
+                <section class="scoring-controls">
+                    <h2>Scoring Parameters</h2>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="match-score">Match Score: <span id="match-value">+2</span></label>
+                            <input type="range" id="match-score" min="1" max="5" value="2">
+                        </div>
+                        <div class="control-group">
+                            <label for="mismatch-penalty">Mismatch Penalty: <span id="mismatch-value">-1</span></label>
+                            <input type="range" id="mismatch-penalty" min="-5" max="-1" value="-1">
+                        </div>
+                        <div class="control-group">
+                            <label for="gap-penalty">Gap Penalty: <span id="gap-value">-2</span></label>
+                            <input type="range" id="gap-penalty" min="-10" max="-1" value="-2">
+                        </div>
+                        <div class="control-group">
+                            <label for="score-threshold">Score Threshold: <span id="threshold-value">5</span></label>
+                            <input type="range" id="score-threshold" min="1" max="20" value="5">
+                        </div>
+                    </div>
+                    <div class="algorithm-controls">
+                        <button id="smith-waterman" class="algorithm-btn">Find Local Alignments</button>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Side Panel (55% width) -->
+            <div class="side-panel">
+                <!-- Dotplot Visualization -->
+                <section class="dotplot-section">
+                    <h2>Dotplot Visualization</h2>
+                    <canvas id="dotplot-canvas" width="400" height="400"></canvas>
+                    <div class="dotplot-controls">
+                        <div class="checkbox-control">
+                            <input type="checkbox" id="show-scores" name="show-scores">
+                            <label for="show-scores">Show Score Matrix</label>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Local Alignments Display -->
+                <section class="alignments-section">
+                    <h2>Local Alignments Found</h2>
+                    <div id="alignments-container" class="alignments-container">
+                        <p class="no-alignments">Run Smith-Waterman to find local alignments</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/smithWaterman.js"></script>
+    <script src="js/swDotplotVisualizer.js"></script>
+    <script src="js/swGameController.js"></script>
+    <script src="js/swApp.js"></script>
+</body>
+</html>

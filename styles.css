@@ -34,6 +34,24 @@ header h1 {
     margin: 0;
 }
 
+.back-link {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: white;
+    text-decoration: none;
+    font-size: 1em;
+    padding: 8px 15px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    transition: background 0.3s ease;
+}
+
+.back-link:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
 /* Main layout */
 .game-container {
     display: flex;
@@ -319,6 +337,99 @@ input[type="range"]::-moz-range-thumb {
 .checkbox-control label {
     margin-bottom: 0;
     justify-content: flex-start;
+}
+
+/* Algorithm Controls */
+.algorithm-controls {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.algorithm-btn {
+    background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    font-size: 1em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.algorithm-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.algorithm-btn:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Alignments Section */
+.alignments-section {
+    flex: 1;
+    min-height: 200px;
+}
+
+.alignments-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 15px;
+    background: #f8f9fa;
+}
+
+.no-alignments {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin: 20px 0;
+}
+
+.alignment-item {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.alignment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: 500;
+    color: #2d3748;
+}
+
+.alignment-score {
+    background: #4caf50;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.alignment-coords {
+    font-size: 0.85em;
+    color: #666;
+    margin-bottom: 8px;
+}
+
+.alignment-display {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 4px;
+    white-space: pre;
 }
 
 /* Statistics Panel */
