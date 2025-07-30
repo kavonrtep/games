@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - Sequence Alignment Trainer</title>
+</head>
+<body>
+    <div>
+        <h1>Debug Console</h1>
+        <button id="test-validator">Test Validator</button>
+        <button id="test-example">Test Example</button>
+        <div id="output"></div>
+    </div>
+
+    <script src="js/sequenceValidator.js"></script>
+    <script>
+        const output = document.getElementById('output');
+        
+        document.getElementById('test-validator').addEventListener('click', () => {
+            try {
+                const validator = new SequenceValidator();
+                output.innerHTML += '<p>SequenceValidator created successfully</p>';
+                
+                const result = validator.validateSequence('ATCG');
+                output.innerHTML += '<p>Validation result: ' + JSON.stringify(result) + '</p>';
+            } catch (error) {
+                output.innerHTML += '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        });
+        
+        document.getElementById('test-example').addEventListener('click', () => {
+            try {
+                const validator = new SequenceValidator();
+                const example = validator.getRandomExample();
+                output.innerHTML += '<p>Example: ' + JSON.stringify(example) + '</p>';
+            } catch (error) {
+                output.innerHTML += '<p style="color: red;">Error: ' + error.message + '</p>';
+            }
+        });
+        
+        window.addEventListener('error', (e) => {
+            output.innerHTML += '<p style="color: red;">Global Error: ' + e.message + ' at ' + e.filename + ':' + e.lineno + '</p>';
+        });
+    </script>
+</body>
+</html>

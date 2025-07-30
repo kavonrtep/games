@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Test</title>
+</head>
+<body>
+    <input type="text" id="sequence1" placeholder="Sequence 1">
+    <input type="text" id="sequence2" placeholder="Sequence 2">
+    <button id="load-example">Load Example</button>
+    <button id="start-alignment">Start Alignment</button>
+    
+    <div id="alignment-editor" tabindex="0">
+        <div id="sequence1-display"></div>
+        <div id="match-line"></div>
+        <div id="sequence2-display"></div>
+    </div>
+    
+    <canvas id="dotplot-canvas" width="300" height="300"></canvas>
+    
+    <div id="current-score">0</div>
+    <div id="alignment-length">0</div>
+    <div id="identity-percent">0%</div>
+    <div id="gaps-count">0</div>
+    <div id="matches-count">0</div>
+    <div id="mismatches-count">0</div>
+
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/scoringSystem.js"></script>
+    <script src="js/alignmentEditor.js"></script>
+    <script src="js/dotplotVisualizer.js"></script>
+    <script src="js/statisticsCalculator.js"></script>
+    <script>
+        // Simple test initialization
+        console.log('Starting simple test...');
+        
+        let validator, scoringSystem, alignmentEditor, dotplot, stats;
+        
+        try {
+            validator = new SequenceValidator();
+            console.log('Validator created');
+            
+            scoringSystem = new ScoringSystem();
+            console.log('Scoring system created');
+            
+            alignmentEditor = new AlignmentEditor('alignment-editor', scoringSystem);
+            console.log('Alignment editor created');
+            
+            dotplot = new DotplotVisualizer('dotplot-canvas');
+            console.log('Dotplot created');
+            
+            stats = new StatisticsCalculator();
+            console.log('Stats created');
+            
+            // Setup basic event listeners
+            document.getElementById('load-example').addEventListener('click', () => {
+                console.log('Load example clicked');
+                const example = validator.getRandomExample('beginner', 'DNA');
+                console.log('Example:', example);
+                document.getElementById('sequence1').value = example.seq1;
+                document.getElementById('sequence2').value = example.seq2;
+            });
+            
+            document.getElementById('start-alignment').addEventListener('click', () => {
+                console.log('Start alignment clicked');
+                const seq1 = document.getElementById('sequence1').value;
+                const seq2 = document.getElementById('sequence2').value;
+                console.log('Sequences:', seq1, seq2);
+                
+                if (seq1 && seq2) {
+                    alignmentEditor.initialize(seq1, seq2, 'DNA');
+                    dotplot.updateDotplot(seq1, seq2, 'DNA');
+                    console.log('Alignment started');
+                }
+            });
+            
+            console.log('Simple test setup complete');
+            
+        } catch (error) {
+            console.error('Error in simple test:', error);
+        }
+    </script>
+</body>
+</html>
