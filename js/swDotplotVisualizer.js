@@ -7,7 +7,6 @@ class SwDotplotVisualizer {
         this.sequenceType = '';
         this.showScores = false;
         this.scoreMatrix = null;
-        this.localAlignments = [];
         
         this.setupCanvas();
         this.setupEventListeners();
@@ -49,13 +48,6 @@ class SwDotplotVisualizer {
         }
     }
 
-    setLocalAlignments(alignments) {
-        this.localAlignments = alignments || [];
-        
-        if (this.seq1 && this.seq2) {
-            this.updateDotplot(this.seq1, this.seq2, this.sequenceType);
-        }
-    }
 
     updateDotplot(seq1, seq2, sequenceType) {
         this.seq1 = seq1;
@@ -83,11 +75,6 @@ class SwDotplotVisualizer {
         this.drawAxes(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
         this.drawCheckersGrid(margin, plotWidth, plotHeight, seq1Clean.length, seq2Clean.length);
         this.drawMatches(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
-        
-        // Highlight local alignments
-        if (this.localAlignments.length > 0) {
-            this.drawLocalAlignments(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
-        }
         
         // Draw scores if enabled
         if (this.showScores && this.scoreMatrix) {
@@ -187,12 +174,12 @@ class SwDotplotVisualizer {
                 // Check if characters match
                 let fillColor = null;
                 if (char1 === char2) {
-                    // Exact match - pale if alignments shown
-                    fillColor = this.localAlignments.length > 0 ? '#2d374840' : '#2d3748';
+                    // Exact match - use normal color (no more pale mode)
+                    fillColor = '#2d3748';
                 } else if (this.sequenceType === 'PROTEIN' && 
                           this.isConservativeSubstitution(char1, char2)) {
-                    // Conservative substitution - pale if alignments shown
-                    fillColor = this.localAlignments.length > 0 ? '#4a556840' : '#4a5568';
+                    // Conservative substitution - use normal color
+                    fillColor = '#4a5568';
                 }
                 
                 if (fillColor) {
@@ -211,29 +198,6 @@ class SwDotplotVisualizer {
         }
     }
 
-    drawLocalAlignments(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
-        const cellWidth = plotWidth / seq1Clean.length;
-        const cellHeight = plotHeight / seq2Clean.length;
-        
-        // Use different colors for different alignments
-        const colors = ['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3'];
-        
-        this.localAlignments.forEach((alignment, index) => {
-            const color = colors[index % colors.length];
-            this.ctx.strokeStyle = color;
-            this.ctx.lineWidth = 3;
-            
-            // Draw rectangle highlighting the alignment region
-            const startX = margin + alignment.startPos1 * cellWidth;
-            const startY = margin + alignment.startPos2 * cellHeight;
-            const width = (alignment.endPos1 - alignment.startPos1 + 1) * cellWidth;
-            const height = (alignment.endPos2 - alignment.startPos2 + 1) * cellHeight;
-            
-            this.ctx.strokeRect(startX, startY, width, height);
-            
-            // Remove diagonal line - just show rectangular highlighting
-        });
-    }
 
     drawScores(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
         if (!this.scoreMatrix || !this.scoreMatrix.score) return;
@@ -384,7 +348,8 @@ class SwDotplotVisualizer {
     clear() {
         this.seq1 = '';
         this.seq2 = '';
-        this.localAlignments = [];
+        this.showScores = false;
+        this.scoreMatrix = null;
         this.drawEmptyState();
     }
 }

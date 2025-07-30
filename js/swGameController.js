@@ -189,12 +189,11 @@ class SwGameController {
         // Clear previous alignments
         this.clearAlignments();
         
-        // Update score display if it's currently enabled
-        if (this.elements.showScores.checked) {
-            this.updateScoreDisplay(true);
-        }
+        // Always show scores immediately after start analysis
+        this.elements.showScores.checked = true;
+        this.updateScoreDisplay(true);
         
-        this.showNotification('Sequences loaded! Click "Find Local Alignments" to run Smith-Waterman algorithm.', 'success');
+        this.showNotification('Sequences loaded! Dotplot with scores is displayed. Click "Find Local Alignments" to identify optimal local alignments.', 'success');
     }
 
     findLocalAlignments() {
@@ -223,15 +222,7 @@ class SwGameController {
 
             this.localAlignments = result.alignments;
             
-            // Update dotplot with alignments
-            this.dotplotVisualizer.setLocalAlignments(this.localAlignments);
-            
-            // Update score display if enabled
-            if (this.elements.showScores.checked) {
-                this.dotplotVisualizer.setShowScores(true, result.matrix);
-            }
-            
-            // Display alignments
+            // Display alignments (dotplot remains unchanged - no highlighting)
             this.displayAlignments();
             
             const count = this.localAlignments.length;
@@ -296,7 +287,6 @@ ${alignment.alignedSeq2}</div>
 
     clearAlignments() {
         this.localAlignments = [];
-        this.dotplotVisualizer.setLocalAlignments([]);
         this.elements.alignmentsContainer.innerHTML = '<p class="no-alignments">Run Smith-Waterman to find local alignments</p>';
     }
 
@@ -408,8 +398,9 @@ ${alignment.alignedSeq2}</div>
         this.currentSequences = null;
         this.isActive = false;
         
-        // Disable algorithm button
+        // Disable algorithm button and uncheck scores
         this.elements.smithWatermanBtn.disabled = true;
+        this.elements.showScores.checked = false;
         
         this.clearInputErrors();
     }
