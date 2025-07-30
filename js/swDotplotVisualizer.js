@@ -231,11 +231,7 @@ class SwDotplotVisualizer {
             
             this.ctx.strokeRect(startX, startY, width, height);
             
-            // Draw diagonal line through the alignment
-            this.ctx.beginPath();
-            this.ctx.moveTo(startX, startY);
-            this.ctx.lineTo(startX + width, startY + height);
-            this.ctx.stroke();
+            // Remove diagonal line - just show rectangular highlighting
         });
     }
 
@@ -261,12 +257,10 @@ class SwDotplotVisualizer {
                 const x = margin + (i - 0.5) * cellWidth;
                 const y = margin + (j - 0.5) * cellHeight;
                 
-                // Only draw scores that fit well in the cell and are > 0
-                if (score > 0) {
-                    const scoreText = score.toString();
-                    if (scoreText.length <= 3) { // Limit text length for readability
-                        this.ctx.fillText(scoreText, x, y);
-                    }
+                // Show all scores including zeros
+                const scoreText = score.toString();
+                if (scoreText.length <= 3) { // Limit text length for readability
+                    this.ctx.fillText(scoreText, x, y);
                 }
             }
         }

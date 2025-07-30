@@ -14,8 +14,8 @@
         </header>
         
         <div class="game-container">
-            <!-- Main Panel (45% width) -->
-            <div class="main-panel">
+            <!-- Left Panel (40% width) -->
+            <div class="left-panel">
                 <!-- Sequence Input Area -->
                 <section class="sequence-input">
                     <h2>Sequence Input</h2>
@@ -58,10 +58,18 @@
                         <button id="smith-waterman" class="algorithm-btn">Find Local Alignments</button>
                     </div>
                 </section>
+
+                <!-- Local Alignments Display -->
+                <section class="alignments-section">
+                    <h2>Local Alignments Found</h2>
+                    <div id="alignments-container" class="alignments-container">
+                        <p class="no-alignments">Run Smith-Waterman to find local alignments</p>
+                    </div>
+                </section>
             </div>
 
-            <!-- Side Panel (55% width) -->
-            <div class="side-panel">
+            <!-- Right Panel (60% width) -->
+            <div class="right-panel">
                 <!-- Dotplot Visualization -->
                 <section class="dotplot-section">
                     <h2>Dotplot Visualization</h2>
@@ -71,14 +79,6 @@
                             <input type="checkbox" id="show-scores" name="show-scores">
                             <label for="show-scores">Show Score Matrix</label>
                         </div>
-                    </div>
-                </section>
-
-                <!-- Local Alignments Display -->
-                <section class="alignments-section">
-                    <h2>Local Alignments Found</h2>
-                    <div id="alignments-container" class="alignments-container">
-                        <p class="no-alignments">Run Smith-Waterman to find local alignments</p>
                     </div>
                 </section>
             </div>

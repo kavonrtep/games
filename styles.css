@@ -73,6 +73,20 @@ header h1 {
     gap: 12px;
 }
 
+.left-panel {
+    flex: 0 0 40%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.right-panel {
+    flex: 0 0 60%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
 /* Section styling */
 section {
     background: white;
@@ -544,7 +558,7 @@ input[type="range"]::-moz-range-thumb {
         flex-direction: column;
     }
     
-    .main-panel, .side-panel {
+    .main-panel, .side-panel, .left-panel, .right-panel {
         flex: none;
         width: 100%;
     }

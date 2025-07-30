@@ -275,8 +275,8 @@ class SwGameController {
             html += `
                 <div class="alignment-item">
                     <div class="alignment-header">
-                        <span>Local Alignment #${index + 1}</span>
-                        <span class="alignment-score">Score: ${alignment.score}</span>
+                        <span>Local Alignment #${index + 1} (Score: ${alignment.score})</span>
+                        <span class="alignment-score">${alignment.score}</span>
                     </div>
                     <div class="alignment-coords">
                         Seq1: ${alignment.startPos1 + 1}-${alignment.endPos1 + 1} | 
