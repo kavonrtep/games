@@ -232,14 +232,87 @@ class SmithWaterman {
             return null;
         }
         
+        // Trim alignment to start and end with matches only
+        const trimmed = this.trimToMatches(alignedSeq1, alignedSeq2, i, j, endI, endJ);
+        
+        if (!trimmed || trimmed.alignedSeq1.length === 0) {
+            return null;
+        }
+        
         return {
-            alignedSeq1: alignedSeq1,
-            alignedSeq2: alignedSeq2,
-            startPos1: i, // 0-based position in seq1 where alignment starts
-            endPos1: endI - 1, // 0-based position in seq1 where alignment ends
-            startPos2: j, // 0-based position in seq2 where alignment starts
-            endPos2: endJ - 1, // 0-based position in seq2 where alignment ends
+            alignedSeq1: trimmed.alignedSeq1,
+            alignedSeq2: trimmed.alignedSeq2,
+            startPos1: trimmed.startPos1,
+            endPos1: trimmed.endPos1,
+            startPos2: trimmed.startPos2,
+            endPos2: trimmed.endPos2,
             score: startScore
+        };
+    }
+
+    trimToMatches(alignedSeq1, alignedSeq2, startPos1, startPos2, endPos1, endPos2) {
+        // Trim from the beginning - remove leading gaps and mismatches
+        let startTrim = 0;
+        while (startTrim < alignedSeq1.length) {
+            const char1 = alignedSeq1[startTrim];
+            const char2 = alignedSeq2[startTrim];
+            
+            // Stop trimming when we find a match
+            if (char1 !== '-' && char2 !== '-' && char1 === char2) {
+                break;
+            }
+            startTrim++;
+        }
+        
+        // Trim from the end - remove trailing gaps and mismatches
+        let endTrim = 0;
+        let pos = alignedSeq1.length - 1;
+        while (pos >= startTrim) {
+            const char1 = alignedSeq1[pos];
+            const char2 = alignedSeq2[pos];
+            
+            // Stop trimming when we find a match
+            if (char1 !== '-' && char2 !== '-' && char1 === char2) {
+                break;
+            }
+            endTrim++;
+            pos--;
+        }
+        
+        // If we trimmed everything, return null
+        if (startTrim >= alignedSeq1.length - endTrim) {
+            return null;
+        }
+        
+        // Extract the trimmed sequences
+        const trimmedSeq1 = alignedSeq1.substring(startTrim, alignedSeq1.length - endTrim);
+        const trimmedSeq2 = alignedSeq2.substring(startTrim, alignedSeq2.length - endTrim);
+        
+        // Calculate the new start and end positions
+        let newStartPos1 = startPos1;
+        let newStartPos2 = startPos2;
+        let newEndPos1 = endPos1;
+        let newEndPos2 = endPos2;
+        
+        // Adjust start positions based on what we trimmed from the beginning
+        for (let i = 0; i < startTrim; i++) {
+            if (alignedSeq1[i] !== '-') newStartPos1++;
+            if (alignedSeq2[i] !== '-') newStartPos2++;
+        }
+        
+        // Adjust end positions based on what we trimmed from the end
+        for (let i = alignedSeq1.length - endTrim; i < alignedSeq1.length; i++) {
+            if (alignedSeq1[i] !== '-') newEndPos1--;
+            if (alignedSeq2[i] !== '-') newEndPos2--;
+        }
+        
+        return {
+            alignedSeq1: trimmedSeq1,
+            alignedSeq2: trimmedSeq2,
+            startPos1: newStartPos1,
+            endPos1: newEndPos1,
+            startPos2: newStartPos2,
+            endPos2: newEndPos2
         };
     }
 
