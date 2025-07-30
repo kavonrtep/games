@@ -147,23 +147,49 @@ class SmithWaterman {
     }
 
     isAlignmentContained(innerAlignment, outerAlignment) {
-        // Check if innerAlignment is completely contained within outerAlignment
-        // An alignment is contained if both its start and end positions in both sequences
-        // are within the bounds of the outer alignment
+        // Check if innerAlignment uses exactly the same bases as part of outerAlignment
+        // We need to check if all aligned positions (non-gap positions) in the inner alignment
+        // are also aligned positions in the outer alignment
         
-        const inner1Start = innerAlignment.startPos1;
-        const inner1End = innerAlignment.endPos1;
-        const inner2Start = innerAlignment.startPos2;
-        const inner2End = innerAlignment.endPos2;
+        // Get all aligned position pairs from both alignments
+        const innerPairs = this.getAlignedPositionPairs(innerAlignment);
+        const outerPairs = this.getAlignedPositionPairs(outerAlignment);
         
-        const outer1Start = outerAlignment.startPos1;
-        const outer1End = outerAlignment.endPos1;
-        const outer2Start = outerAlignment.startPos2;
-        const outer2End = outerAlignment.endPos2;
+        // Check if all inner pairs are contained in outer pairs
+        for (const innerPair of innerPairs) {
+            const isFound = outerPairs.some(outerPair => 
+                outerPair.pos1 === innerPair.pos1 && outerPair.pos2 === innerPair.pos2
+            );
+            if (!isFound) {
+                return false;
+            }
+        }
         
-        // Inner alignment is contained if it's completely within outer alignment bounds
-        return (inner1Start >= outer1Start && inner1End <= outer1End &&
-                inner2Start >= outer2Start && inner2End <= outer2End);
+        // Inner alignment is contained if all its aligned positions are in the outer alignment
+        return innerPairs.length > 0; // Only return true if there are actual aligned positions
+    }
+
+    getAlignedPositionPairs(alignment) {
+        // Extract all position pairs where both sequences have actual characters (no gaps)
+        const pairs = [];
+        let pos1 = alignment.startPos1;
+        let pos2 = alignment.startPos2;
+        
+        for (let i = 0; i < alignment.alignedSeq1.length; i++) {
+            const char1 = alignment.alignedSeq1[i];
+            const char2 = alignment.alignedSeq2[i];
+            
+            if (char1 !== '-' && char2 !== '-') {
+                // Both sequences have actual characters at this position
+                pairs.push({ pos1, pos2, char1, char2 });
+            }
+            
+            // Advance position counters
+            if (char1 !== '-') pos1++;
+            if (char2 !== '-') pos2++;
+        }
+        
+        return pairs;
     }
 
     traceback(matrix, seq1, seq2, startI, startJ, used) {
