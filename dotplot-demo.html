@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Dotplot Demonstration</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>DNA Dotplot Demonstration</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+        </header>
+        
+        <div class="game-container">
+            <!-- Left Panel (40% width) -->
+            <div class="left-panel">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>DNA Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1:</label>
+                        <input type="text" id="sequence1" placeholder="Enter DNA sequence (A, T, G, C)" maxlength="50">
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2:</label>
+                        <input type="text" id="sequence2" placeholder="Enter DNA sequence (A, T, G, C)" maxlength="50">
+                    </div>
+                    <div class="example-selection">
+                        <label for="example-selector">Choose Example:</label>
+                        <select id="example-selector">
+                            <option value="">Select an educational example...</option>
+                        </select>
+                        <button id="load-selected-example">Load Selected Example</button>
+                    </div>
+                    <div class="input-controls">
+                        <button id="generate-dotplot">Generate Dotplot</button>
+                        <button id="clear-sequences">Clear</button>
+                    </div>
+                </section>
+
+                <!-- Dotplot Parameters -->
+                <section class="scoring-controls">
+                    <h2>Dotplot Parameters</h2>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="window-size">Window Size: <span id="window-value">3</span></label>
+                            <input type="range" id="window-size" min="1" max="10" value="3">
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        <div class="legend-item">
+                            <span class="legend-color forward"></span>
+                            <span>Forward matches (green)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color reverse"></span>
+                            <span>Reverse matches (red)</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Example Information -->
+                <section class="example-info" id="example-info-section" style="display: none;">
+                    <h2>Example Information</h2>
+                    <div id="example-info-content">
+                        <h3 id="example-name"></h3>
+                        <p id="example-description"></p>
+                        <p><strong>Expected Pattern:</strong> <span id="example-pattern"></span></p>
+                    </div>
+                </section>
+
+                <!-- Statistics Display -->
+                <section class="statistics">
+                    <h2>Dotplot Statistics</h2>
+                    <div id="statistics-content" class="stats-content">
+                        <p class="no-stats">Generate dotplot to see statistics</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Panel (60% width) -->
+            <div class="right-panel">
+                <!-- Dotplot Visualization -->
+                <section class="dotplot-section">
+                    <h2>DNA Dotplot Visualization</h2>
+                    <canvas id="dotplot-canvas" width="500" height="500"></canvas>
+                    
+                    <!-- Forward Alignment Display - directly below dotplot -->
+                    <div class="sequence-alignment-compact" id="alignment-section" style="display: none;">
+                        <div class="alignment-info-compact">
+                            <span id="alignment-position-info"></span>
+                        </div>
+                        <div class="alignment-sequences-compact">
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Seq1:</span>
+                                <span class="sequence-display-compact" id="seq1-alignment"></span>
+                            </div>
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Match:</span>
+                                <span class="sequence-display-compact" id="match-alignment"></span>
+                            </div>
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Seq2:</span>
+                                <span class="sequence-display-compact" id="seq2-alignment"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reverse Complement Alignment Display -->
+                    <div class="sequence-alignment-compact reverse-alignment" id="reverse-alignment-section" style="display: none;">
+                        <div class="alignment-info-compact">
+                            <span id="reverse-alignment-position-info"></span>
+                        </div>
+                        <div class="alignment-sequences-compact">
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Seq1:</span>
+                                <span class="sequence-display-compact" id="seq1-reverse-alignment"></span>
+                            </div>
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Match:</span>
+                                <span class="sequence-display-compact" id="match-reverse-alignment"></span>
+                            </div>
+                            <div class="sequence-row-compact">
+                                <span class="sequence-label-compact">Rev2:</span>
+                                <span class="sequence-display-compact" id="seq2-reverse-alignment"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="dotplot-info">
+                        <p><strong>Instructions:</strong></p>
+                        <ul>
+                            <li>Green dots represent forward-forward matches</li>
+                            <li>Red dots represent forward-reverse complement matches</li>
+                            <li>Sequence 2 reverse complement is shown on the right side</li>
+                            <li>Adjust window size to change sensitivity</li>
+                            <li>Click on any cell in the dotplot to see sequence alignment</li>
+                            <li><strong>Keyboard navigation:</strong> Arrow keys (↑↓←→), &lt;&gt; for diagonal, [] for anti-diagonal</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/dotplotExamples.js"></script>
+    <script>
+        // Make examples available globally
+        window.DOTPLOT_EXAMPLES = DOTPLOT_EXAMPLES;
+    </script>
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/dotplotAlgorithm.js"></script>
+    <script src="js/dotplotDnaVisualizer.js"></script>
+    <script src="js/dotplotGameController.js"></script>
+    <script src="js/dotplotApp.js"></script>
+</body>
+</html>

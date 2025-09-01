@@ -311,14 +311,14 @@ input[type="range"]::-moz-range-thumb {
 }
 
 #dotplot-canvas {
-    width: 100%;
-    max-width: 450px;
-    height: 450px;
     border: 1px solid #e2e8f0;
     border-radius: 6px;
+    cursor: crosshair;
+    background: white;
+    max-width: 100%;
+    max-height: 600px;
     display: block;
     margin: 0 auto 15px;
-    background-color: white;
 }
 
 .dotplot-controls {
@@ -411,6 +411,19 @@ input[type="range"]::-moz-range-thumb {
     padding: 15px;
     margin-bottom: 15px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.alignment-item:hover {
+    background: #f7fafc;
+    border-color: #cbd5e0;
+}
+
+.alignment-item.selected {
+    background: #fed7d7;
+    border-color: #fc8181;
+    box-shadow: 0 2px 6px rgba(252, 129, 129, 0.3);
 }
 
 .alignment-header {
@@ -552,6 +565,217 @@ input[type="range"]::-moz-range-thumb {
     background-color: rgba(128, 90, 213, 0.1);
 }
 
+/* BLAST-specific styles */
+.step-controls {
+    flex-shrink: 0;
+}
+
+.step-indicator {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.step-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.step-item:hover {
+    background: #edf2f7;
+    border-color: #cbd5e0;
+}
+
+.step-item.active {
+    background: #667eea;
+    color: white;
+    border-color: #5a67d8;
+}
+
+.step-item.completed {
+    background: #48bb78;
+    color: white;
+    border-color: #38a169;
+}
+
+.step-number {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.step-item.active .step-number,
+.step-item.completed .step-number {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.step-label {
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.step-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+}
+
+.step-buttons button {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 13px;
+}
+
+.results-summary {
+    flex-shrink: 0;
+}
+
+.summary-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.visualization-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.visualization-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 350px;
+}
+
+#blast-canvas {
+    max-width: 100%;
+    height: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background: white;
+}
+
+.step-instructions {
+    background: #f7fafc;
+    padding: 12px;
+    border-radius: 6px;
+    margin-top: 10px;
+}
+
+.step-instructions p {
+    margin: 0;
+    font-size: 14px;
+    color: #4a5568;
+    line-height: 1.4;
+}
+
+.step-specific-controls {
+    margin-top: 15px;
+    padding: 12px;
+    background: #edf2f7;
+    border-radius: 6px;
+}
+
+.step-specific-controls .control-group {
+    margin-bottom: 10px;
+}
+
+.step-specific-controls .control-group:last-child {
+    margin-bottom: 0;
+}
+
+.step-specific-controls label {
+    font-weight: 600;
+    color: #2d3748;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.step-specific-controls p {
+    margin: 3px 0;
+    font-size: 13px;
+    color: #4a5568;
+}
+
+/* Textarea styling for database sequence */
+textarea {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 1em;
+    font-family: 'Courier New', monospace;
+    transition: border-color 0.3s ease;
+    resize: vertical;
+    min-height: 60px;
+}
+
+textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Input error states */
+.input-error {
+    border-color: #e53e3e !important;
+    box-shadow: 0 0 0 3px rgba(229, 62, 62, 0.1) !important;
+}
+
+/* Notification styles */
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 6px;
+    color: white;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    max-width: 300px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification-info {
+    background: #3182ce;
+}
+
+.notification-success {
+    background: #38a169;
+}
+
+.notification-warning {
+    background: #d69e2e;
+}
+
+.notification-error {
+    background: #e53e3e;
+}
+
 /* Responsive design */
 @media (max-width: 1024px) {
     .game-container {
@@ -565,6 +789,16 @@ input[type="range"]::-moz-range-thumb {
     
     .controls-grid {
         grid-template-columns: 1fr;
+    }
+    
+    .step-indicator {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .step-item {
+        flex: 1;
+        min-width: 180px;
     }
 }
 
@@ -581,4 +815,427 @@ input[type="range"]::-moz-range-thumb {
         font-size: 1em;
         padding: 15px;
     }
+}
+
+/* DNA Dotplot Demo Specific Styles */
+
+/* Legend styles */
+.match-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9em;
+}
+
+.legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    margin-right: 8px;
+    border: 1px solid #ddd;
+}
+
+.legend-color.forward {
+    background-color: #22c55e;
+}
+
+.legend-color.reverse {
+    background-color: #dc2626;
+}
+
+/* Statistics display */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 8px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stat-item:last-child {
+    border-bottom: none;
+}
+
+.stat-label {
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 0.9em;
+}
+
+.stat-value {
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.stat-value.forward-color {
+    color: #22c55e;
+}
+
+.stat-value.reverse-color {
+    color: #dc2626;
+}
+
+.no-stats {
+    text-align: center;
+    color: #666;
+    font-style: italic;
+    margin: 20px 0;
+}
+
+/* Dotplot canvas */
+#dotplot-canvas {
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    cursor: crosshair;
+    background: white;
+    max-width: 100%;
+    max-height: 600px;
+    display: block;
+    margin: 0 auto;
+}
+
+.dotplot-info {
+    margin-top: 15px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    font-size: 0.9em;
+}
+
+.dotplot-info ul {
+    margin-left: 20px;
+    line-height: 1.6;
+}
+
+.dotplot-info li {
+    margin-bottom: 5px;
+}
+
+/* Input validation */
+input.error {
+    border-color: #fc8181 !important;
+    box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.1) !important;
+    background-color: #fed7d7 !important;
+}
+
+/* Tooltips */
+.match-tooltip {
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.tooltip-header {
+    font-weight: 600;
+    color: #2d3748;
+    margin-bottom: 8px;
+    padding-bottom: 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tooltip-content {
+    color: #4a5568;
+}
+
+.tooltip-content div {
+    margin-bottom: 4px;
+}
+
+.match-info.forward {
+    background: #dcfce7;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    border-left: 4px solid #22c55e;
+}
+
+.match-info.reverse {
+    background: #fef2f2;
+    padding: 8px;
+    border-radius: 4px;
+    margin-top: 8px;
+    border-left: 4px solid #dc2626;
+}
+
+.match-type {
+    font-weight: 600;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.match-info.forward .match-type {
+    color: #16a34a;
+}
+
+.match-info.reverse .match-type {
+    color: #b91c1c;
+}
+
+.no-match {
+    color: #666;
+    font-style: italic;
+}
+
+.error-message {
+    color: #dc2626;
+    font-weight: 500;
+    text-align: center;
+    background: #fef2f2;
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #fca5a5;
+}
+
+/* Error container for initialization errors */
+.error-container {
+    text-align: center;
+    padding: 40px;
+    background: #fef2f2;
+    border-radius: 8px;
+    margin: 20px;
+    border: 2px solid #fca5a5;
+}
+
+.error-container h2 {
+    color: #dc2626;
+    margin-bottom: 15px;
+}
+
+.error-container p {
+    color: #4a5568;
+    margin-bottom: 10px;
+}
+
+.error-container button {
+    background: #dc2626;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.error-container button:hover {
+    background: #b91c1c;
+}
+
+/* Example Selection Styles */
+.example-selection {
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.example-selection label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 500;
+    color: #4a5568;
+    font-size: 0.9em;
+}
+
+#example-selector {
+    width: 100%;
+    padding: 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+    background: white;
+    color: #2d3748;
+}
+
+#example-selector:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#load-selected-example {
+    background-color: #667eea;
+    color: white;
+    padding: 6px 12px;
+    font-size: 0.85em;
+    border-radius: 4px;
+}
+
+#load-selected-example:hover {
+    background-color: #5a67d8;
+}
+
+#load-selected-example:disabled {
+    background-color: #a0aec0;
+    cursor: not-allowed;
+}
+
+/* Example Information Styles */
+.example-info {
+    background: #e6fffa;
+    border: 1px solid #81e6d9;
+    border-radius: 6px;
+}
+
+.example-info h3 {
+    color: #2d3748;
+    font-size: 1.1em;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.example-info p {
+    margin-bottom: 8px;
+    color: #4a5568;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.example-info p:last-child {
+    margin-bottom: 0;
+}
+
+#clear-sequences {
+    background-color: #e2e8f0;
+    color: #4a5568;
+}
+
+#clear-sequences:hover {
+    background-color: #cbd5e0;
+}
+
+/* Compact Sequence Alignment Display Styles - positioned below dotplot */
+.sequence-alignment-compact {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    margin: 10px 0;
+    padding: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+}
+
+/* Reverse complement alignment styling */
+.sequence-alignment-compact.reverse-alignment {
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+.alignment-info-compact {
+    text-align: center;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1e40af;
+    font-size: 11px;
+}
+
+.alignment-sequences-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    line-height: 1.1;
+}
+
+.sequence-row-compact {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 1px 0;
+}
+
+.sequence-label-compact {
+    width: 45px;
+    font-weight: 600;
+    color: #374151;
+    text-align: right;
+    margin-right: 6px;
+    flex-shrink: 0;
+    font-size: 11px;
+}
+
+.sequence-display-compact {
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+    flex: 1;
+    font-size: 12px;
+}
+
+/* Compact Base styling */
+.base {
+    display: inline-block;
+    padding: 1px 2px;
+    margin: 0 0.5px;
+    border-radius: 2px;
+    font-weight: bold;
+    position: relative;
+    font-size: 11px;
+}
+
+/* Center position highlighting with frame - compact version */
+.center-base {
+    border: 2px solid #dc2626 !important;
+    background-color: rgba(220, 38, 38, 0.15) !important;
+    box-shadow: 0 0 0 1px #dc2626;
+    font-weight: 900;
+    transform: scale(1.05);
+    z-index: 1;
+}
+
+/* Match highlighting */
+.match-base {
+    color: #16a34a;
+    background-color: rgba(22, 163, 74, 0.1);
+    font-weight: bold;
+}
+
+/* Nucleotide colors for alignment display */
+.base.nucleotide-A { 
+    color: #dc2626; 
+    background-color: rgba(220, 38, 38, 0.1);
+}
+
+.base.nucleotide-T { 
+    color: #2563eb; 
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+.base.nucleotide-C { 
+    color: #16a34a; 
+    background-color: rgba(22, 163, 74, 0.1);
+}
+
+.base.nucleotide-G { 
+    color: #ea580c; 
+    background-color: rgba(234, 88, 12, 0.1);
+}
+
+/* Match line styling */
+.base:not(.nucleotide-A):not(.nucleotide-T):not(.nucleotide-C):not(.nucleotide-G) {
+    color: #6b7280;
+}
+
+/* Space/padding character styling */
+.base.nucleotide-space {
+    color: transparent;
+    background-color: transparent;
+    border: none !important;
+}
+
+/* Ensure spaces maintain their width */
+.sequence-display-compact .base {
+    min-width: 8px;
+    text-align: center;
 }
