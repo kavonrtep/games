@@ -7,6 +7,7 @@ class SwDotplotVisualizer {
         this.sequenceType = '';
         this.showScores = false;
         this.scoreMatrix = null;
+        this.highlightedAlignment = null;
         
         this.setupCanvas();
         this.setupEventListeners();
@@ -48,6 +49,13 @@ class SwDotplotVisualizer {
         }
     }
 
+    setHighlightedAlignment(alignment) {
+        this.highlightedAlignment = alignment;
+        
+        if (this.seq1 && this.seq2) {
+            this.updateDotplot(this.seq1, this.seq2, this.sequenceType);
+        }
+    }
 
     updateDotplot(seq1, seq2, sequenceType) {
         this.seq1 = seq1;
@@ -75,6 +83,11 @@ class SwDotplotVisualizer {
         this.drawAxes(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
         this.drawCheckersGrid(margin, plotWidth, plotHeight, seq1Clean.length, seq2Clean.length);
         this.drawMatches(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
+        
+        // Draw highlighted alignment positions if any
+        if (this.highlightedAlignment) {
+            this.drawHighlightedAlignment(margin, plotWidth, plotHeight, seq1Clean, seq2Clean);
+        }
         
         // Draw scores if enabled
         if (this.showScores && this.scoreMatrix) {
@@ -198,6 +211,85 @@ class SwDotplotVisualizer {
         }
     }
 
+    drawHighlightedAlignment(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
+        if (!this.highlightedAlignment) return;
+        
+        const cellWidth = plotWidth / seq1Clean.length;
+        const cellHeight = plotHeight / seq2Clean.length;
+        
+        // Get all position pairs including gaps from the highlighted alignment
+        const allPairs = this.getAllAlignmentPositions(this.highlightedAlignment);
+        
+        for (const pair of allPairs) {
+            if (pair.pos1 < seq1Clean.length && pair.pos2 < seq2Clean.length) {
+                const x = margin + pair.pos1 * cellWidth;
+                const y = margin + pair.pos2 * cellHeight;
+                
+                if (pair.isGap) {
+                    // Draw red frame for gaps
+                    this.ctx.strokeStyle = '#dc2626'; // Red color
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(x + 1, y + 1, cellWidth - 2, cellHeight - 2);
+                } else {
+                    // Draw light red fill for aligned positions
+                    this.ctx.fillStyle = '#fca5a5'; // Light red color
+                    this.ctx.fillRect(x + 1, y + 1, cellWidth - 2, cellHeight - 2);
+                }
+            }
+        }
+    }
+
+    getAllAlignmentPositions(alignment) {
+        // Extract all position pairs including gaps from the highlighted alignment
+        const pairs = [];
+        let pos1 = alignment.startPos1;
+        let pos2 = alignment.startPos2;
+        
+        for (let i = 0; i < alignment.alignedSeq1.length; i++) {
+            const char1 = alignment.alignedSeq1[i];
+            const char2 = alignment.alignedSeq2[i];
+            
+            if (char1 !== '-' && char2 !== '-') {
+                // Both sequences have actual characters at this position
+                pairs.push({ pos1, pos2, char1, char2, isGap: false });
+            } else if (char1 === '-' && char2 !== '-') {
+                // Gap in sequence 1, character in sequence 2
+                pairs.push({ pos1: pos1 - 1, pos2, char1, char2, isGap: true });
+            } else if (char1 !== '-' && char2 === '-') {
+                // Character in sequence 1, gap in sequence 2
+                pairs.push({ pos1, pos2: pos2 - 1, char1, char2, isGap: true });
+            }
+            
+            // Advance position counters
+            if (char1 !== '-') pos1++;
+            if (char2 !== '-') pos2++;
+        }
+        
+        return pairs;
+    }
+
+    getAlignedPositionPairs(alignment) {
+        // Extract all position pairs where both sequences have actual characters (no gaps)
+        const pairs = [];
+        let pos1 = alignment.startPos1;
+        let pos2 = alignment.startPos2;
+        
+        for (let i = 0; i < alignment.alignedSeq1.length; i++) {
+            const char1 = alignment.alignedSeq1[i];
+            const char2 = alignment.alignedSeq2[i];
+            
+            if (char1 !== '-' && char2 !== '-') {
+                // Both sequences have actual characters at this position
+                pairs.push({ pos1, pos2, char1, char2 });
+            }
+            
+            // Advance position counters
+            if (char1 !== '-') pos1++;
+            if (char2 !== '-') pos2++;
+        }
+        
+        return pairs;
+    }
 
     drawScores(margin, plotWidth, plotHeight, seq1Clean, seq2Clean) {
         if (!this.scoreMatrix || !this.scoreMatrix.score) return;
@@ -350,6 +442,7 @@ class SwDotplotVisualizer {
         this.seq2 = '';
         this.showScores = false;
         this.scoreMatrix = null;
+        this.highlightedAlignment = null;
         this.drawEmptyState();
     }
 }

@@ -253,7 +253,7 @@ class SwGameController {
             const formattedAlignment = this.formatAlignmentWithPositions(alignment);
             
             html += `
-                <div class="alignment-item">
+                <div class="alignment-item" data-alignment-index="${index}">
                     <div class="alignment-header">
                         <span>Local Alignment #${index + 1} (Score: ${alignment.score})</span>
                         <span class="alignment-score">${alignment.score}</span>
@@ -268,6 +268,18 @@ class SwGameController {
         });
         
         container.innerHTML = html;
+        
+        // Add click event listeners to alignment items
+        container.querySelectorAll('.alignment-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                const index = parseInt(item.dataset.alignmentIndex);
+                this.highlightAlignmentInDotplot(index);
+                
+                // Visual feedback - highlight selected alignment
+                container.querySelectorAll('.alignment-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+            });
+        });
     }
 
     formatAlignmentWithPositions(alignment) {
@@ -313,8 +325,18 @@ ${matchLineSpacing}${matchLine}
 ${seq2StartPadded} ${alignment.alignedSeq2} ${seq2EndPadded}`;
     }
 
+    highlightAlignmentInDotplot(alignmentIndex) {
+        if (alignmentIndex >= 0 && alignmentIndex < this.localAlignments.length) {
+            const alignment = this.localAlignments[alignmentIndex];
+            this.dotplotVisualizer.setHighlightedAlignment(alignment);
+            
+            this.showNotification(`Highlighted alignment #${alignmentIndex + 1} in dotplot`, 'info');
+        }
+    }
+
     clearAlignments() {
         this.localAlignments = [];
+        this.dotplotVisualizer.setHighlightedAlignment(null);
         this.elements.alignmentsContainer.innerHTML = '<p class="no-alignments">Run Smith-Waterman to find local alignments</p>';
     }
 

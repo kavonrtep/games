@@ -123,3 +123,248 @@
 - **Phylogenetic context** showing evolutionary relationships
 
 Would you like me to elaborate on any of these components, or shall we start implementing specific parts? The alignment editor with real-time scoring would be a great starting point, as it's the core interactive element.
+
+---
+
+## Game 3: BLAST Algorithm Demonstration
+
+### **Educational Objectives**
+- Understand the core principles of the BLAST (Basic Local Alignment Search Tool) algorithm
+- Learn the concept of k-mer based seed finding and local alignment extension
+- Visualize how BLAST identifies potential alignment regions through shared k-mers
+- Grasp the relationship between k-mer length and sensitivity vs. specificity
+- Experience the step-by-step process of sequence database searching
+
+### **BLAST Algorithm Steps to Demonstrate**
+
+1. **K-mer Generation**: Break query sequence into overlapping k-mers of length L (3-6)
+2. **K-mer Matching**: Find all positions in the database sequence where query k-mers match
+3. **Seed Identification**: Locate shared k-mers between query and database sequence
+4. **Alignment Extension**: Extend alignment bidirectionally around each seed using local alignment
+5. **Scoring and Ranking**: Score extended alignments and rank by significance
+
+### **User Interface Layout**
+
+**Left Panel (40% width):**
+- **Sequence Input Area** (top)
+  - Query sequence input (shorter, 10-30 chars)
+  - Database sequence input (longer, 50-200 chars)
+  - K-mer length selector (3-6)
+  - Load example button
+- **Step Controls** (middle)
+  - Step-by-step progression buttons
+  - Current step indicator
+  - Reset/restart functionality
+- **Results Summary** (bottom)
+  - Found k-mer matches count
+  - Extended alignments count
+  - Best alignment score
+
+**Right Panel (60% width):**
+- **Visualization Area** (full height)
+  - K-mer generation display
+  - Sequence comparison matrix
+  - Alignment extension visualization
+  - Final alignment results
+
+### **Step-by-Step Workflow**
+
+#### **Step 1: K-mer Generation**
+**Interface:**
+- Display query sequence with sliding window visualization
+- Show all generated k-mers in a scrollable list
+- Highlight current k-mer position on sequence
+- K-mer count indicator
+
+**Visualization:**
+```
+Query: ATCGATCG (k=3)
+K-mers: [ATC][TCG][CGA][GAT][ATC][TCG]
+        ^
+Position: 0  1   2   3   4   5
+```
+
+**User Interaction:**
+- Click "Generate K-mers" to see all k-mers
+- Hover over k-mer to highlight position in sequence
+- Adjust k-mer length to see effect on k-mer count
+
+#### **Step 2: K-mer Matching**
+**Interface:**
+- Display database sequence
+- Show matching positions for each query k-mer
+- Color-coded matches (different colors for different k-mers)
+- Match statistics panel
+
+**Visualization:**
+```
+Database: GGATCGATCGAATCGTAG...
+Query k-mers:
+ATC: positions [2, 6, 15]  ■
+TCG: positions [3, 7, 16]  ■
+CGA: positions [4, 8]      ■
+```
+
+**User Interaction:**
+- Click "Find Matches" to populate match table
+- Click on k-mer to highlight all its matches in database
+- Toggle individual k-mer visibility
+
+#### **Step 3: Seed Identification**
+**Interface:**
+- Cluster nearby matches into potential alignment seeds
+- Display seed regions with their coordinates
+- Show seed quality metrics (match density, length)
+
+**Visualization:**
+```
+Database: ----ATCGATCG----ATCG----
+Seeds:    ████████████    ████
+          Seed 1 (score: 12)  Seed 2 (score: 6)
+          Pos: 4-11          Pos: 16-19
+```
+
+**User Interaction:**
+- Click "Identify Seeds" to cluster matches
+- Minimum seed length threshold slider
+- Click on seed to see contributing k-mers
+
+#### **Step 4: Alignment Extension**
+**Interface:**
+- For each seed, extend alignment in both directions
+- Show extension process with match/mismatch scoring
+- Display extended alignment with gaps if beneficial
+- Extension stops when score drops below threshold
+
+**Visualization:**
+```
+Extension around Seed 1:
+Query:    --ATCGATCG--
+          ||||||||||
+Database: GGATCGATCGAA
+          ^          ^
+        Start      End
+Score: +8 (matches) -2 (mismatches) = +6
+```
+
+**User Interaction:**
+- Click "Extend Alignments" to process all seeds
+- Extension threshold slider
+- Step through extension process for selected seed
+- Show/hide extension scoring details
+
+#### **Step 5: Final Results**
+**Interface:**
+- List all significant alignments found
+- Sort by score, e-value, or position
+- Display full alignment details for selected result
+- Comparison with different k-mer lengths
+
+**Visualization:**
+```
+BLAST Results (k=3):
+1. Score: 15, Query: 1-8, Database: 4-11
+   Query:    ATCGATCG
+             ||||||||
+   Database: ATCGATCG
+
+2. Score: 8, Query: 5-8, Database: 16-19
+   Query:    ATCG
+             ||||
+   Database: ATCG
+```
+
+### **Educational Features**
+
+#### **Parameter Exploration:**
+- **K-mer length effects:**
+  - Shorter k-mers (3): More sensitive, more false matches
+  - Longer k-mers (6): More specific, fewer matches
+- **Threshold effects:**
+  - Extension threshold impact on alignment length
+  - Seed clustering sensitivity
+
+#### **Comparative Analysis:**
+- Side-by-side comparison of different k-mer lengths
+- Show trade-off between sensitivity and specificity
+- Demonstrate why BLAST uses multiple approaches
+
+#### **Interactive Learning:**
+- **Guided mode**: Step-by-step tutorial with hints
+- **Free exploration**: Advanced users can adjust all parameters
+- **Challenge mode**: Find optimal parameters for given sequences
+
+### **Technical Implementation Details**
+
+#### **Data Structures:**
+```javascript
+class BlastDemo {
+    // K-mer generation and matching
+    generateKmers(sequence, k)
+    findMatches(queryKmers, dbSequence)
+    
+    // Seed identification and clustering
+    identifySeeds(matches, minSeedLength)
+    clusterMatches(matches, maxDistance)
+    
+    // Alignment extension
+    extendAlignment(seed, querySeq, dbSeq, threshold)
+    scoreExtension(alignment, scoringMatrix)
+    
+    // Results processing
+    rankAlignments(alignments)
+    calculateSignificance(alignment, dbLength)
+}
+```
+
+#### **Visualization Components:**
+- **K-mer Generator**: Shows sliding window over sequence
+- **Match Matrix**: 2D visualization of k-mer matches
+- **Seed Clusters**: Grouped visualization of nearby matches
+- **Extension Tracer**: Step-by-step alignment extension
+- **Results Browser**: Interactive alignment viewer
+
+#### **User Interface States:**
+1. **Input State**: Sequence entry and parameter selection
+2. **K-mer State**: K-mer generation and display
+3. **Matching State**: Database searching and match finding  
+4. **Seeding State**: Seed identification and clustering
+5. **Extension State**: Alignment extension around seeds
+6. **Results State**: Final alignment presentation and analysis
+
+### **Example Sequences for Different Difficulty Levels**
+
+#### **Beginner (High Similarity):**
+```
+Query:    ATCGATCGAA (10 chars)
+Database: GGATCGATCGAATCGTAGCCATCGATCGAA... (80 chars)
+Expected: Multiple perfect matches, clear seeds
+```
+
+#### **Intermediate (Moderate Similarity):**
+```
+Query:    ATCGATTGAA (10 chars)  
+Database: GGATCGATCGAATCGTAGCCATCGTTCGAA... (100 chars)
+Expected: Some mismatches, extension needed
+```
+
+#### **Advanced (Low Similarity):**
+```
+Query:    ATCGATTGAA (10 chars)
+Database: CCATGGTTCGAATCGTTAGCCTTCGATCGAA... (120 chars) 
+Expected: Few seeds, challenging extensions
+```
+
+### **Assessment and Learning Outcomes**
+
+#### **Knowledge Checks:**
+- What happens when k-mer length increases?
+- Why does BLAST use seeds instead of full alignment?
+- How does extension threshold affect results?
+
+#### **Practical Skills:**
+- Optimal parameter selection for different sequence types
+- Understanding speed vs. sensitivity trade-offs
+- Interpreting BLAST-like search results
+
+This design provides a comprehensive, step-by-step exploration of BLAST fundamentals while maintaining the interactive, educational approach of the existing alignment games.
