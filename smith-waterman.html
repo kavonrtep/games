@@ -27,8 +27,15 @@
                         <label for="sequence2">Sequence 2:</label>
                         <input type="text" id="sequence2" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
                     </div>
+                    <div class="example-selection">
+                        <label for="example-selector">Choose Example:</label>
+                        <select id="example-selector">
+                            <option value="">Select an educational example...</option>
+                        </select>
+                        <button id="load-selected-example">Load Selected Example</button>
+                    </div>
                     <div class="input-controls">
-                        <button id="load-example">Load Example</button>
+                        <button id="load-example">Load Random Example</button>
                         <button id="start-alignment">Start Analysis</button>
                     </div>
                 </section>
@@ -86,6 +93,11 @@
     </div>
 
     <!-- JavaScript Modules -->
+    <script src="js/smithWatermanExamples.js"></script>
+    <script>
+        // Make examples available globally
+        window.SMITH_WATERMAN_EXAMPLES = SMITH_WATERMAN_EXAMPLES;
+    </script>
     <script src="js/sequenceValidator.js"></script>
     <script src="js/smithWaterman.js"></script>
     <script src="js/swDotplotVisualizer.js"></script>

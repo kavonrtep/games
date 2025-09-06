@@ -368,3 +368,13 @@ Expected: Few seeds, challenging extensions
 - Interpreting BLAST-like search results
 
 This design provides a comprehensive, step-by-step exploration of BLAST fundamentals while maintaining the interactive, educational approach of the existing alignment games.
+
+
+
+# TODO 
+Dotplot Explorer is an interactive game designed to help students understand how dotplots reveal similarities between biological sequences. By inputting two sequences and adjusting parameters such as word length, students can explore how sensitivity and noise change the appearance of the plot.
+Once potential patterns are visible, the Show Alignments feature highlights local alignments as connected blocks, similar to what is seen in genome synteny browsers. Through this hands-on exploration, students learn to interpret diagonals, inversions, and repeats, building intuition for how dotplots connect to real biological insights.
+
+design will be similar to dotplot game but it is expected that the sequences will be longer - up to 200 characters
+Additional feature will be functionality "show alignments" - when the user clicks on this button the program will find local alignments and highlight them on the dotplot as connected blocks - similar to what is seen in genome synteny browsers
+

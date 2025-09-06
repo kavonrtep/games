@@ -44,6 +44,8 @@ class GameController {
         this.elements = {
             sequence1Input: document.getElementById('sequence1'),
             sequence2Input: document.getElementById('sequence2'),
+            exampleSelector: document.getElementById('example-selector'),
+            loadSelectedExampleBtn: document.getElementById('load-selected-example'),
             loadExampleBtn: document.getElementById('load-example'),
             startAlignmentBtn: document.getElementById('start-alignment'),
             needlemanWunschBtn: document.getElementById('needleman-wunsch'),
@@ -64,9 +66,13 @@ class GameController {
             thresholdValue: document.getElementById('threshold-value'),
             showScores: document.getElementById('show-scores')
         };
+        
+        this.populateExampleMenu();
     }
 
     setupEventListeners() {
+        this.elements.exampleSelector.addEventListener('change', () => this.handleExampleSelection());
+        this.elements.loadSelectedExampleBtn.addEventListener('click', () => this.loadSelectedExample());
         this.elements.loadExampleBtn.addEventListener('click', () => this.loadExample());
         this.elements.startAlignmentBtn.addEventListener('click', () => this.startAlignment());
         this.elements.needlemanWunschBtn.addEventListener('click', () => this.calculateOptimalAlignment());
@@ -139,6 +145,44 @@ class GameController {
             this.onDotplotMouseMove(data);
         });
         console.log('Callbacks setup complete');
+    }
+
+    populateExampleMenu() {
+        if (!window.NEEDLEMAN_WUNSCH_EXAMPLES) return;
+        
+        const selector = this.elements.exampleSelector;
+        
+        // Clear existing options (except the first placeholder)
+        while (selector.children.length > 1) {
+            selector.removeChild(selector.lastChild);
+        }
+        
+        // Add each example as an option
+        for (const [key, example] of Object.entries(window.NEEDLEMAN_WUNSCH_EXAMPLES)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = example.name;
+            selector.appendChild(option);
+        }
+    }
+
+    handleExampleSelection() {
+        const selectedKey = this.elements.exampleSelector.value;
+        // Could add preview functionality here if desired
+        // For now, just enable/disable the load button
+        this.elements.loadSelectedExampleBtn.disabled = !selectedKey;
+    }
+
+    loadSelectedExample() {
+        const selectedKey = this.elements.exampleSelector.value;
+        if (!selectedKey || !window.NEEDLEMAN_WUNSCH_EXAMPLES) return;
+        
+        const example = window.NEEDLEMAN_WUNSCH_EXAMPLES[selectedKey];
+        this.elements.sequence1Input.value = example.seq1;
+        this.elements.sequence2Input.value = example.seq2;
+        
+        this.validateInput();
+        this.showNotification(`Loaded example: ${example.name}`, 'info');
     }
 
     loadExample() {

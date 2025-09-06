@@ -36,6 +36,8 @@ class SwGameController {
         this.elements = {
             sequence1Input: document.getElementById('sequence1'),
             sequence2Input: document.getElementById('sequence2'),
+            exampleSelector: document.getElementById('example-selector'),
+            loadSelectedExampleBtn: document.getElementById('load-selected-example'),
             loadExampleBtn: document.getElementById('load-example'),
             startAlignmentBtn: document.getElementById('start-alignment'),
             smithWatermanBtn: document.getElementById('smith-waterman'),
@@ -53,9 +55,13 @@ class SwGameController {
             showScores: document.getElementById('show-scores'),
             alignmentsContainer: document.getElementById('alignments-container')
         };
+        
+        this.populateExampleMenu();
     }
 
     setupEventListeners() {
+        this.elements.exampleSelector.addEventListener('change', () => this.handleExampleSelection());
+        this.elements.loadSelectedExampleBtn.addEventListener('click', () => this.loadSelectedExample());
         this.elements.loadExampleBtn.addEventListener('click', () => this.loadExample());
         this.elements.startAlignmentBtn.addEventListener('click', () => this.startAlignment());
         this.elements.smithWatermanBtn.addEventListener('click', () => this.findLocalAlignments());
@@ -114,6 +120,43 @@ class SwGameController {
         });
         
         console.log('Callbacks setup complete');
+    }
+
+    populateExampleMenu() {
+        if (!window.SMITH_WATERMAN_EXAMPLES) return;
+        
+        const selector = this.elements.exampleSelector;
+        
+        // Clear existing options (except the first placeholder)
+        while (selector.children.length > 1) {
+            selector.removeChild(selector.lastChild);
+        }
+        
+        // Add each example as an option
+        for (const [key, example] of Object.entries(window.SMITH_WATERMAN_EXAMPLES)) {
+            const option = document.createElement('option');
+            option.value = key;
+            option.textContent = example.name;
+            selector.appendChild(option);
+        }
+    }
+
+    handleExampleSelection() {
+        const selectedKey = this.elements.exampleSelector.value;
+        // Enable/disable the load button based on selection
+        this.elements.loadSelectedExampleBtn.disabled = !selectedKey;
+    }
+
+    loadSelectedExample() {
+        const selectedKey = this.elements.exampleSelector.value;
+        if (!selectedKey || !window.SMITH_WATERMAN_EXAMPLES) return;
+        
+        const example = window.SMITH_WATERMAN_EXAMPLES[selectedKey];
+        this.elements.sequence1Input.value = example.seq1;
+        this.elements.sequence2Input.value = example.seq2;
+        
+        this.validateInput();
+        this.showNotification(`Loaded example: ${example.name}`, 'info');
     }
 
     loadExample() {
