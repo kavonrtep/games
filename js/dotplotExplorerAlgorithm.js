@@ -1,10 +1,15 @@
 class DotplotExplorerAlgorithm {
     constructor() {
         this.windowSize = 8; // Default window size for explorer
+        this.allowMismatches = false; // Default: exact matching only
     }
 
     setWindowSize(size) {
         this.windowSize = Math.max(1, Math.min(15, size));
+    }
+
+    setMismatchTolerance(allow) {
+        this.allowMismatches = Boolean(allow);
     }
 
     // Get reverse complement of DNA sequence
@@ -35,6 +40,31 @@ class DotplotExplorerAlgorithm {
     // Check if two k-mers match exactly
     kmersMatch(kmer1, kmer2) {
         return kmer1.toUpperCase() === kmer2.toUpperCase();
+    }
+
+    // Count mismatches between two k-mers
+    countMismatches(kmer1, kmer2) {
+        if (kmer1.length !== kmer2.length) return Infinity;
+        
+        let mismatches = 0;
+        const seq1 = kmer1.toUpperCase();
+        const seq2 = kmer2.toUpperCase();
+        
+        for (let i = 0; i < seq1.length; i++) {
+            if (seq1[i] !== seq2[i]) {
+                mismatches++;
+            }
+        }
+        return mismatches;
+    }
+
+    // Check if two k-mers match within tolerance
+    kmersMatchWithTolerance(kmer1, kmer2) {
+        if (this.allowMismatches) {
+            return this.countMismatches(kmer1, kmer2) <= 1; // Allow max 1 mismatch
+        } else {
+            return this.kmersMatch(kmer1, kmer2); // Exact match only
+        }
     }
 
     // Generate dotplot data for DNA sequences
@@ -84,11 +114,22 @@ class DotplotExplorerAlgorithm {
         };
     }
 
-    // Find matches by comparing sequences base-by-base and forming diagonal lines
+    // Find matches using either exact or approximate k-mer matching
     findMatches(kmers1, kmers2, matchType) {
         const seq1 = kmers1[0].fullSeq;
         const seq2 = kmers2[0].fullSeq;
         
+        if (this.allowMismatches) {
+            // K-mer based approximate matching
+            return this.findApproximateMatches(kmers1, kmers2, matchType);
+        } else {
+            // Original base-by-base exact matching
+            return this.findExactMatches(seq1, seq2, matchType);
+        }
+    }
+
+    // Original exact matching implementation
+    findExactMatches(seq1, seq2, matchType) {
         // Find all individual base matches first
         const baseMatches = [];
         for (let i = 0; i < seq1.length; i++) {
@@ -117,6 +158,70 @@ class DotplotExplorerAlgorithm {
                     lineStart: i === 0,
                     lineEnd: i === line.length - 1,
                     length: 1  // Each match represents one position
+                });
+            }
+        }
+        
+        return matches;
+    }
+
+    // New approximate k-mer matching implementation
+    findApproximateMatches(kmers1, kmers2, matchType) {
+        const seq1 = kmers1[0].fullSeq;
+        const seq2 = kmers2[0].fullSeq;
+        
+        // Create a comprehensive match grid using approximate k-mer comparison
+        const baseMatches = [];
+        
+        // For each position in both sequences, check if there's an approximate k-mer match
+        for (let i = 0; i <= seq1.length - this.windowSize; i++) {
+            for (let j = 0; j <= seq2.length - this.windowSize; j++) {
+                const kmer1 = seq1.substring(i, i + this.windowSize);
+                const kmer2 = seq2.substring(j, j + this.windowSize);
+                
+                if (this.kmersMatchWithTolerance(kmer1, kmer2)) {
+                    // Add all base positions that are part of this matching k-mer
+                    for (let k = 0; k < this.windowSize; k++) {
+                        baseMatches.push({
+                            seq1Pos: i + k,
+                            seq2Pos: j + k,
+                            kmersMatch: true,
+                            mismatches: this.countMismatches(kmer1, kmer2)
+                        });
+                    }
+                }
+            }
+        }
+        
+        // Remove duplicates (same position might be covered by multiple overlapping k-mers)
+        const uniqueMatches = [];
+        const matchSet = new Set();
+        for (const match of baseMatches) {
+            const key = `${match.seq1Pos},${match.seq2Pos}`;
+            if (!matchSet.has(key)) {
+                matchSet.add(key);
+                uniqueMatches.push(match);
+            }
+        }
+        
+        // Find diagonal lines from these base matches (same as exact matching)
+        const diagonalLines = this.findDiagonalLines(uniqueMatches, this.windowSize);
+        
+        // Convert to match objects for visualization
+        const matches = [];
+        for (const line of diagonalLines) {
+            for (let i = 0; i < line.length; i++) {
+                matches.push({
+                    seq1Position: line.startSeq1 + i,
+                    seq2Position: line.startSeq2 + i,
+                    seq1Kmer: this.getSubsequence(seq1, line.startSeq1, this.windowSize),
+                    seq2Kmer: this.getSubsequence(seq2, line.startSeq2, this.windowSize),
+                    matchType: matchType,
+                    windowSize: this.windowSize,
+                    lineLength: line.length,
+                    lineStart: i === 0,
+                    lineEnd: i === line.length - 1,
+                    length: 1
                 });
             }
         }
@@ -164,6 +269,7 @@ class DotplotExplorerAlgorithm {
         return lines;
     }
 
+
     // Trace a diagonal line from a starting match position
     traceDiagonalLine(startMatch, matchSet) {
         const startSeq1 = startMatch.seq1Pos;
@@ -208,6 +314,7 @@ class DotplotExplorerAlgorithm {
             length: lineLength
         };
     }
+
 
     // Clean DNA sequence - keep only valid DNA bases
     cleanDnaSequence(sequence) {

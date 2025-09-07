@@ -49,6 +49,13 @@
                             <input type="range" id="window-size" min="1" max="15" value="8">
                             <small>Shorter = more sensitive, longer = less noise</small>
                         </div>
+                        <div class="control-group">
+                            <div class="checkbox-control">
+                                <input type="checkbox" id="allow-mismatches" name="allow-mismatches">
+                                <label for="allow-mismatches">Tolerate mismatches (max 1 per window)</label>
+                            </div>
+                            <small>Allow up to 1 mismatch per window for more sensitive matching</small>
+                        </div>
                     </div>
                     <div class="match-info">
                         <div class="legend-item">
@@ -90,12 +97,37 @@
                         </div>
                         <div class="sequence-context">
                             <div class="sequence-row">
-                                <span class="sequence-label">Seq1:</span>
+                                <span class="sequence-label">Seq1 :</span>
                                 <span class="sequence-segment" id="seq1-context"></span>
                             </div>
                             <div class="sequence-row">
-                                <span class="sequence-label">Seq2:</span>
+                                <span class="sequence-label">Match:</span>
+                                <span class="sequence-segment" id="match-context"></span>
+                            </div>
+                            <div class="sequence-row">
+                                <span class="sequence-label">Seq2 :</span>
                                 <span class="sequence-segment" id="seq2-context"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reverse Complement Alignment Display -->
+                    <div class="position-display reverse-complement" id="reverse-position-display" style="display: none;">
+                        <div class="position-info">
+                            <span id="reverse-position-coordinates"></span>
+                        </div>
+                        <div class="sequence-context">
+                            <div class="sequence-row">
+                                <span class="sequence-label">Seq1 :</span>
+                                <span class="sequence-segment" id="reverse-seq1-context"></span>
+                            </div>
+                            <div class="sequence-row">
+                                <span class="sequence-label">Match:</span>
+                                <span class="sequence-segment" id="reverse-match-context"></span>
+                            </div>
+                            <div class="sequence-row">
+                                <span class="sequence-label">RevC2:</span>
+                                <span class="sequence-segment" id="reverse-seq2-context"></span>
                             </div>
                         </div>
                     </div>

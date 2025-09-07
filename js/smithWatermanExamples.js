@@ -23,105 +23,71 @@
 
 const SMITH_WATERMAN_EXAMPLES = {
     
-    'splice-junction': {
-        name: 'Splice Junction Conservation',
-        description: 'RNA sequences with conserved splice site signals',
-        seq1: 'AAGGUAAGUCC',
-        seq2: 'GUCGGUAAGAC',
-        sequenceType: 'rna',
-        expectedPattern: 'Local alignment around GGUAAG consensus',
-        scoringRecommendation: 'Match=2, Mismatch=-1, Gap=-1 shows conservation',
-        educationalNotes: 'Splice sites have conserved sequences (GT-AG rule). Local alignment finds these conserved motifs even in different contexts.'
+    'core-motif': {
+        name: 'Shared Core Motif',
+        description: 'Two unrelated sequences share a short conserved motif',
+        seq1: 'GAGCGTCTGTTGACATCGTACGATTGCAACGATT',
+        seq2: 'CGTCTTGGCTAATCTTGACATCGTACGATGGTCGGTT',
+        sequenceType: 'dna',
+        expectedPattern: 'Local alignment around TTGACATCGTACGAT',
+        scoringRecommendation: 'Match=2, Mismatch=-3, Gap=-2',
+        educationalNotes: 'Shows how Smith-Waterman identifies a short conserved block within otherwise unrelated sequences.'
     },
     
-    'exon-similarity': {
-        name: 'Similar Exon Sequences',
-        description: 'DNA sequences with one similar exon region',
-        seq1: 'ATCGATCGAAGGCTAACG',
-        seq2: 'GGGAAGGCTAACCCTTT',
+    'sequence-overlap': {
+        name: 'Overlaping sequences',
+        description: 'DNA sequences with overlap',
+        seq1: 'GAGCGTCTGGCGTCTTGGCTAATC',
+        seq2: 'GCGTCTTGGCTAATCCCCCTACAT',
         sequenceType: 'dna',
         expectedPattern: 'Local alignment around AAGGCTAAC region',
         scoringRecommendation: 'Standard DNA scoring to highlight local similarity',
         educationalNotes: 'Models gene comparison where only specific exons are conserved between paralogs or orthologs.'
     },
     
-    'motif-detection': {
-        name: 'Regulatory Motif Detection',
-        description: 'DNA sequences sharing a transcription factor binding site',
-        seq1: 'ATCGTCGATTATAAGCG',
-        seq2: 'GGGCTATAAGCTTTCC',
+    'te-insertion': {
+        name: 'Sequence Insertion',
+        description: 'Identical sequences with an insertion in one',
+        seq1: 'GGCCAGTGGTCGGTTGCTACACCCCTGCCGCAACGTTGAAGGTCCCGG',
+        seq2: 'GGCCAGTGGTCGGTTGAACGTTGAAGGTCCCGG',
         sequenceType: 'dna',
-        expectedPattern: 'Local alignment around TATAAG motif (TATA box)',
+        expectedPattern: 'two alignments flanking the insertion',
         scoringRecommendation: 'Try Match=3, Mismatch=-2 to emphasize motif',
-        educationalNotes: 'TATA box is a key regulatory element. Local alignment can identify conserved regulatory motifs in promoter regions.'
+        educationalNotes: 'increase the gap penalty and mismatch penalty to see how it affects the alignment'
     },
     
     
-    'partial-homology': {
-        name: 'Partial Sequence Homology',
-        description: 'Sequences homologous only in specific regions',
-        seq1: 'ATCGATCGATTGCCAA',
-        seq2: 'GGGTTGCCAACCCTT',
+    'repeat': {
+        name: 'Repetitive motifs',
+        description: 'Repeated sequence motifs with variations',
+        seq1: 'GAGCGTCTGGCGTCTTGGCTAAT',
+        seq2: 'GTGCGTCTGGCCTCTTGGCTAATGAGCGTCTGGCCTCTTGGCTAAT',
         sequenceType: 'dna',
         expectedPattern: 'Local alignment around TTGCCAA region',
         scoringRecommendation: 'Default parameters show clear local similarity',
         educationalNotes: 'Common in comparative genomics: genes may be similar only in coding regions while differing in regulatory sequences.'
     },
-    
-    
-    'weak-similarity': {
-        name: 'Weak Local Similarity',
-        description: 'Sequences with subtle local conservation',
-        seq1: 'ATCGAACCGTTGCAAG',
-        seq2: 'GGGAACCCTTGCTTCC',
-        sequenceType: 'dna',
-        expectedPattern: 'Weak local alignment around AACCGTTGC region',
-        scoringRecommendation: 'Lower gap penalty (-0.5) may reveal weak similarity',
-        educationalNotes: 'Tests sensitivity: can the algorithm detect weak but biologically meaningful local similarities?'
-    },
-    
-    'ancient-conserved': {
-        name: 'Ancient Conserved Sequence',
-        description: 'Highly conserved sequence in different contexts',
-        seq1: 'GGCGCGATCGATCGC',
-        seq2: 'ATGCGATCGATCGAA',
-        sequenceType: 'dna',
-        expectedPattern: 'Perfect local alignment around CGATCGATC',
-        scoringRecommendation: 'High match score shows perfect conservation',
-        educationalNotes: 'Models ancient conserved sequences like ribosomal RNA regions that are identical across very different organisms.'
-    },
-    
-    'intron-exon-boundary': {
-        name: 'Intron-Exon Boundary Similarity',
+
+    'partialy-similar': {
+        name: 'Sequence with Partial Similarity on 5\' End',
         description: 'Sequences sharing conserved exon regions but different introns',
-        seq1: 'ATCGAAGGCTAACCGGT',
-        seq2: 'GGGCAAGGCTAACTTTT',
+        seq1: 'CAAGGGCGAGTATTGAACCAGGTGACACCCGTTATACTCCA',
+        seq2: 'CAAGGGCGAGTATTGAACCAGGTTGTTATAAACAATCAGTG',
         sequenceType: 'dna',
         expectedPattern: 'Local alignment around conserved AAGGCTAAC exon',
         scoringRecommendation: 'Standard DNA scoring highlights conserved coding region',
         educationalNotes: 'Common in gene analysis: exons are conserved while introns diverge, perfect for local alignment detection.'
     },
     
-    'transposon-remnants': {
-        name: 'Transposable Element Remnants',
-        description: 'DNA sequences containing similar transposon fragments',
-        seq1: 'GGCATGCATGCATGGC',
-        seq2: 'TTCATGCATGCATCCC',
+    'unrelated-sequences': {
+        name: 'Unrelated Sequences',
+        description: 'Unrelated DNA sequences with low similarity',
+        seq1: 'GAAGTTATGGAGCATAATAACATGTGGATGGCCAGTGGTCGGTTGCTACA',
+        seq2: 'CCCTGCCGCGGTCCCGGATTAGACTGGCTGGATCTATGCCGTGACACCCG',
         sequenceType: 'dna',
         expectedPattern: 'Local alignment around CATGCATGCAT repeat',
         scoringRecommendation: 'Match=2, Gap=-1 to detect repeat elements clearly',
         educationalNotes: 'Transposable elements leave similar sequence signatures. Local alignment can identify these remnants in different genomic contexts.'
-    },
-    
-    'cpg-island-similarity': {
-        name: 'CpG Island Conservation',
-        description: 'Sequences with conserved CpG-rich regulatory regions',
-        seq1: 'ATGCCGCGCGCGTTAA',
-        seq2: 'GGGCGCGCGCGCCAAT',
-        sequenceType: 'dna',
-        expectedPattern: 'Local alignment around CpG-rich CGCGCGCG region',
-        scoringRecommendation: 'Higher match score emphasizes GC-rich conservation',
-        educationalNotes: 'CpG islands are important regulatory elements often conserved between related genes or species.'
     }
 
     // Easy to add new examples - just follow this template:

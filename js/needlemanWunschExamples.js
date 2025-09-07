@@ -25,8 +25,8 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
     'identical-dna': {
         name: 'Identical DNA Sequences',
         description: 'Perfect match between two identical DNA sequences',
-        seq1: 'ATCGATCG',
-        seq2: 'ATCGATCG', 
+        seq1: 'ATCGATGCT',
+        seq2: 'ATCGATGCT',
         sequenceType: 'dna',
         expectedPattern: 'Perfect diagonal alignment with no gaps, maximum score',
         scoringRecommendation: 'Default parameters work well: Match=2, Mismatch=-1, Gap=-1',
@@ -36,8 +36,8 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
     'similar-dna': {
         name: 'Similar DNA with SNPs',
         description: 'DNA sequences with single nucleotide polymorphisms',
-        seq1: 'ATCGATCGAA',
-        seq2: 'ATGGATCGTA',
+        seq1: 'ATCGATCGAATCGT',
+        seq2: 'ATGGATCGTATAGT',
         sequenceType: 'dna',
         expectedPattern: 'Mostly diagonal with some mismatches, no gaps needed',
         scoringRecommendation: 'Try Match=2, Mismatch=-1, Gap=-2 to discourage gaps',
@@ -47,8 +47,8 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
     'indel-example': {
         name: 'Insertion/Deletion Example',
         description: 'One sequence has an insertion relative to the other',
-        seq1: 'ATCGCGATCG',
-        seq2: 'ATCGATCG',
+        seq1: 'ATCGCGTATGCAACG',
+        seq2: 'ATCGATGCAACG',
         sequenceType: 'dna',
         expectedPattern: 'Alignment with gap in shorter sequence',
         scoringRecommendation: 'Gap penalty -1 to see clear indel, try -2 to see effect',
@@ -68,22 +68,22 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
     },
     
     'rna-example': {
-        name: 'RNA Secondary Structure',
-        description: 'RNA sequences that might form base pairs',
-        seq1: 'AUCGAUCG',
-        seq2: 'CGAUCGAU',
-        sequenceType: 'rna',
+        name: 'Unrelated DNA Sequences',
+        description: 'Two different DNA sequences with low similarity',
+        seq1: 'GCTAGCTAGCTATGCG',
+        seq2: 'ACATAAGGTACCTAGAG',
+        sequenceType: 'DNA',
         expectedPattern: 'Alignment showing potential complementarity',
-        scoringRecommendation: 'Standard RNA scoring: Match=2, Mismatch=-1, Gap=-1',
-        educationalNotes: 'While this is global alignment, notice how these sequences have complementary regions that could form RNA secondary structures.'
+        scoringRecommendation: 'Standard scoring: Match=2, Mismatch=-1, Gap=-1',
+        educationalNotes: 'Two unrelated sequences may still show some local similarity or complementarity, but overall low alignment score.'
     },
-    
-    
+
+
     'tandem-repeats': {
         name: 'Tandem Repeat Variations',
         description: 'Sequences with different numbers of tandem repeats',
-        seq1: 'ATGATGATG',
-        seq2: 'ATGATG',
+        seq1: 'GCTAGCTGCTAGCTGCTAGCT',
+        seq2: 'TAGCTGCTAGCTGCTAGCTGCTAG',
         sequenceType: 'dna',
         expectedPattern: 'Gaps align extra repeat units',
         scoringRecommendation: 'Gap penalty -1 shows repeat structure clearly',
@@ -101,15 +101,15 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
         educationalNotes: 'Palindromic sequences are important for restriction enzyme recognition sites and can form hairpin structures.'
     },
     
-    'codon-variations': {
-        name: 'Coding Sequence Variations',
-        description: 'DNA sequences representing similar genes with codon usage differences',
-        seq1: 'ATGAAATTTGCA',
-        seq2: 'ATGAAGTTTGCT',
+    'small-inversion': {
+        name: 'Inversion Motif',
+        description: 'A short reversed segment inside one sequence',
+        seq1: 'ATCGGTGTTCCGATCCT',
+        seq2: 'ATCGGTGAAGGGATCCT',
         sequenceType: 'dna',
-        expectedPattern: 'High similarity with few silent substitutions',
-        scoringRecommendation: 'Match=2, Mismatch=-1 shows conservation pattern',
-        educationalNotes: 'Demonstrates synonymous codon usage differences that do not change amino acid sequence but affect DNA alignment.'
+        expectedPattern: 'Mostly diagonal with mismatches in inverted region',
+        scoringRecommendation: 'Match=2, Mismatch=-1, Gap=-1',
+        educationalNotes: 'Shows how inversions are represented as mismatches since global alignment cannot flip orientation.'
     }
 
     // Easy to add new examples - just follow this template:

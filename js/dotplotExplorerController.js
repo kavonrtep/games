@@ -31,6 +31,16 @@ class DotplotExplorerController {
             }
         });
 
+        const allowMismatchesCheckbox = document.getElementById('allow-mismatches');
+        allowMismatchesCheckbox.addEventListener('change', () => {
+            this.algorithm.setMismatchTolerance(allowMismatchesCheckbox.checked);
+            
+            // Regenerate dotplot if sequences are present
+            if (seq1Input.value && seq2Input.value) {
+                this.generateDotplot();
+            }
+        });
+
         // Example selection
         const exampleSelector = document.getElementById('example-selector');
         exampleSelector.addEventListener('change', () => this.handleExampleSelection());
@@ -273,18 +283,37 @@ class DotplotExplorerController {
     }
 
     displayPositionContext(data) {
+        // Forward alignment display
         const positionDisplay = document.getElementById('position-display');
         const coordinates = document.getElementById('position-coordinates');
         const seq1Context = document.getElementById('seq1-context');
         const seq2Context = document.getElementById('seq2-context');
+        const matchContext = document.getElementById('match-context');
         
         coordinates.textContent = `Position: Seq1[${data.seq1Position + 1}], Seq2[${data.seq2Position + 1}]`;
         
         // Create highlighted sequence context
         seq1Context.innerHTML = this.createHighlightedContext(data.seq1Context);
         seq2Context.innerHTML = this.createHighlightedContext(data.seq2Context);
+        matchContext.innerHTML = this.createMatchContext(data.seq1Context, data.seq2Context);
         
         positionDisplay.style.display = 'block';
+        
+        // Reverse complement alignment display
+        const reversePositionDisplay = document.getElementById('reverse-position-display');
+        const reverseCoordinates = document.getElementById('reverse-position-coordinates');
+        const reverseSeq1Context = document.getElementById('reverse-seq1-context');
+        const reverseSeq2Context = document.getElementById('reverse-seq2-context');
+        const reverseMatchContext = document.getElementById('reverse-match-context');
+        
+        reverseCoordinates.textContent = `Reverse: Seq1[${data.seq1Position + 1}], RevC2[${data.reverseSeq2Position + 1}]`;
+        
+        // Create highlighted reverse complement context
+        reverseSeq1Context.innerHTML = this.createHighlightedContext(data.seq1ContextForReverse);
+        reverseSeq2Context.innerHTML = this.createHighlightedContext(data.seq2ReverseContext);
+        reverseMatchContext.innerHTML = this.createMatchContext(data.seq1ContextForReverse, data.seq2ReverseContext);
+        
+        reversePositionDisplay.style.display = 'block';
     }
 
     createHighlightedContext(context) {
@@ -294,6 +323,38 @@ class DotplotExplorerController {
             const cssClass = i === context.centerPosition ? 'center-base' : 'base';
             html += `<span class="${cssClass}">${char}</span>`;
         }
+        return html;
+    }
+
+    createMatchContext(seq1Context, seq2Context) {
+        let matchString = '';
+        const minLength = Math.min(seq1Context.segment.length, seq2Context.segment.length);
+        
+        // First, build the raw match string without HTML
+        for (let i = 0; i < minLength; i++) {
+            const char1 = seq1Context.segment[i];
+            const char2 = seq2Context.segment[i];
+            
+            // Skip spaces (positions outside sequence boundaries)
+            if (char1 === ' ' || char2 === ' ') {
+                matchString += ' ';
+            } else if (char1.toUpperCase() === char2.toUpperCase()) {
+                // Match - use | symbol
+                matchString += '|';
+            } else {
+                // Mismatch - use space
+                matchString += ' ';
+            }
+        }
+        
+        // Now wrap with highlighting, treating it as a single string
+        let html = '';
+        for (let i = 0; i < matchString.length; i++) {
+            const char = matchString[i];
+            const cssClass = i === seq1Context.centerPosition ? 'center-base' : 'base';
+            html += `<span class="${cssClass}">${char}</span>`;
+        }
+        
         return html;
     }
 
@@ -328,8 +389,13 @@ class DotplotExplorerController {
         document.getElementById('example-selector').value = '';
         this.hideExampleInfo();
         
+        // Reset mismatch tolerance
+        document.getElementById('allow-mismatches').checked = false;
+        this.algorithm.setMismatchTolerance(false);
+        
         // Hide displays
         document.getElementById('position-display').style.display = 'none';
+        document.getElementById('reverse-position-display').style.display = 'none';
         document.getElementById('alignment-details').style.display = 'none';
         
         // Disable alignment buttons
@@ -351,6 +417,8 @@ class DotplotExplorerController {
         // Reset parameters to default
         document.getElementById('window-size').value = '8';
         this.algorithm.setWindowSize(8);
+        document.getElementById('allow-mismatches').checked = false;
+        this.algorithm.setMismatchTolerance(false);
         this.updateDisplayValues();
     }
 }

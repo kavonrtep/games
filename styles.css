@@ -1192,6 +1192,16 @@ input.error {
     font-size: 12px;
 }
 
+/* Reverse complement alignment styling */
+.position-display.reverse-complement {
+    background: #fef7f0;
+    border: 1px solid #fed7aa;
+}
+
+.position-display.reverse-complement .position-info {
+    color: #c2410c;
+}
+
 .position-info {
     text-align: center;
     margin-bottom: 8px;
@@ -1212,13 +1222,55 @@ input.error {
 }
 
 .sequence-label {
-    min-width: 40px;
+    width: 50px; /* Fixed width instead of min-width */
     font-weight: 600;
     color: #4a5568;
+    font-family: 'Courier New', monospace; /* Same monospace as sequences */
+    display: inline-block;
+    text-align: left;
 }
 
 .sequence-segment {
     font-family: 'Courier New', monospace;
+    letter-spacing: 0;
+    word-spacing: 0;
+}
+
+/* Ensure perfect alignment in sequence context display */
+.sequence-context .sequence-segment {
+    display: block;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    letter-spacing: 0;
+    white-space: pre; /* Preserve exact spacing */
+}
+
+.sequence-context .sequence-segment span {
+    display: inline;
+    font-family: inherit;
+    font-size: inherit;
+    margin: 0;
+    padding: 1px 2px;
+    border-radius: 2px;
+    /* Remove any potential alignment issues */
+    vertical-align: baseline;
+    text-align: left;
+}
+
+/* Override center-base styling for sequence context to maintain alignment */
+.sequence-context .center-base {
+    background: #fbbf24 !important;
+    color: #1f2937 !important;
+    font-weight: bold !important;
+    /* Keep same padding as other characters */
+    padding: 1px 2px !important;
+    margin: 0 !important;
+    border-radius: 2px;
+    /* Remove transform that might affect alignment */
+    transform: none !important;
+    box-shadow: none !important;
+    border: 1px solid #d97706;
 }
 
 .center-base {

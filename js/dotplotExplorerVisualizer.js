@@ -733,11 +733,18 @@ class DotplotExplorerVisualizer {
         this.drawDotplot();
         
         if (this.onPositionClickCallback) {
+            // Calculate reverse complement position
+            const reverseSeq2Pos = this.seq2.length - seq2Pos - 1;
+            
             this.onPositionClickCallback({
                 seq1Position: seq1Pos,
                 seq2Position: seq2Pos,
                 seq1Context: this.generateSequenceContext(this.seq1, seq1Pos),
-                seq2Context: this.generateSequenceContext(this.seq2, seq2Pos)
+                seq2Context: this.generateSequenceContext(this.seq2, seq2Pos),
+                // Add reverse complement contexts
+                reverseSeq2Position: reverseSeq2Pos,
+                seq1ContextForReverse: this.generateSequenceContext(this.seq1, seq1Pos),
+                seq2ReverseContext: this.generateSequenceContext(this.seq2Reverse, reverseSeq2Pos)
             });
         }
     }
