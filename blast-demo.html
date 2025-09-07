@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLAST Algorithm Demonstration</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>BLAST Algorithm Demonstration</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+        </header>
+        
+        <div class="game-container">
+            <!-- Left Panel (40% width) -->
+            <div class="left-panel">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="query-sequence">Query Sequence (shorter):</label>
+                        <input type="text" id="query-sequence" placeholder="Enter query sequence (10-30 chars)" maxlength="30">
+                    </div>
+                    <div class="input-group">
+                        <label for="database-sequence">Database Sequence (longer):</label>
+                        <textarea id="database-sequence" placeholder="Enter database sequence (50-200 chars)" maxlength="200" rows="3"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="kmer-length">K-mer Length: <span id="kmer-value">3</span></label>
+                        <input type="range" id="kmer-length" min="3" max="6" value="3">
+                    </div>
+                    <div class="input-controls">
+                        <button id="load-example">Load Example</button>
+                        <button id="reset-blast">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Step Controls -->
+                <section class="step-controls">
+                    <h2>BLAST Steps</h2>
+                    <div class="step-indicator">
+                        <div class="step-item active" data-step="0">
+                            <div class="step-number">1</div>
+                            <div class="step-label">Generate K-mers</div>
+                        </div>
+                        <div class="step-item" data-step="1">
+                            <div class="step-number">2</div>
+                            <div class="step-label">Find Matches</div>
+                        </div>
+                        <div class="step-item" data-step="2">
+                            <div class="step-number">3</div>
+                            <div class="step-label">Identify Seeds</div>
+                        </div>
+                        <div class="step-item" data-step="3">
+                            <div class="step-number">4</div>
+                            <div class="step-label">Extend Alignments</div>
+                        </div>
+                        <div class="step-item" data-step="4">
+                            <div class="step-number">5</div>
+                            <div class="step-label">Results</div>
+                        </div>
+                    </div>
+                    <div class="step-buttons">
+                        <button id="prev-step" disabled>← Previous</button>
+                        <button id="next-step">Next Step →</button>
+                    </div>
+                </section>
+
+                <!-- Results Summary -->
+                <section class="results-summary">
+                    <h2>Summary</h2>
+                    <div class="summary-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">K-mers Generated:</span>
+                            <span class="stat-value" id="kmers-count">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Matches Found:</span>
+                            <span class="stat-value" id="matches-count">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Seeds Identified:</span>
+                            <span class="stat-value" id="seeds-count">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Final Alignments:</span>
+                            <span class="stat-value" id="alignments-count">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Best Score:</span>
+                            <span class="stat-value" id="best-score">-</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Right Panel (60% width) -->
+            <div class="right-panel">
+                <!-- Visualization Area -->
+                <section class="visualization-section">
+                    <h2 id="visualization-title">Step 1: K-mer Generation</h2>
+                    <div class="visualization-container">
+                        <canvas id="blast-canvas" width="600" height="500"></canvas>
+                    </div>
+                    <div class="step-instructions">
+                        <div id="step-instructions-content">
+                            Enter sequences and click "Next Step" to begin BLAST algorithm demonstration.
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Step-specific Controls -->
+                <section class="step-specific-controls">
+                    <div id="step-controls-content">
+                        <!-- Dynamic content based on current step -->
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/blastAlgorithm.js"></script>
+    <script src="js/kmerGenerator.js"></script>
+    <script src="js/kmerMatcher.js"></script>
+    <script src="js/seedIdentifier.js"></script>
+    <script src="js/alignmentExtender.js"></script>
+    <script src="js/blastVisualizer.js"></script>
+    <script src="js/blastGameController.js"></script>
+    <script src="js/blastApp.js"></script>
+</body>
+</html>

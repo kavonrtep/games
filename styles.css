@@ -315,8 +315,6 @@ input[type="range"]::-moz-range-thumb {
     border-radius: 6px;
     cursor: crosshair;
     background: white;
-    max-width: 100%;
-    max-height: 600px;
     display: block;
     margin: 0 auto 15px;
 }
@@ -901,8 +899,6 @@ textarea:focus {
     border-radius: 6px;
     cursor: crosshair;
     background: white;
-    max-width: 100%;
-    max-height: 600px;
     display: block;
     margin: 0 auto;
 }

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dotplot Explorer - Genomic Sequence Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Dotplot Explorer - Genomic Sequence Analysis</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+        </header>
+        
+        <div class="game-container">
+            <!-- Left Panel (35% width) -->
+            <div class="left-panel">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>Genomic Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1 (up to 200 bases):</label>
+                        <textarea id="sequence1" placeholder="Enter DNA sequence (A, T, G, C)" maxlength="200" rows="4"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2 (up to 200 bases):</label>
+                        <textarea id="sequence2" placeholder="Enter DNA sequence (A, T, G, C)" maxlength="200" rows="4"></textarea>
+                    </div>
+                    <div class="example-selection">
+                        <label for="example-selector">Choose Genomic Example:</label>
+                        <select id="example-selector">
+                            <option value="">Select a genomic comparison example...</option>
+                        </select>
+                        <button id="load-selected-example">Load Selected Example</button>
+                    </div>
+                    <div class="input-controls">
+                        <button id="generate-dotplot">Generate Dotplot</button>
+                        <button id="clear-sequences">Clear</button>
+                    </div>
+                </section>
+
+                <!-- Dotplot Parameters -->
+                <section class="scoring-controls">
+                    <h2>Analysis Parameters</h2>
+                    <div class="controls-grid">
+                        <div class="control-group">
+                            <label for="window-size">Window Size: <span id="window-value">8</span></label>
+                            <input type="range" id="window-size" min="1" max="15" value="8">
+                            <small>Shorter = more sensitive, longer = less noise</small>
+                        </div>
+                    </div>
+                    <div class="match-info">
+                        <div class="legend-item">
+                            <span class="legend-color forward"></span>
+                            <span>Forward matches (green)</span>
+                        </div>
+                        <div class="legend-item">
+                            <span class="legend-color reverse"></span>
+                            <span>Reverse matches (red)</span>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Alignment Controls -->
+                <section class="alignment-controls">
+                    <h2>Alignment Analysis</h2>
+                    <div class="alignment-buttons">
+                        <button id="show-alignments" disabled>Show Alignments</button>
+                        <button id="hide-alignments" disabled>Hide Alignments</button>
+                    </div>
+                    <div class="alignment-info">
+                        <p>Generate a dotplot first, then click "Show Alignments" to highlight local alignment blocks similar to genome browsers.</p>
+                    </div>
+                </section>
+
+            </div>
+
+            <!-- Right Panel (65% width) -->
+            <div class="right-panel">
+                <!-- Dotplot Visualization -->
+                <section class="dotplot-section">
+                    <h2>Genomic Dotplot Visualization</h2>
+                    <canvas id="dotplot-canvas" width="800" height="800"></canvas>
+                    
+                    <!-- Sequence Position Display -->
+                    <div class="position-display" id="position-display" style="display: none;">
+                        <div class="position-info">
+                            <span id="position-coordinates"></span>
+                        </div>
+                        <div class="sequence-context">
+                            <div class="sequence-row">
+                                <span class="sequence-label">Seq1:</span>
+                                <span class="sequence-segment" id="seq1-context"></span>
+                            </div>
+                            <div class="sequence-row">
+                                <span class="sequence-label">Seq2:</span>
+                                <span class="sequence-segment" id="seq2-context"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alignment Details -->
+                    <div class="alignment-details" id="alignment-details" style="display: none;">
+                        <h3>Local Alignment Blocks</h3>
+                        <div id="alignment-blocks-list"></div>
+                    </div>
+                    
+                    <div class="dotplot-info">
+                        <p><strong>Instructions:</strong></p>
+                        <ul>
+                            <li>Green dots show forward-forward matches</li>
+                            <li>Red dots show forward-reverse complement matches</li>
+                            <li>Adjust word length to control sensitivity vs noise</li>
+                            <li>Use "Show Alignments" to highlight syntenic blocks</li>
+                            <li>Click on dotplot to inspect sequence context</li>
+                            <li>Longer sequences reveal genomic rearrangements</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/dotplotExplorerExamples.js"></script>
+    <script>
+        // Make examples available globally
+        window.DOTPLOT_EXPLORER_EXAMPLES = DOTPLOT_EXPLORER_EXAMPLES;
+    </script>
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/dotplotExplorerAlgorithm.js"></script>
+    <script src="js/dotplotExplorerVisualizer.js"></script>
+    <script src="js/dotplotExplorerController.js"></script>
+    <script src="js/dotplotExplorerApp.js"></script>
+</body>
+</html>
