@@ -62,8 +62,6 @@ class GameController {
             gapOpenValue: document.getElementById('gap-open-value'),
             gapExtendValue: document.getElementById('gap-extend-value'),
             
-            threshold: document.getElementById('threshold'),
-            thresholdValue: document.getElementById('threshold-value'),
             showScores: document.getElementById('show-scores')
         };
         
@@ -83,7 +81,6 @@ class GameController {
         this.elements.sequence2Input.addEventListener('input', () => this.validateInput());
         
         this.setupScoringControls();
-        this.setupDotplotControls();
         this.setupScoreDisplayControl();
         
         // Initially disable editor buttons
@@ -118,13 +115,6 @@ class GameController {
         });
     }
 
-    setupDotplotControls() {
-        this.elements.threshold.addEventListener('input', (e) => {
-            const value = parseFloat(e.target.value);
-            this.elements.thresholdValue.textContent = value;
-            this.updateDotplotParameters();
-        });
-    }
 
     setupCallbacks() {
         console.log('Setting up callbacks...');
@@ -183,6 +173,9 @@ class GameController {
         
         this.validateInput();
         this.showNotification(`Loaded example: ${example.name}`, 'info');
+        
+        // Automatically start alignment after loading example
+        this.startAlignment();
     }
 
     loadExample() {
@@ -329,11 +322,6 @@ class GameController {
         }
     }
 
-    updateDotplotParameters() {
-        const threshold = parseFloat(this.elements.threshold.value);
-        
-        this.dotplotVisualizer.updateParameters(threshold);
-    }
 
     setupScoreDisplayControl() {
         this.elements.showScores.addEventListener('change', (e) => {

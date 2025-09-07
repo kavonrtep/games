@@ -4,7 +4,6 @@ class DotplotVisualizer {
         this.ctx = this.canvas.getContext('2d');
         this.seq1 = '';
         this.seq2 = '';
-        this.threshold = 0.5;
         this.sequenceType = '';
         this.dotData = [];
         this.showScores = false;
@@ -41,13 +40,6 @@ class DotplotVisualizer {
         });
     }
 
-    updateParameters(threshold) {
-        this.threshold = threshold;
-        
-        if (this.seq1 && this.seq2) {
-            this.updateDotplot(this.seq1, this.seq2, this.sequenceType);
-        }
-    }
 
     setShowScores(showScores, scoreMatrix = null) {
         this.showScores = showScores;
@@ -82,7 +74,7 @@ class DotplotVisualizer {
                 
                 const similarity = this.calculateSimilarity(char1, char2);
                 
-                if (similarity >= this.threshold) {
+                if (similarity > 0) {
                     this.dotData.push({
                         x: i,
                         y: j,
