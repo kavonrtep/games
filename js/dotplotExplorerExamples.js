@@ -22,10 +22,10 @@
 
 const DOTPLOT_EXPLORER_EXAMPLES = {
     'gene-duplications': {
-        name: 'Gene Duplication Event',
+        name: 'Self-Comparison (Duplication Event)',
         description: 'Two related genes showing internal duplications and rearrangements',
-        seq1: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATTACCGAACGTAGCTGATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTAA',
-        seq2: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATTACCGAACGTAGCTGATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTAA',
+        seq1: 'ATGTACAACAATACTTATTAGTCATCTTTTAGACACAATCTCCCTGCTCAGTGGTATATGGTTTTAGACACAATCTCCCTGCTCAGTGGTATATGGTTTTTGCTATAATTAGCCACCCTCATAAGTTGCACTACTTCTGCGACCCAAATGCACCCTTACCACGAAGACAGGATTGTCCGATCCTA',
+        seq2: 'ATGTACAACAATACTTATTAGTCATCTTTTAGACACAATCTCCCTGCTCAGTGGTATATGGTTTTAGACACAATCTCCCTGCTCAGTGGTATATGGTTTTTGCTATAATTAGCCACCCTCATAAGTTGCACTACTTCTGCGACCCAAATGCACCCTTACCACGAAGACAGGATTGTCCGATCCTA',
         expectedPattern: 'Perfect diagonal with potential internal repeat blocks',
         windowSize: 8,
         educationalNotes: 'Demonstrates how gene duplications appear as perfect diagonals. Internal repetitive elements create additional diagonal patterns within the main alignment block.'
@@ -34,8 +34,8 @@ const DOTPLOT_EXPLORER_EXAMPLES = {
     'chromosomal-inversion': {
         name: 'Chromosomal Inversion',
         description: 'Genomic segments showing large-scale inversion between homologous regions',
-        seq1: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTAATTCGAGCTAGCTACGATCGATCGAACCTTAGGCCATGCATGCATGCAAATCGATCGATCG',
-        seq2: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGACGATCGATCGATCGTAGCTAGCTCGAATTACGTACGTACGTGATCCGGATTGCGCATAAGCCTTCGATCGATCGAT',
+        seq1: 'CTAGGACGGGCGCAAAGGATATATAATTCAATTAAGAATACCTTATATTATTGTACACCTACCGGTCACCAGCCAACAATGTGCGGATGGCGTTACGACTTACTGGGCCTGATCTCACCGCTTTAGATACCGCACACTGGGCAATACGAGGTAAAGCCAGTCACCCAGTGTCGATCAACAGCTAACGTAACGGTAAGAGG',
+        seq2: 'CTAGGACGGGCGCAAAGGATATATAATTCAATTAAGAATACCTTATATTATTGTACACCTACCGGTCACCAGCCAACAATGTGCGGATGGCGTTACGACTTACTGGGCCTGATCTCACCGCTTTAGACCTCTTACCGTTACGTTAGCTGTTGATCGACACTGGGTGACTGGCTTTACCTCGTATTGCCCAGTGTGCGGTA',
         expectedPattern: 'Diagonal segments with anti-diagonal sections showing inversion',
         windowSize: 6,
         educationalNotes: 'Large inversions create anti-diagonal patterns in dotplots. Forward alignment blocks flanking a reverse alignment block indicate chromosomal inversion events.'
@@ -52,30 +52,20 @@ const DOTPLOT_EXPLORER_EXAMPLES = {
     },
 
     'transposon-insertion': {
-        name: 'Transposable Element Insertion',
+        name: 'Self-Comparison (LTR-RT insertion)',
         description: 'Genomic sequences where one contains a transposable element insertion',
-        seq1: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGATGCTAGCTACGATCGATCGAACCTTAAATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG',
-        seq2: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTACGTACGTACGTACGTGCTAGCTACGATCGATCGAACCTTAAATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG',
+        seq1: 'CTCACAAAATCGCACTGTCGGCGTCCCTTGGGTATTTTACGTTAGCATCAGGTGGACTAGCATGAATCTTTACTCCCAGGCGAAAACGGGTGCGTGGACAAGTTTACGTTAGCATCAGGTGCGAGCAGCAAACGAAAATTCTTGGCCTGCTTGGTGTCTCGTATTTCTC',
+        seq2: 'CTCACAAAATCGCACTGTCGGCGTCCCTTGGGTATTTTACGTTAGCATCAGGTGGACTAGCATGAATCTTTACTCCCAGGCGAAAACGGGTGCGTGGACAAGTTTACGTTAGCATCAGGTGCGAGCAGCAAACGAAAATTCTTGGCCTGCTTGGTGTCTCGTATTTCTC',
         expectedPattern: 'Broken diagonal with insertion creating gap in alignment',
         windowSize: 7,
-        educationalNotes: 'Transposon insertions break collinearity, creating gaps in alignment blocks. The inserted element may show similarity to other genomic locations.'
-    },
-
-    'gene-conversion': {
-        name: 'Gene Conversion Event',
-        description: 'Paralogous genes showing evidence of gene conversion',
-        seq1: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATGCTAGCTACGATCGATCGAACCTTACGTACGTACGTACGTACGTACGTAAATCGATCGATCG',
-        seq2: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATACGTACGTACGTACGTACGTACGTGCTAGCTACGATCGATCGAACCTTAAATCGATCGATCG',
-        expectedPattern: 'High similarity blocks with localized regions of perfect identity',
-        windowSize: 8,
-        educationalNotes: 'Gene conversion creates patches of perfect identity between otherwise divergent paralogs. Shows as perfect diagonal segments within larger alignment blocks.'
+        educationalNotes: ''
     },
 
     'syntenic-regions': {
         name: 'Syntenic Genomic Regions',
         description: 'Orthologous genomic regions showing conserved gene order',
-        seq1: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATCACGTACGTACGTAAGGCTTATGCGCAATCCGGAGCTAGCTACGATCGATCGAACCTTAAAT',
-        seq2: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATCACGTACGTACGTAAGGCTTATGCGCAATCCGGAGCTAGCTACGATCGATCGAACCTTAAAT',
+        seq1: 'GCGCTGATAGTCGTTGTGTCCCGACAGGCTAGGATATAAGATATCACCAGTACCCAAAACATACGTTCAGCGTGGGATCAGGCGGGCTCGCCACGTTGGCTAATCCTGGACATGTACGAGACCATGTTACATTTTGTAAATGTTCAGAAGAA',
+        seq2: 'AATTTGTGTTAGAAGGTTGTGTCCCGACAGGCTAGGATATAACGAGTCACCACGTACCAATAGCAAATACGTTCAGCGTGGGATCAACGATCGGTCCTATTCATTGTGGTGGACATGTACGAGACCATGTTGACGCTCGGATTACACGGGAAAGGTGC',
         expectedPattern: 'Strong diagonal with conserved blocks representing syntenic genes',
         windowSize: 9,
         educationalNotes: 'Syntenic regions show as strong diagonal alignment blocks. Conserved gene order between species creates collinear dotplot patterns in comparative genomics.'
@@ -84,32 +74,24 @@ const DOTPLOT_EXPLORER_EXAMPLES = {
     'segmental-duplication': {
         name: 'Segmental Duplication',
         description: 'Large DNA segments with high sequence identity at different genomic locations',
-        seq1: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTACGTACGTACGTAAGGCTTATGCGCAATCCGGATCGATCGATCGATCGATCGATCGATCG',
-        seq2: 'GCTAGCTACGATCGATCGAACCTTAAATCGATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTACGTACGTACGTAAGGCTTATGCGCAATCCG',
+        seq1: 'ATAGATTTGCGTTACTGTCTGCATAAGGAGTCCGGTGTAGCGAAGGATGAAGGCGACCCTAGGTAGCAACCGCCGGCTTCGGCGGTAAGGTATCACTCAGGAAGCAGACACAGAAAGACACG',
+        seq2: 'ATAGATTTGCGTTACTGTCTGCATAAGGAGTCCGGTGTAGCGAAGGATGAAGGCGACCCTAGGTAGCAGGTGTAGCGAAGGATGAAGGCGACCCTAGGTAGCAACCGCCGGCTTCGGCGGTAAGGTATCACTCAGGAAGCAGACACAGAAAGACACG',
         expectedPattern: 'Offset diagonal blocks showing duplicated segments',
         windowSize: 8,
         educationalNotes: 'Segmental duplications appear as diagonal blocks at different positions. These >90% identical regions >1kb long are hotspots for genomic instability.'
     },
 
-    'evolutionary-divergence': {
-        name: 'Evolutionary Divergence',
-        description: 'Homologous sequences showing accumulated mutations over evolutionary time',
-        seq1: 'ATGAAATTTGCATCCGGATCGATCGAAGCTTATGCGCAATCCGGATCACGTACGTACGTAAGGCTTATGCGCAATCCGGAGCTAGCTACGATCGATCGAACCTTAAAT',
-        seq2: 'ATGAAATTTGCATCCGGATCGAGCGAAACTTATGCGCAATCCGGATCACATACATACGTAAGGCTTATACGCAATCCGGAGCTAGCTACGATCAATCAAACCTTAAAT',
-        expectedPattern: 'Fragmented diagonal showing conserved blocks separated by divergent regions',
-        windowSize: 6,
-        educationalNotes: 'Evolutionary divergence creates fragmented alignment patterns. Highly conserved functional elements maintain strong diagonal blocks despite overall divergence.'
+    'similar-sequences': {
+        name: 'Similar Genomic Sequences',
+        description: 'not  completely identical sequences with high similarity',
+        seq1: 'GTTAATTCTATAGCAATACGATCATATGCGGATGGGCAGTGGCCGGTAGTCACACGTCTACCGCGGTGCTCAATGACCGGGACTAAAGAGGCGAAGATTATGGTGTGTGACCCGTTATGCTCGAGTTCGGTCAGAGCGTCATTGCGAGTAGTCGATTGCTTTCTCAATCTCCGAGCGATTTAGCGTGACAGCCCCAGGGA',
+        seq2: 'GTTAATAGGATAGCAATACGATAGTACGTGGATGGTCAGTGGCCGGTAGTCACACATGTTCCCCGGTGCTTAATGACCGGGACTAAAGAGGCGAAGATTATGGTGTGTAACCCGTTATGCTCGAGTTCGGTCAGAGCGTTATTGCGAGTAGCCGATTGCTTTCGCAATCTCCGGGCGATTTAGCGTGATTGCCCCAGGGA',
+        expectedPattern: 'Offset diagonal blocks showing duplicated segments',
+        windowSize: 8,
+        educationalNotes: 'Mutation no indels but SNPs'
     },
 
-    'recombination-breakpoint': {
-        name: 'Recombination Breakpoint',
-        description: 'Sequences showing evidence of historical recombination events',
-        seq1: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGATCACGTACGTACGTAAGGCTTATGCGCAATCCGGAGCTAGCTACGATCGATCGAACCTTAAAT',
-        seq2: 'ATCGATCGATCGAAGGCTTATGCGCAATCCGGAGCTAGCTACGATCGATCGAACCTTAAATCACGTACGTACGTAAGGCTTATGCGCAATCCGGA',
-        expectedPattern: 'Diagonal blocks that switch positions, indicating recombination breakpoint',
-        windowSize: 7,
-        educationalNotes: 'Recombination breakpoints create crossing diagonal patterns. The switch from one diagonal track to another indicates historical crossing over events.'
-    }
+
 
     // Easy to add new examples - just follow this template:
     /*
