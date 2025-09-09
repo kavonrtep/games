@@ -3,8 +3,7 @@ class ScoringSystem {
         this.parameters = {
             match: 2,
             mismatch: -1,
-            gapOpen: -2,
-            gapExtend: -0.5
+            gap: -2
         };
     }
 
@@ -34,8 +33,6 @@ class ScoringSystem {
         let mismatches = 0;
         let gaps = 0;
         let gapOpenings = 0;
-        let inGap1 = false;
-        let inGap2 = false;
         const breakdown = [];
 
         for (let i = 0; i < alignedSeq1.length; i++) {
@@ -48,32 +45,9 @@ class ScoringSystem {
             if (char1 === '-' || char2 === '-') {
                 gaps++;
                 
-                if (char1 === '-') {
-                    if (!inGap1) {
-                        scoreContribution = this.parameters.gapOpen;
-                        gapOpenings++;
-                        type = 'gap-open';
-                        inGap1 = true;
-                    } else {
-                        scoreContribution = this.parameters.gapExtend;
-                        type = 'gap-extend';
-                    }
-                    inGap2 = false;
-                } else if (char2 === '-') {
-                    if (!inGap2) {
-                        scoreContribution = this.parameters.gapOpen;
-                        gapOpenings++;
-                        type = 'gap-open';
-                        inGap2 = true;
-                    } else {
-                        scoreContribution = this.parameters.gapExtend;
-                        type = 'gap-extend';
-                    }
-                    inGap1 = false;
-                }
+                scoreContribution = this.parameters.gap;
+                type = 'gap';
             } else {
-                inGap1 = false;
-                inGap2 = false;
                 
                 if (char1 === char2) {
                     matches++;
@@ -169,7 +143,7 @@ class ScoringSystem {
         
         const optimalScore = (matches * this.parameters.match) + 
                            (mismatches * this.parameters.mismatch) + 
-                           (gaps > 0 ? this.parameters.gapOpen + (gaps - 1) * this.parameters.gapExtend : 0);
+                           (gaps * this.parameters.gap);
         
         return Math.round(optimalScore * 10) / 10;
     }

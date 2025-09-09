@@ -43,13 +43,13 @@ class NeedlemanWunsch {
         
         // Initialize first row (gaps in seq1)
         for (let j = 1; j < cols; j++) {
-            score[0][j] = score[0][j-1] + scoringParams.gapOpen + (j > 1 ? scoringParams.gapExtend : 0);
+            score[0][j] = j * scoringParams.gap;
             traceback[0][j] = this.LEFT;
         }
         
         // Initialize first column (gaps in seq2)
         for (let i = 1; i < rows; i++) {
-            score[i][0] = score[i-1][0] + scoringParams.gapOpen + (i > 1 ? scoringParams.gapExtend : 0);
+            score[i][0] = i * scoringParams.gap;
             traceback[i][0] = this.UP;
         }
         
@@ -68,9 +68,9 @@ class NeedlemanWunsch {
                 const matchScore = char1 === char2 ? scoringParams.match : scoringParams.mismatch;
                 const diagonal = score[i-1][j-1] + matchScore;
                 
-                // Gap penalties with affine gap model
-                const gapInSeq1 = this.calculateGapScore(score, i-1, j, traceback[i-1][j], scoringParams, this.UP);
-                const gapInSeq2 = this.calculateGapScore(score, i, j-1, traceback[i][j-1], scoringParams, this.LEFT);
+                // Simple linear gap penalties
+                const gapInSeq1 = score[i-1][j] + scoringParams.gap;
+                const gapInSeq2 = score[i][j-1] + scoringParams.gap;
                 
                 // Choose the best score
                 if (diagonal >= gapInSeq1 && diagonal >= gapInSeq2) {
@@ -87,17 +87,6 @@ class NeedlemanWunsch {
         }
     }
 
-    calculateGapScore(scoreMatrix, prevI, prevJ, prevDirection, scoringParams, currentDirection) {
-        const baseScore = scoreMatrix[prevI][prevJ];
-        
-        // If continuing a gap, use gap extension penalty
-        if (prevDirection === currentDirection) {
-            return baseScore + scoringParams.gapExtend;
-        } else {
-            // Starting a new gap, use gap opening penalty
-            return baseScore + scoringParams.gapOpen;
-        }
-    }
 
     traceback(matrix, seq1, seq2, scoringParams) {
         const { traceback } = matrix;

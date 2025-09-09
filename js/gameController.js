@@ -54,13 +54,11 @@ class GameController {
             
             matchScore: document.getElementById('match-score'),
             mismatchPenalty: document.getElementById('mismatch-penalty'),
-            gapOpen: document.getElementById('gap-open'),
-            gapExtend: document.getElementById('gap-extend'),
+            gapPenalty: document.getElementById('gap-penalty'),
             
             matchValue: document.getElementById('match-value'),
             mismatchValue: document.getElementById('mismatch-value'),
-            gapOpenValue: document.getElementById('gap-open-value'),
-            gapExtendValue: document.getElementById('gap-extend-value'),
+            gapPenaltyValue: document.getElementById('gap-penalty-value'),
             
             showScores: document.getElementById('show-scores')
         };
@@ -102,15 +100,9 @@ class GameController {
             this.updateScoringParameters();
         });
 
-        this.elements.gapOpen.addEventListener('input', (e) => {
+        this.elements.gapPenalty.addEventListener('input', (e) => {
             const value = parseInt(e.target.value);
-            this.elements.gapOpenValue.textContent = value;
-            this.updateScoringParameters();
-        });
-
-        this.elements.gapExtend.addEventListener('input', (e) => {
-            const value = parseFloat(e.target.value);
-            this.elements.gapExtendValue.textContent = value;
+            this.elements.gapPenaltyValue.textContent = value;
             this.updateScoringParameters();
         });
     }
@@ -307,8 +299,7 @@ class GameController {
         const newParams = {
             match: parseInt(this.elements.matchScore.value),
             mismatch: parseInt(this.elements.mismatchPenalty.value),
-            gapOpen: parseInt(this.elements.gapOpen.value),
-            gapExtend: parseFloat(this.elements.gapExtend.value)
+            gap: parseInt(this.elements.gapPenalty.value)
         };
         
         this.scoringSystem.updateParameters(newParams);
