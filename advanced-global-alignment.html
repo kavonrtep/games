@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Global Alignment Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Advanced Global Alignment Trainer</h1>
+            <p class="subtitle">DNA sequence alignment with customizable scoring parameters</p>
+        </header>
+        
+        <div class="game-container">
+            <!-- Main Panel (65% width) -->
+            <div class="main-panel" style="flex: 0 0 65%;">
+                <!-- Sequence Input Area -->
+                <section class="sequence-input">
+                    <h2>DNA Sequence Input</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1:</label>
+                        <input type="text" id="sequence1" placeholder="Enter DNA sequence (5-50 chars)" maxlength="50" pattern="[ATCGatcg]*">
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2:</label>
+                        <input type="text" id="sequence2" placeholder="Enter DNA sequence (5-50 chars)" maxlength="50" pattern="[ATCGatcg]*">
+                    </div>
+                    <div class="example-selection">
+                        <label for="example-selector">Choose Example:</label>
+                        <select id="example-selector">
+                            <option value="">Select an educational example...</option>
+                        </select>
+                        <button id="load-selected-example">Load Selected Example</button>
+                    </div>
+                    <div class="input-controls">
+                        <button id="load-example">Load Random Example</button>
+                        <button id="start-alignment">Start Alignment</button>
+                    </div>
+                </section>
+
+                <!-- Interactive Alignment Editor -->
+                <section class="alignment-editor" id="alignment-editor" tabindex="0">
+                    <h2>Alignment Editor</h2>
+                    <div class="alignment-container">
+                        <div class="sequence-display" id="sequence1-display"></div>
+                        <div class="match-line" id="match-line"></div>
+                        <div class="sequence-display" id="sequence2-display"></div>
+                        <div class="score-line" id="score-line"></div>
+                    </div>
+                    <div class="editor-instructions">
+                        <p>Use arrow keys to navigate • Space/- to insert gaps • Delete/Backspace to remove gaps</p>
+                        <div class="editor-controls">
+                            <button id="global-alignment" class="editor-btn">Global Alignment Algorithm</button>
+                            <button id="remove-gap-columns" class="editor-btn">Remove Gap-Only Columns</button>
+                            <button id="reset-alignment" class="editor-btn">Reset Alignment</button>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- Side Panel (35% width) -->
+            <div class="side-panel" style="flex: 0 0 35%;">
+                <!-- Scoring Parameters -->
+                <section class="scoring-parameters">
+                    <h2>Scoring Parameters</h2>
+                    
+                    <!-- Substitution Matrix -->
+                    <div class="matrix-section">
+                        <h3>DNA Substitution Matrix</h3>
+                        <div class="matrix-grid">
+                            <div class="matrix-header">
+                                <div></div>
+                                <div>A</div>
+                                <div>T</div>
+                                <div>C</div>
+                                <div>G</div>
+                            </div>
+                            <div class="matrix-row">
+                                <div class="row-header">A</div>
+                                <input type="number" id="matrix-AA" value="2" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-AT" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-AC" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-AG" value="-1" min="-10" max="10" step="1">
+                            </div>
+                            <div class="matrix-row">
+                                <div class="row-header">T</div>
+                                <input type="number" id="matrix-TA" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-TT" value="2" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-TC" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-TG" value="-1" min="-10" max="10" step="1">
+                            </div>
+                            <div class="matrix-row">
+                                <div class="row-header">C</div>
+                                <input type="number" id="matrix-CA" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-CT" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-CC" value="2" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-CG" value="-1" min="-10" max="10" step="1">
+                            </div>
+                            <div class="matrix-row">
+                                <div class="row-header">G</div>
+                                <input type="number" id="matrix-GA" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-GT" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-GC" value="-1" min="-10" max="10" step="1">
+                                <input type="number" id="matrix-GG" value="2" min="-10" max="10" step="1">
+                            </div>
+                        </div>
+                        <div class="matrix-presets">
+                            <button id="preset-match-mismatch" class="preset-btn">Match/Mismatch (+2/-1)</button>
+                            <button id="preset-transition-transversion" class="preset-btn">Transition/Transversion</button>
+                        </div>
+                        <div class="matrix-legend">
+                            <div class="legend-title">Color Scale:</div>
+                            <div class="legend-items">
+                                <div class="legend-item">
+                                    <div class="legend-color score-positive-high"></div>
+                                    <span>+3 to +10</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-positive-medium"></div>
+                                    <span>+1.5 to +2.9</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-positive-low"></div>
+                                    <span>+0.1 to +1.4</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-zero"></div>
+                                    <span>0</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-negative-low"></div>
+                                    <span>-0.1 to -1.4</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-negative-medium"></div>
+                                    <span>-1.5 to -2.9</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color score-negative-high"></div>
+                                    <span>-3 to -10</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gap Parameters -->
+                    <div class="gap-parameters">
+                        <h3>Gap Penalties</h3>
+                        <div class="gap-controls">
+                            <div class="control-group">
+                                <label for="gap-open">Gap Opening: <span id="gap-open-value">-3</span></label>
+                                <input type="range" id="gap-open" min="-15" max="-1" value="-3" step="1">
+                            </div>
+                            <div class="control-group">
+                                <label for="gap-extend">Gap Extension: <span id="gap-extend-value">-1</span></label>
+                                <input type="range" id="gap-extend" min="-10" max="-1" value="-1" step="1">
+                            </div>
+                            <div class="control-group">
+                                <label for="end-gap-penalty">End Gap Penalty: <span id="end-gap-value">-1</span></label>
+                                <input type="range" id="end-gap-penalty" min="-5" max="0" value="-1" step="1">
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Alignment Statistics -->
+                <section class="statistics-panel">
+                    <h2>Alignment Statistics</h2>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-label">Total Score:</span>
+                            <span class="stat-value" id="total-score">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Alignment Length:</span>
+                            <span class="stat-value" id="alignment-length">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Identity:</span>
+                            <span class="stat-value" id="identity-percent">0%</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Matches:</span>
+                            <span class="stat-value" id="matches-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Mismatches:</span>
+                            <span class="stat-value" id="mismatches-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Total Gaps:</span>
+                            <span class="stat-value" id="gaps-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Gap Openings:</span>
+                            <span class="stat-value" id="gap-openings-count">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Match Score:</span>
+                            <span class="stat-value" id="match-score-total">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Gap Penalty:</span>
+                            <span class="stat-value" id="gap-penalty-total">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">End Gap Penalty:</span>
+                            <span class="stat-value" id="end-gap-penalty-total">0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Modules -->
+    <script src="js/advancedGlobalAlignmentExamples.js"></script>
+    <script>
+        // Make examples available globally
+        window.ADVANCED_GLOBAL_ALIGNMENT_EXAMPLES = ADVANCED_GLOBAL_ALIGNMENT_EXAMPLES;
+    </script>
+    <script src="js/sequenceValidator.js"></script>
+    <script src="js/advancedScoringSystem.js"></script>
+    <script src="js/globalAlignmentAlgorithm.js"></script>
+    <script src="js/advancedAlignmentEditor.js"></script>
+    <script src="js/advancedStatisticsCalculator.js"></script>
+    <script src="js/advancedGameController.js"></script>
+    <script src="js/advancedApp.js"></script>
+</body>
+</html>
