@@ -37,8 +37,8 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'GACTCGCTGTTTTCGAAATTTGCTTCGAAATTTGCGCTCAAGGGCGAGT',
         seq2: 'GACTCGCTGTTTTCGAAATTTGCTTCGAAATTTGCGCTCAAGGGCGAGT',
         expectedPattern: 'Multiple parallel diagonal lines',
-        windowSizeRecommendation: 'Use window size 3-5 to see clear repeat patterns',
-        educationalNotes: 'Shows how tandem repeats appear as parallel diagonals. Common in genomics for gene duplications and repeat elements.'
+        windowSizeRecommendation: 'Use window size 3-8 to see clear repeat patterns',
+        educationalNotes: 'Common in genomics for gene duplications and repeat elements.'
     },
     
     'inverted-repeat': {
@@ -47,8 +47,8 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'TGCCATTCTCTCAGTGTATTACGCGTAATACACTGAGAGAATGGCA',
         seq2: 'TGCCATTCTCTCAGTGTATTACGCGTAATACACTGAGAGAATGGCA',
         expectedPattern: 'Anti-diagonal pattern (reverse complement matches)',
-        windowSizeRecommendation: 'Window size 2-4 works well to see palindromic structure',
-        educationalNotes: 'Red anti-diagonal shows reverse complement matches. Important for finding restriction sites and hairpin structures.'
+        windowSizeRecommendation: '',
+        educationalNotes: 'Red anti-diagonal shows reverse complement matches'
     },
     'inverted-repeat2': {
         name: 'Self-Comparison (Inverted Repeat 2)',
@@ -56,8 +56,8 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'TGCCATTCTCTCAGTGTATTAACGTCGCGTAATACACTGAGAGAATGGCA',
         seq2: 'TGCCATTCTCTCAGTGTATTACCTACGCGTAATACACTGAGAGAATGGCA',
         expectedPattern: 'Anti-diagonal pattern (reverse complement matches)',
-        windowSizeRecommendation: 'Window size 2-4 works well to see palindromic structure',
-        educationalNotes: 'Red anti-diagonal shows reverse complement matches. Important for finding restriction sites and hairpin structures.'
+        windowSizeRecommendation: '',
+        educationalNotes: 'Red anti-diagonal shows reverse complement matches'
     },
 
     'mutations': {
@@ -66,27 +66,18 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'AGCTTAGCAGCTTGACGTAACG',
         seq2: 'AGCTGAGCATCTTGCCGTAACG',
         expectedPattern: 'Broken diagonal with gaps at mutation sites',
-        windowSizeRecommendation: 'Try window size 1 to see individual mutations, 3-4 to see conservation',
-        educationalNotes: 'Demonstrates sequence evolution. Gaps in diagonal correspond to mutation sites. Higher window sizes filter out single mutations.'
+        windowSizeRecommendation: '',
+        educationalNotes: ''
     },
     
     'inversion-deletion': {
-        name: 'Sequence with Inversion/Deletion',
-        description: 'One sequence has inversion and deletion',
+        name: 'Sequence with Insertion/Deletion',
+        description: 'One sequence has insertion other deletion',
         seq1: 'GACTCGCTGTTTTCGAAATTTGCGCTCAAGGGCG',
         seq2: 'GACTCGCTGTTTTCGAAATAAACAATTGCGCTCAAGGGCG',
         expectedPattern: 'Diagonal with shifted segments',
-        windowSizeRecommendation: 'Window size 3-5 to see structural variations clearly',
-        educationalNotes: 'Shows complex structural variations. Diagonal shifts indicate insertions/deletions. Useful for comparative genomics.'
-    },
-    'inversion-deletion2': {
-        name: 'Sequence with Inversion/Deletion 2',
-        description: 'One sequence has inversion and deletion',
-        seq1: 'GACTCGCTGTTTTCGAAATTTGCGCTCAAGGGCG',
-        seq2: 'GACTCGCTGTTTTCGAAATAAACAATTGCGCTCAAGGGCG',
-        expectedPattern: 'Diagonal with shifted segments',
-        windowSizeRecommendation: 'Window size 3-5 to see structural variations clearly',
-        educationalNotes: 'Shows complex structural variations. Diagonal shifts indicate insertions/deletions. Useful for comparative genomics.'
+        windowSizeRecommendation: '',
+        educationalNotes: ''
     },
 
     'middle-inversion': {
@@ -95,7 +86,7 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'TATAAACCTGTTAGCTTACCTGACTCTACTTGGAAAT',
         seq2: 'TATAAACCTGTGGTAAGCTATGACTCTACTTGGAAAT',
         expectedPattern: 'Diagonal with inverted middle section',
-        windowSizeRecommendation: 'Window size 2-4 shows the inversion pattern best',
+        windowSizeRecommendation: '',
         educationalNotes: 'Middle section shows as red (reverse complement) while ends remain green (forward match). Models chromosomal inversions.'
     },
     
@@ -105,8 +96,8 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'AGCTTAGCAGCTTGAC',
         seq2: 'GCAGCTTGACGTAACG',
         expectedPattern: 'Offset diagonal showing overlap region',
-        windowSizeRecommendation: 'Window size 3-6 to identify overlap regions',
-        educationalNotes: 'Shows sequence overlap patterns. Critical for genome assembly and identifying homologous regions in different sequences.'
+        windowSizeRecommendation: '',
+        educationalNotes: ''
     },
     
     'tandem-repeats': {
@@ -115,8 +106,8 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'GTGTTGACGTAACGGTGTTGACGTAACGGTGTTGACGTAACGGTGTTGA',
         seq2: 'GTGTTGACGTAACGGTGTTGACGTAACGGTGTTGACGTAACGGTGTTGA',
         expectedPattern: 'Multiple diagonal segments in different positions',
-        windowSizeRecommendation: 'Try different window sizes (1-6) to see various repeat levels',
-        educationalNotes: 'Complex pattern with multiple matching regions. Demonstrates real-world sequence relationships with various homology levels.'
+        windowSizeRecommendation: '',
+        educationalNotes: 'Length of repeat unit corresponds to spacing between diagonals'
     },
     'tandem-repeats2': {
         name: 'Self-Comparison (Tandem Repeat 2)',
@@ -124,11 +115,11 @@ const DOTPLOT_EXAMPLES = {
         seq1: 'AGATCAGATCAGATCAGATCAGATCAGATCAGATCAGATCAGATCAGAT',
         seq2: 'AGATCAGATCAGATCAGATCAGATCAGATCAGATCAGATCAGATCAGAT',
         expectedPattern: 'Multiple diagonal segments in different positions',
-        windowSizeRecommendation: 'Try different window sizes (1-6) to see various repeat levels',
-        educationalNotes: 'Complex pattern with multiple matching regions. Demonstrates real-world sequence relationships with various homology levels.'
+        windowSizeRecommendation: '',
+        educationalNotes: 'Length of repeat unit corresponds to spacing between diagonals'
     },
     'low-complexity': {
-        name: 'Low Complexity Sequences',
+        name: 'Self-Comparison (Low Complexity Sequences)',
         description: 'Homopolymer runs produce dense dot patterns',
         seq1: 'AAAAAAAAAATTTTTTTTTT',
         seq2: 'AAAAAAATTTTAAAAAAATTTTAAAAAA',
@@ -137,7 +128,7 @@ const DOTPLOT_EXAMPLES = {
         educationalNotes: 'Demonstrates how low complexity regions can obscure alignment signals in dotplots. Important for understanding why filters are used.'
     },
     'low-complexity2': {
-        name: 'Self-Comparison (Low Complexity Sequence)',
+        name: 'Self-Comparison (Low Complexity Sequence 2)',
         description: 'Homopolymer runs produce dense dot patterns',
         seq1: 'AAAAAAAAAATTTTTTTTTTCCCCCCCCCCCATATATATAT',
         seq2: 'AAAAAAAAAATTTTTTTTTTCCCCCCCCCCCATATATATAT',
@@ -150,9 +141,9 @@ const DOTPLOT_EXAMPLES = {
         description: 'Duplication of a sequence segment',
         seq1: 'TGGTCGGATCCATCGTTGGCGCCCGACCCCCCCATTCCA',
         seq2: 'TGGTCGGATCCATCGTTGGCCCATCGTTGGCGCCCGACCCCCCCATTCCA',
-        expectedPattern: 'Dense blocky patterns rather than clear diagonals',
-        windowSizeRecommendation: 'Window 2–4 reveals the noise effect',
-        educationalNotes: 'Duplication.'
+        expectedPattern: 'Diagonal with offset duplicated segment',
+        windowSizeRecommendation: '',
+        educationalNotes: ''
     },
 
 
