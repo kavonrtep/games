@@ -90,27 +90,28 @@ const NEEDLEMAN_WUNSCH_EXAMPLES = {
         educationalNotes: 'Common in genomics: tandem repeats of different lengths require gaps to align globally. Shows microsatellite variation.'
     },
     
-    'palindromic-sequences': {
-        name: 'Palindromic DNA Sequences',
+    'partialy-similar-sequences': {
+        name: 'Partialy Similar Sequences',
         description: 'DNA sequences with palindromic (reverse complement) regions',
-        seq1: 'ATCGGAATTCCGAT',
-        seq2: 'GAATTCCGATCGGA',
+        seq1: 'TATTGAACCAGGTGACACCCGTTATA',
+        seq2: 'TATTGAACCAGGTTGTTATAAACAAT',
         sequenceType: 'dna',
-        expectedPattern: 'Some regions align well due to shared palindromes',
+        expectedPattern: 'Some regions align well',
         scoringRecommendation: 'Standard scoring shows shared motifs clearly',
-        educationalNotes: 'Palindromic sequences are important for restriction enzyme recognition sites and can form hairpin structures.'
+        educationalNotes: ''
     },
     
     'small-inversion': {
-        name: 'Inversion Motif',
-        description: 'A short reversed segment inside one sequence',
-        seq1: 'ATCGGTGTTCCGATCCT',
-        seq2: 'ATCGGTGAAGGGATCCT',
+        name: 'Conserved region',
+        description: 'Short conserved motif with flanking divergent sequences',
+        seq1: 'GAGGTCGCCGTATGCAGACGCTCGGAT',
+        seq2: 'TGAGCGCCGTATGCAGCGTTACCCCA',
         sequenceType: 'dna',
         expectedPattern: 'Mostly diagonal with mismatches in inverted region',
         scoringRecommendation: 'Match=2, Mismatch=-1, Gap=-1',
         educationalNotes: 'Shows how inversions are represented as mismatches since global alignment cannot flip orientation.'
     }
+
 
     // Easy to add new examples - just follow this template:
     /*
