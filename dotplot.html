@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dotplot Trainer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Dotplot Trainer</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= left panel -->
+            <div class="left-panel dp-left">
+
+                <section class="sequence-input">
+                    <h2>Sequences</h2>
+                    <div class="input-group">
+                        <label for="sequence1">Sequence 1 (horizontal axis, up to 500 bases):</label>
+                        <textarea id="sequence1" rows="3" maxlength="600" spellcheck="false" placeholder="Enter DNA sequence (A, C, G, T)"></textarea>
+                    </div>
+                    <div class="input-group">
+                        <label for="sequence2">Sequence 2 (vertical axis):</label>
+                        <textarea id="sequence2" rows="3" maxlength="600" spellcheck="false" placeholder="Enter DNA sequence (A, C, G, T)"></textarea>
+                    </div>
+                    <div class="checkbox-control">
+                        <input type="checkbox" id="self-compare">
+                        <label for="self-compare">Compare Sequence 1 with itself</label>
+                    </div>
+                    <div class="input-controls dp-buttons">
+                        <button id="generate-dotplot" class="primary">Draw dotplot</button>
+                        <button id="shuffle-seq2" title="Randomly reorder the bases of Sequence 2 (same composition) to see what pure chance looks like">Shuffle Seq 2</button>
+                        <button id="clear-sequences">Clear</button>
+                    </div>
+                    <div class="example-selection">
+                        <label for="example-selector">Load an example:</label>
+                        <select id="example-selector">
+                            <option value="">Select an example…</option>
+                        </select>
+                    </div>
+                </section>
+
+                <section class="scoring-controls">
+                    <h2>Parameters</h2>
+                    <div class="dp-mode">
+                        <label><input type="radio" name="mode" value="runlength" checked> Minimum diagonal length</label>
+                        <label><input type="radio" name="mode" value="window"> Window / threshold</label>
+                    </div>
+                    <div id="runlength-controls" class="controls-grid">
+                        <div class="control-group">
+                            <label for="min-run">Minimum diagonal length: <span id="min-run-value">3</span></label>
+                            <input type="range" id="min-run" min="1" max="20" value="3">
+                            <small>Keep only runs of ≥ this many consecutive identical bases (= exact word matches of this length).</small>
+                        </div>
+                    </div>
+                    <div id="window-controls" class="controls-grid" hidden>
+                        <div class="control-group">
+                            <label for="window-size">Window size: <span id="window-size-value">9</span></label>
+                            <input type="range" id="window-size" min="1" max="31" value="9">
+                        </div>
+                        <div class="control-group">
+                            <label for="threshold">Threshold (matches in window): <span id="threshold-value">6</span></label>
+                            <input type="range" id="threshold" min="1" max="9" value="6">
+                            <small>Classic sliding-window dotplot: a dot is placed at the window centre when at least <em>threshold</em> of <em>window</em> positions match. Hollow dots mark tolerated mismatches.</small>
+                        </div>
+                    </div>
+
+                    <div class="dp-blocks-control">
+                        <div class="checkbox-control">
+                            <input type="checkbox" id="show-blocks">
+                            <label for="show-blocks">Show alignment blocks (ribbon view + list)</label>
+                        </div>
+                        <div class="control-group" id="min-block-group" hidden>
+                            <label for="min-block">Minimum block length: <span id="min-block-value">10</span></label>
+                            <input type="range" id="min-block" min="2" max="60" value="10">
+                        </div>
+                    </div>
+
+                    <div class="match-info">
+                        <div class="legend-item"><span class="legend-color forward"></span><span>Same-strand match (Seq 1 vs Seq 2)</span></div>
+                        <div class="legend-item"><span class="legend-color reverse"></span><span>Reverse-complement match (Seq 1 vs revcomp of Seq 2)</span></div>
+                        <div class="legend-item"><span class="legend-color hollow"></span><span>Tolerated mismatch inside a window</span></div>
+                    </div>
+                </section>
+
+                <section class="example-info" id="example-info-section" hidden>
+                    <h2>About this example</h2>
+                    <h3 id="example-name"></h3>
+                    <p id="example-description"></p>
+                    <p><strong>Expected pattern:</strong> <span id="example-pattern"></span></p>
+                    <p id="example-notes-p"><strong>Notes:</strong> <span id="example-notes"></span></p>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+
+                <section class="dp-challenge">
+                    <h2>Game: name the event</h2>
+                    <p class="dp-hint">A random pair of sequences is drawn with one hidden event. Read the plot and pick what happened. Score: <strong id="challenge-score">0 / 0</strong></p>
+                    <button id="new-challenge" class="primary">New challenge</button>
+                    <div id="challenge-options" class="dp-options" hidden></div>
+                    <div id="challenge-feedback" class="dp-feedback" hidden></div>
+                </section>
+
+                <section class="statistics">
+                    <h2>Statistics</h2>
+                    <div id="statistics-content" class="stats-content">
+                        <p class="no-stats">Draw a dotplot to see statistics</p>
+                    </div>
+                </section>
+            </div>
+
+            <!-- ============================================ right panel -->
+            <div class="right-panel dp-right">
+                <section class="dotplot-section">
+                    <h2>Dotplot</h2>
+                    <div class="dp-canvas-wrap">
+                        <canvas id="dotplot-canvas" width="500" height="500"></canvas>
+                        <div id="dp-tooltip" class="dp-tooltip" hidden></div>
+                    </div>
+
+                    <div class="sequence-alignment-compact" id="alignment-section" hidden>
+                        <div class="alignment-info-compact" id="alignment-position-info"></div>
+                        <div class="alignment-sequences-compact">
+                            <div class="sequence-row-compact"><span class="sequence-label-compact">Seq 1</span><span class="sequence-display-compact" id="seq1-alignment"></span></div>
+                            <div class="sequence-row-compact"><span class="sequence-label-compact"></span><span class="sequence-display-compact" id="match-alignment"></span></div>
+                            <div class="sequence-row-compact"><span class="sequence-label-compact">Seq 2</span><span class="sequence-display-compact" id="seq2-alignment"></span></div>
+                        </div>
+                    </div>
+                    <div class="sequence-alignment-compact reverse-alignment" id="reverse-alignment-section" hidden>
+                        <div class="alignment-info-compact" id="reverse-alignment-position-info"></div>
+                        <div class="alignment-sequences-compact">
+                            <div class="sequence-row-compact"><span class="sequence-label-compact">Seq 1</span><span class="sequence-display-compact" id="seq1-reverse-alignment"></span></div>
+                            <div class="sequence-row-compact"><span class="sequence-label-compact"></span><span class="sequence-display-compact" id="match-reverse-alignment"></span></div>
+                            <div class="sequence-row-compact"><span class="sequence-label-compact">rc Seq 2</span><span class="sequence-display-compact" id="seq2-reverse-alignment"></span></div>
+                        </div>
+                    </div>
+
+                    <div class="alignment-details" id="alignment-details" hidden>
+                        <h3>Alignment blocks <span id="block-count" class="dp-count"></span></h3>
+                        <p class="dp-hint">Click a block to highlight it in the plot. Coordinates are 1-based on the original sequences; for reverse blocks the Seq 2 range is read on the opposite strand.</p>
+                        <div id="alignment-blocks-list"></div>
+                    </div>
+
+                    <div class="dotplot-info">
+                        <p><strong>How to read the plot</strong></p>
+                        <ul>
+                            <li>Sequence 1 runs left→right, Sequence 2 runs top→bottom. A dot at (x, y) means base x of Seq 1 equals base y of Seq 2.</li>
+                            <li><span class="dp-green">Green</span> lines parallel to the main diagonal: same-strand similarity (identity, direct repeats). A sideways jump of the diagonal = insertion/deletion.</li>
+                            <li><span class="dp-red">Red</span> lines perpendicular to the diagonal: the segment matches the <em>reverse complement</em> of Seq 2 (inversions, inverted repeats, palindromes). For short sequences the complement of Seq 2 is printed on the right axis – read it bottom→top.</li>
+                            <li>Use <em>Shuffle Seq 2</em> to see what chance alone produces with the current settings, and compare with the "expected by chance" statistic.</li>
+                            <li>Click a cell to inspect the sequences around it; then use ← ↑ → ↓ to move, <kbd>&lt;</kbd> <kbd>&gt;</kbd> to slide along the diagonal and <kbd>[</kbd> <kbd>]</kbd> along the anti-diagonal.</li>
+                        </ul>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/dotplotEngine.js"></script>
+    <script src="js/dotplotExamples.js"></script>
+    <script src="js/dotplotChallenge.js"></script>
+    <script src="js/dotplotCanvas.js"></script>
+    <script src="js/dotplotController.js"></script>
+    <script src="js/dotplotApp.js"></script>
+</body>
+</html>

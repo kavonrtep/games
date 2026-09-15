@@ -19,6 +19,7 @@ body {
 }
 
 header {
+    position: relative;
     text-align: center;
     margin-bottom: 15px;
     padding: 12px;
@@ -1498,3 +1499,124 @@ textarea.error {
     min-width: 8px;
     text-align: center;
 }
+
+/* =========================================================================
+   Dotplot Trainer (dotplot.html)
+   ========================================================================= */
+
+[hidden] { display: none !important; }
+
+/* stacked toasts: the container is fixed, each notification flows inside it */
+.toast-stack {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 1000;
+    pointer-events: none;
+}
+.toast-stack .notification {
+    position: static;
+    transform: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.toast-stack .notification.show { opacity: 1; }
+
+.dp-left { flex: 0 0 36%; }
+.dp-right { flex: 1 1 auto; min-width: 0; }
+
+.dp-buttons { flex-wrap: wrap; gap: 8px; }
+button.primary { background: #4c6ef5; color: white; }
+button.primary:hover { background: #3b5bdb; }
+
+.dp-mode {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    font-size: 0.95em;
+}
+.dp-mode label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+.dp-blocks-control { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+.dp-blocks-control .control-group { margin-top: 8px; }
+
+.legend-color.hollow {
+    background: white;
+    border: 2px solid #22c55e;
+    box-sizing: border-box;
+}
+
+.dp-canvas-wrap { position: relative; }
+.dp-tooltip {
+    position: absolute;
+    background: rgba(45, 55, 72, 0.95);
+    color: white;
+    font-size: 12px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 5;
+}
+.dp-tip-status { color: #cbd5e0; }
+
+.dp-hint { font-size: 0.85em; color: #4a5568; margin: 6px 0; }
+.dp-count { font-weight: normal; color: #718096; font-size: 0.9em; }
+.dp-green { color: #16a34a; font-weight: 600; }
+.dp-red { color: #dc2626; font-weight: 600; }
+kbd {
+    font-family: monospace;
+    background: #edf2f7;
+    border: 1px solid #cbd5e0;
+    border-radius: 3px;
+    padding: 0 4px;
+    font-size: 0.9em;
+}
+
+.example-info h4 { margin: 14px 0 6px; font-size: 1em; color: #2d3748; }
+.dp-question { margin: 8px 0 12px; }
+.dp-question p { margin-bottom: 6px; }
+.dp-options { display: flex; flex-wrap: wrap; gap: 6px; }
+.dp-options button {
+    background: white;
+    border: 1px solid #cbd5e0;
+    color: #2d3748;
+    padding: 6px 10px;
+    font-size: 0.9em;
+}
+.dp-options button:hover:not(:disabled) { background: #edf2f7; }
+.dp-options button.correct { background: #dcfce7; border-color: #22c55e; color: #166534; }
+.dp-options button.wrong { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
+.dp-options button:disabled { opacity: 0.7; cursor: default; }
+.dp-answer-row { display: flex; gap: 6px; align-items: center; }
+.dp-answer-row input[type="number"] {
+    width: 90px;
+    padding: 6px 8px;
+    border: 1px solid #cbd5e0;
+    border-radius: 4px;
+    font-size: 0.95em;
+}
+.dp-feedback {
+    margin-top: 6px;
+    padding: 8px 10px;
+    border-radius: 4px;
+    font-size: 0.9em;
+    background: #f7fafc;
+    border-left: 4px solid #cbd5e0;
+}
+.dp-feedback.correct { background: #f0fdf4; border-left-color: #22c55e; }
+.dp-feedback.wrong { background: #fef2f2; border-left-color: #dc2626; }
+
+.dp-challenge .dp-options { margin-top: 10px; }
+.dp-challenge #new-challenge { margin-top: 4px; }
+
+.alignment-block-item { cursor: pointer; transition: box-shadow 0.15s; }
+.alignment-block-item:hover { box-shadow: 0 0 0 2px #bfdbfe; }
+.alignment-block-item.selected { box-shadow: 0 0 0 2px #2563eb; }
+#alignment-blocks-list { max-height: 320px; overflow-y: auto; }
+
+.sequence-label-compact { width: 52px; }
