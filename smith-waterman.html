@@ -3,105 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Smith-Waterman Local Alignment Trainer</title>
+    <title>Local Alignment Trainer</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body data-mode="local">
     <div class="app-container">
         <header>
-            <h1>Smith-Waterman Local Alignment Trainer</h1>
+            <h1>Local Alignment Trainer <span class="dp-sub">Smith–Waterman</span></h1>
             <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="needleman-wunsch.html" class="back-link dp-right-link">Global alignment →</a>
         </header>
-        
+
         <div class="game-container">
-            <!-- Left Panel (40% width) -->
-            <div class="left-panel">
-                <!-- Sequence Input Area -->
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main">
                 <section class="sequence-input">
-                    <h2>Sequence Input</h2>
-                    <div class="input-group">
-                        <label for="sequence1">Sequence 1:</label>
-                        <input type="text" id="sequence1" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
+                    <h2>Sequences <span id="type-badge" class="at-badge"></span></h2>
+                    <div class="at-inputs">
+                        <div class="input-group">
+                            <label for="sequence1">Sequence 1 (2–50 residues, DNA / RNA / protein):</label>
+                            <input type="text" id="sequence1" maxlength="60" spellcheck="false" placeholder="e.g. ATCGCGTATGCAACG">
+                        </div>
+                        <div class="input-group">
+                            <label for="sequence2">Sequence 2:</label>
+                            <input type="text" id="sequence2" maxlength="60" spellcheck="false" placeholder="e.g. ATCGATGCAACG">
+                        </div>
                     </div>
-                    <div class="input-group">
-                        <label for="sequence2">Sequence 2:</label>
-                        <input type="text" id="sequence2" placeholder="Enter DNA/RNA/protein sequence (5-50 chars)" maxlength="50">
-                    </div>
-                    <div class="example-selection">
-                        <label for="example-selector">Choose Example:</label>
-                        <select id="example-selector">
-                            <option value="">Select an educational example...</option>
-                        </select>
-                        <button id="load-selected-example">Load Selected Example</button>
-                    </div>
-                    <div class="input-controls">
-                        <button id="load-example">Load Random Example</button>
-                        <button id="start-alignment">Start Analysis</button>
+                    <div class="input-controls dp-buttons">
+                        <button id="start-btn" class="primary">Align these sequences</button>
+                        <div class="example-selection at-example">
+                            <label for="example-selector">or load an example:</label>
+                            <select id="example-selector"><option value="">Select…</option></select>
+                        </div>
                     </div>
                 </section>
 
-                <!-- Scoring Controls -->
-                <section class="scoring-controls">
-                    <h2>Scoring Parameters</h2>
-                    <div class="controls-grid">
-                        <div class="control-group">
-                            <label for="match-score">Match Score: <span id="match-value">+2</span></label>
-                            <input type="range" id="match-score" min="1" max="5" value="2">
-                        </div>
-                        <div class="control-group">
-                            <label for="mismatch-penalty">Mismatch Penalty: <span id="mismatch-value">-1</span></label>
-                            <input type="range" id="mismatch-penalty" min="-5" max="-1" value="-1">
-                        </div>
-                        <div class="control-group">
-                            <label for="gap-penalty">Gap Penalty: <span id="gap-value">-2</span></label>
-                            <input type="range" id="gap-penalty" min="-10" max="-1" value="-2">
-                        </div>
-                        <div class="control-group">
-                            <label for="score-threshold">Score Threshold: <span id="threshold-value">5</span></label>
-                            <input type="range" id="score-threshold" min="1" max="20" value="5">
-                        </div>
+                <section class="alignment-editor-section">
+                    <h2>Alignment editor</h2>
+                    <div id="editor" class="ae"></div>
+                    <div class="at-target" id="target-line"></div>
+                    <div class="editor-controls dp-buttons">
+                        <button id="check-btn" class="primary">Check my alignment</button>
+                        <button id="show-optimal-btn">Show an optimal alignment</button>
+                        <button id="remove-gap-cols-btn">Remove gap-only columns</button>
+                        <button id="reset-btn">Reset</button>
                     </div>
-                    <div class="algorithm-controls">
-                        <button id="smith-waterman" class="algorithm-btn">Find Local Alignments</button>
-                    </div>
+                    <p class="dp-hint" id="editor-help">
+                        Click a residue or use ← → to place the cursor, ↑ ↓ to switch sequence, <kbd>Space</kbd> or <kbd>-</kbd> to insert a gap, <kbd>Delete</kbd>/<kbd>Backspace</kbd> to remove one.
+                        <span class="local-only">In local mode press <kbd>[</kbd> and <kbd>]</kbd> (or shift-click) to mark the start and end of your local alignment.</span>
+                    </p>
+                    <div id="feedback" class="dp-feedback" hidden></div>
                 </section>
 
-                <!-- Local Alignments Display -->
-                <section class="alignments-section">
-                    <h2>Local Alignments Found</h2>
-                    <div id="alignments-container" class="alignments-container">
-                        <p class="no-alignments">Run Smith-Waterman to find local alignments</p>
-                    </div>
+                <section class="local-only" id="local-list-section" hidden>
+                    <h2>Local alignments found <span id="local-count" class="dp-count"></span></h2>
+                    <p class="dp-hint">All local alignments scoring at least the threshold, best first. Click one to trace it in the matrix.</p>
+                    <div id="local-list"></div>
+                </section>
+
+                <section class="example-info" id="example-info" hidden>
+                    <h2>About this example</h2>
+                    <h3 id="example-name"></h3>
+                    <p id="example-description"></p>
+                    <p><strong>Expected:</strong> <span id="example-expected"></span></p>
+                    <p><strong>Notes:</strong> <span id="example-notes"></span></p>
+                    <div id="quiz" class="dp-quiz"></div>
                 </section>
             </div>
 
-            <!-- Right Panel (60% width) -->
-            <div class="right-panel">
-                <!-- Dotplot Visualization -->
-                <section class="dotplot-section">
-                    <h2>Dotplot Visualization</h2>
-                    <canvas id="dotplot-canvas" width="400" height="400"></canvas>
-                    <div class="dotplot-controls">
-                        <div class="checkbox-control">
-                            <input type="checkbox" id="show-scores" name="show-scores">
-                            <label for="show-scores">Show Score Matrix</label>
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section class="scoring-controls">
+                    <h2>Scoring parameters</h2>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Substitution scores</label>
+                        <div class="dp-mode" id="sub-kind">
+                            <label><input type="radio" name="sub-kind" value="simple" checked> match / mismatch</label>
+                            <label><input type="radio" name="sub-kind" value="titv"> transition / transversion</label>
+                            <label><input type="radio" name="sub-kind" value="custom"> custom 4 × 4</label>
+                            <label><input type="radio" name="sub-kind" value="blosum62"> BLOSUM62</label>
+                        </div>
+                        <div class="controls-grid" id="simple-controls">
+                            <div class="control-group"><label for="match">Match: <span id="match-value">+2</span></label><input type="range" id="match" min="1" max="10" value="2"></div>
+                            <div class="control-group"><label for="mismatch">Mismatch: <span id="mismatch-value">−1</span></label><input type="range" id="mismatch" min="-10" max="0" value="-1"></div>
+                        </div>
+                        <div class="controls-grid" id="titv-controls" hidden>
+                            <div class="control-group"><label for="ti-match">Match: <span id="ti-match-value">+2</span></label><input type="range" id="ti-match" min="1" max="10" value="2"></div>
+                            <div class="control-group"><label for="transition">Transition (A↔G, C↔T): <span id="transition-value">−1</span></label><input type="range" id="transition" min="-10" max="0" value="-1"></div>
+                            <div class="control-group"><label for="transversion">Transversion: <span id="transversion-value">−3</span></label><input type="range" id="transversion" min="-10" max="0" value="-3"></div>
+                        </div>
+                        <div id="custom-controls" hidden>
+                            <table class="at-matrix" id="custom-matrix"></table>
+                        </div>
+                        <p class="dp-hint" id="blosum-hint" hidden>BLOSUM62: substitution scores from observed conservative exchanges in protein blocks. Hover the score line under the alignment to see each column's value.</p>
+                    </div>
+
+                    <div class="at-param-group">
+                        <label class="at-param-title">Gap penalties</label>
+                        <div class="dp-mode">
+                            <label><input type="radio" name="gap-model" value="linear" checked> linear (every gap symbol)</label>
+                            <label><input type="radio" name="gap-model" value="affine"> affine (open + extend)</label>
+                        </div>
+                        <div class="controls-grid" id="linear-controls">
+                            <div class="control-group"><label for="gap">Gap: <span id="gap-value">−2</span></label><input type="range" id="gap" min="-12" max="-1" value="-2"></div>
+                        </div>
+                        <div class="controls-grid" id="affine-controls" hidden>
+                            <div class="control-group"><label for="gap-open">Gap open (first symbol): <span id="gap-open-value">−4</span></label><input type="range" id="gap-open" min="-15" max="-1" value="-4"></div>
+                            <div class="control-group"><label for="gap-extend">Gap extend (each further symbol): <span id="gap-extend-value">−1</span></label><input type="range" id="gap-extend" min="-10" max="-1" value="-1"></div>
+                        </div>
+                        <div class="dp-mode global-only" id="end-gaps">
+                            <span class="at-inline-label">End gaps:</span>
+                            <label><input type="radio" name="end-gaps" value="penalized" checked> penalised like any gap</label>
+                            <label><input type="radio" name="end-gaps" value="free"> free (semi-global)</label>
+                        </div>
+                        <div class="controls-grid local-only" id="threshold-controls" hidden>
+                            <div class="control-group"><label for="threshold">List alignments with score ≥ <span id="threshold-value">10</span></label><input type="range" id="threshold" min="1" max="60" value="10"></div>
                         </div>
                     </div>
+                </section>
+
+                <section class="statistics-panel">
+                    <h2>Statistics</h2>
+                    <div id="stats" class="stats-content"><p class="no-stats">Align two sequences to see statistics.</p></div>
                 </section>
             </div>
         </div>
-    </div>
 
-    <!-- JavaScript Modules -->
-    <script src="js/smithWatermanExamples.js"></script>
-    <script>
-        // Make examples available globally
-        window.SMITH_WATERMAN_EXAMPLES = SMITH_WATERMAN_EXAMPLES;
-    </script>
-    <script src="js/sequenceValidator.js"></script>
-    <script src="js/smithWaterman.js"></script>
-    <script src="js/swDotplotVisualizer.js"></script>
-    <script src="js/swGameController.js"></script>
-    <script src="js/swApp.js"></script>
+        <!-- ============================================= matrix (full width) -->
+        <section class="at-matrix-section">
+            <h2>Dynamic-programming matrix</h2>
+            <div class="at-matrix-toolbar">
+                <label><input type="checkbox" id="mv-values" checked> values</label>
+                <label><input type="checkbox" id="mv-arrows" checked> traceback arrows</label>
+                <label><input type="checkbox" id="mv-optimal"> optimal path</label>
+                <label><input type="checkbox" id="mv-student" checked> my alignment as a path</label>
+                <span class="at-sep"></span>
+                <button id="mv-step-btn">Fill step by step</button>
+                <button id="mv-fill-btn">Fill it yourself</button>
+                <button id="mv-full-btn" hidden>Back to full matrix</button>
+            </div>
+            <div class="at-step-controls" id="step-controls" hidden>
+                <button id="step-next">Next cell</button>
+                <button id="step-row">Finish row</button>
+                <button id="step-all">Fill all</button>
+                <button id="step-back">◀ Back</button>
+                <div id="step-explain" class="at-step-explain"></div>
+            </div>
+            <div class="at-step-controls" id="fill-controls" hidden>
+                <span class="dp-hint">Row 0 and column 0 are given. Type the value of every other cell, then check.</span>
+                <button id="fill-check" class="primary">Check my matrix</button>
+                <span id="fill-result"></span>
+            </div>
+            <div class="at-matrix-wrap">
+                <div id="matrix"></div>
+                <div id="mv-tooltip" class="dp-tooltip" hidden></div>
+            </div>
+            <p class="dp-hint" id="matrix-help">Sequence 1 runs across the top, Sequence 2 down the side. Cell (i, j) holds the best score for the first i residues of Seq 1 against the first j of Seq 2; arrows show where that value came from (several arrows = a tie). Shaded cells are identical residues.</p>
+        </section>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/alignmentExamples.js"></script>
+    <script src="js/alignEditor.js"></script>
+    <script src="js/alignMatrixView.js"></script>
+    <script src="js/alignTrainer.js"></script>
 </body>
 </html>

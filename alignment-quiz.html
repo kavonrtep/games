@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alignment Quiz</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Alignment Quiz</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="needleman-wunsch.html" class="back-link dp-right-link">Alignment Trainer →</a>
+        </header>
+
+        <div class="game-container">
+            <div class="left-panel dp-left">
+                <section id="start-screen">
+                    <h2>Test your understanding of pairwise alignment</h2>
+                    <p class="dp-intro">Twelve generated questions, from filling a dynamic-programming matrix by hand to choosing between local and global alignment. Immediate feedback after every answer. Practise first in the <a href="needleman-wunsch.html">Global</a> and <a href="smith-waterman.html">Local Alignment Trainers</a>.</p>
+                    <h3>12-question session</h3>
+                    <p class="dp-hint">Two questions per level. The seed decides which sequences you get – share the link to repeat the same set.</p>
+                    <div class="dp-answer-row">
+                        <label for="seed-input">Seed</label>
+                        <input type="text" id="seed-input" maxlength="40" spellcheck="false">
+                        <button id="new-seed" title="Pick a different random seed">⟳</button>
+                    </div>
+                    <button id="start-session" class="primary">Start session</button>
+                    <h3>Drill one skill</h3>
+                    <div class="dp-answer-row">
+                        <select id="drill-type"></select>
+                        <button id="start-drill">Start drill</button>
+                    </div>
+                    <div id="history-box" hidden>
+                        <h3>Your previous sessions</h3>
+                        <div id="history-content"></div>
+                    </div>
+                </section>
+
+                <section id="question-screen" hidden>
+                    <div class="dp-progress">
+                        <span id="progress-text"></span>
+                        <div class="dp-progress-bar"><div id="progress-fill"></div></div>
+                    </div>
+                    <h2 id="q-title"></h2>
+                    <p id="q-prompt" class="dp-prompt"></p>
+                    <div id="answer-area"></div>
+                    <div id="hint-box" class="dp-feedback" hidden></div>
+                    <div id="feedback-box" class="dp-feedback" hidden></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="check-btn" class="primary">Check</button>
+                        <button id="hint-btn" title="Shows a hint – the question then counts at most half a point">Hint</button>
+                        <button id="next-btn" hidden>Next question →</button>
+                        <button id="quit-btn">End</button>
+                    </div>
+                    <p class="dp-hint" id="running-score"></p>
+                </section>
+
+                <section id="summary-screen" hidden>
+                    <h2>Session summary</h2>
+                    <p id="summary-score" class="dp-summary-score"></p>
+                    <div id="summary-skills"></div>
+                    <p id="summary-compare" class="dp-hint"></p>
+                    <div class="dp-buttons input-controls">
+                        <button id="again-same" class="primary">Same set again</button>
+                        <button id="again-new">New session</button>
+                        <button id="drill-weakest">Drill weakest skill</button>
+                    </div>
+                    <p class="dp-hint">Session link: <a id="summary-link" href="#"></a></p>
+                </section>
+            </div>
+
+            <div class="right-panel dp-right">
+                <section class="at-workspace">
+                    <h2>Workspace</h2>
+                    <div id="editor-area" hidden>
+                        <h3>Alignment editor <span class="dp-hint">– click a residue, ← → move, <kbd>Space</kbd> gap, <kbd>Delete</kbd> remove, <kbd>[</kbd> <kbd>]</kbd> mark a local region</span></h3>
+                        <div id="editor" class="ae"></div>
+                        <p class="dp-hint" id="editor-score"></p>
+                    </div>
+                    <div id="matrix-area">
+                        <div class="at-matrix-wrap">
+                            <div id="matrix"></div>
+                            <div id="mv-tooltip" class="dp-tooltip" hidden></div>
+                        </div>
+                        <p class="dp-hint">Sequence 1 across the top (i), Sequence 2 down the side (j). Shaded cells are identical residues.</p>
+                    </div>
+                    <div id="blosum-area" hidden>
+                        <h3>BLOSUM62</h3>
+                        <div class="at-matrix-wrap"><table class="mv-table mv-blosum" id="blosum-table"></table></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/alignEditor.js"></script>
+    <script src="js/alignMatrixView.js"></script>
+    <script src="js/alignQuizGenerators.js"></script>
+    <script src="js/alignQuiz.js"></script>
+</body>
+</html>
