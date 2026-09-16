@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MSA Workbench</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>MSA Workbench <span class="dp-sub">multiple alignment · consensus · PSSM · logo</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="needleman-wunsch.html" class="back-link dp-right-link">Pairwise alignment →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main ms-main">
+                <section class="sequence-input">
+                    <h2>Sequences <span id="type-badge" class="at-badge"></span></h2>
+                    <textarea id="fasta-input" rows="5" spellcheck="false" placeholder=">seq1&#10;ACGT...&#10;>seq2&#10;ACGA...   (FASTA, or one sequence per line; 2–12 sequences, up to 400 residues)"></textarea>
+                    <div class="input-controls dp-buttons">
+                        <button id="align-btn" class="primary">Align automatically</button>
+                        <button id="load-raw-btn" title="Load the sequences as typed (aligned by you, or unaligned to align by hand)">Load as typed</button>
+                        <div class="example-selection at-example">
+                            <label for="example-selector">or load an example:</label>
+                            <select id="example-selector"><option value="">Select…</option></select>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="ms-editor-section">
+                    <h2>Alignment</h2>
+                    <div class="dp-buttons input-controls ms-toolbar">
+                        <button id="step-btn">Step through progressive alignment</button>
+                        <button id="remove-gap-cols-btn">Remove gap-only columns</button>
+                        <button id="reset-btn" title="Back to the automatic alignment">Reset</button>
+                        <label class="ms-check"><input type="checkbox" id="show-logo" checked> logo</label>
+                        <label class="ms-check"><input type="checkbox" id="show-consensus" checked> consensus</label>
+                        <label class="ms-check"><input type="checkbox" id="shade-conservation"> shade by conservation</label>
+                    </div>
+                    <div id="stepper" class="at-step-controls" hidden>
+                        <button id="step-prev">◀ Previous merge</button>
+                        <button id="step-next">Next merge ▶</button>
+                        <button id="step-finish">Finish</button>
+                        <div id="step-explain" class="at-step-explain"></div>
+                    </div>
+                    <div id="editor"></div>
+                    <p class="dp-hint">Click a residue to select its column and move the cursor; ← → ↑ ↓ move, <kbd>Space</kbd> inserts a gap in the active sequence, <kbd>Shift</kbd>+<kbd>Space</kbd> a gap column in all sequences, <kbd>Delete</kbd>/<kbd>Backspace</kbd> remove a gap (<kbd>Shift</kbd> removes a gap-only column). Consensus row: capital = residue reaching the threshold, lowercase = most frequent residue below it, x/N = no clear majority (DNA uses IUPAC codes), – = mostly gaps.</p>
+                    <div id="ms-target" class="at-target"></div>
+                </section>
+
+                <section class="ms-pssm-section">
+                    <h2>Position-specific scoring matrix <span class="dp-hint">log-odds, bits: log₂(frequency with pseudocounts ÷ background)</span></h2>
+                    <div id="pssm-wrap" class="ms-pssm-wrap"><div id="pssm"></div></div>
+                    <div class="ms-scan">
+                        <label for="scan-input">Scan a sequence with this PSSM (core columns only, ≤ 50 % gaps):</label>
+                        <div class="dp-answer-row">
+                            <input type="text" id="scan-input" spellcheck="false" placeholder="sequence to scan">
+                            <button id="scan-btn">Scan</button>
+                        </div>
+                        <div id="scan-result" class="ms-scan-result"></div>
+                    </div>
+                </section>
+
+                <section class="example-info" id="example-info" hidden>
+                    <h2>About this example</h2>
+                    <h3 id="example-name"></h3>
+                    <p id="example-description"></p>
+                    <p><strong>Notes:</strong> <span id="example-notes"></span></p>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section class="scoring-controls">
+                    <h2>Parameters</h2>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Alignment (progressive, affine gaps)</label>
+                        <p class="dp-hint" id="sub-hint"></p>
+                        <div class="controls-grid" id="dna-sub" hidden>
+                            <div class="control-group"><label for="match">Match: <span id="match-value">+2</span></label><input type="range" id="match" min="1" max="10" value="2"></div>
+                            <div class="control-group"><label for="mismatch">Mismatch: <span id="mismatch-value">−1</span></label><input type="range" id="mismatch" min="-10" max="0" value="-1"></div>
+                        </div>
+                        <div class="controls-grid">
+                            <div class="control-group"><label for="gap-open">Gap open: <span id="gap-open-value">−10</span></label><input type="range" id="gap-open" min="-20" max="-1" value="-10"></div>
+                            <div class="control-group"><label for="gap-extend">Gap extend: <span id="gap-extend-value">−1</span></label><input type="range" id="gap-extend" min="-10" max="-1" value="-1"></div>
+                        </div>
+                        <p class="dp-hint">Changing these re-runs the automatic alignment.</p>
+                    </div>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Profile statistics</label>
+                        <div class="controls-grid">
+                            <div class="control-group"><label for="threshold">Consensus threshold: <span id="threshold-value">50</span> %</label><input type="range" id="threshold" min="30" max="100" step="5" value="50"></div>
+                            <div class="control-group"><label for="pseudocount">Pseudocount β: <span id="pseudocount-value">1</span></label><input type="range" id="pseudocount" min="0" max="5" step="0.5" value="1"></div>
+                        </div>
+                        <label class="ms-check"><input type="checkbox" id="correction" checked> small-sample correction of the logo</label>
+                        <label class="ms-check"><input type="checkbox" id="gap-scale" checked> scale logo stacks by the fraction of non-gap residues</label>
+                    </div>
+                </section>
+
+                <section class="ms-column-section">
+                    <h2>Column detail</h2>
+                    <div id="column-detail"><p class="no-stats">Click a column in the alignment.</p></div>
+                </section>
+
+                <section class="statistics-panel">
+                    <h2>Statistics</h2>
+                    <div id="stats"><p class="no-stats">Load sequences to see statistics.</p></div>
+                </section>
+
+                <section class="ms-tree-section">
+                    <h2>Guide tree (UPGMA on pairwise identity)</h2>
+                    <div id="tree"></div>
+                    <pre id="newick" class="ms-newick"></pre>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/msaEngine.js"></script>
+    <script src="js/msaLogo.js"></script>
+    <script src="js/msaEditor.js"></script>
+    <script src="js/msaExamples.js"></script>
+    <script src="js/msaController.js"></script>
+</body>
+</html>

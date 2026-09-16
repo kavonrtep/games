@@ -16,6 +16,7 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `needleman-wunsch.html` | Global alignment trainer (editor, target score, DP matrix with step/fill modes, linear/affine gaps, BLOSUM62) | `alignTrainer.js` (`data-mode="global"`) |
 | `smith-waterman.html` | Local alignment trainer, same code base (`data-mode="local"`) | `alignTrainer.js` |
 | `alignment-quiz.html` | Seeded self-assessment on alignment (13 question types, 6 levels) | `alignQuiz.js`, `alignQuizGenerators.js` |
+| `msa.html` | MSA workbench: multi-row gap editor, progressive alignment with stepper, consensus, PSSM, sequence logo, PSSM scan | `msaController.js`, `msaEngine.js`, `msaEditor.js`, `msaLogo.js` |
 | `dotplot.html` | Dotplot trainer with examples, quiz questions and "name the event" game | `dotplotController.js` |
 | `dotplot-quiz.html` | Seeded self-assessment on dotplots (16 question types) | `dotplotQuiz.js`, `dotplotQuizGenerators.js` |
 | `blast-demo.html` | BLAST seed-and-extend demo | `blast*.js`, `kmer*.js`, `seedIdentifier.js`, `alignmentExtender.js` |
@@ -34,7 +35,11 @@ are redirects kept for old links.
   fill-it-yourself modes).
 - `js/dotplotEngine.js` – dotplot computation (run-length and window/threshold
   modes, expected chance hits). `js/dotplotCanvas.js` – canvas renderer.
-- Example sets: `js/alignmentExamples.js`, `js/dotplotExamples.js`. Quiz
+- `js/msaEngine.js` – FASTA parsing, UPGMA guide tree, profile–profile
+  progressive alignment, column statistics (entropy, information, PSSM,
+  consensus) and PSSM scanning; `js/msaLogo.js` renders SVG logos.
+- Example sets: `js/alignmentExamples.js`, `js/dotplotExamples.js`,
+  `js/msaExamples.js` (real UniProt sequences from the course exercises). Quiz
   answers in the examples are functions of the engine result, never literals.
 
 ## Conventions
