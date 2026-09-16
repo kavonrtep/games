@@ -15,11 +15,14 @@ class MsaController {
         this.selectedCol = null;
         this.currentExample = null;
         this.stepIndex = -1;
+        this.order = [];            // sequence indices in display (guide-tree leaf) order
+        this.dispNames = [];
 
         this.editor = new MsaEditor(this.$('editor'), {
             cellWidth: this.cellWidth,
             onChange: rows => { if (this.stepIndex < 0) { this.rows = rows; this.refresh(); } },
-            onColumn: col => { this.selectedCol = col; this.renderColumnDetail(); }
+            onColumn: col => { this.selectedCol = col; this.renderColumnDetail(); },
+            onRender: () => this.drawTree()
         });
         // keep the PSSM table scrolled with the alignment
         this.editor.scroll.addEventListener('scroll', () => { this.$('pssm-wrap').scrollLeft = this.editor.scroll.scrollLeft; });
@@ -40,7 +43,7 @@ class MsaController {
             const n = this.editor.removeGapOnlyColumns();
             this.toast(n ? `Removed ${n} gap-only column${n === 1 ? '' : 's'}` : 'No gap-only columns', 'info');
         });
-        this.$('reset-btn').addEventListener('click', () => { if (this.auto) { this.endStepping(); this.editor.setRows(this.auto.rows); } });
+        this.$('reset-btn').addEventListener('click', () => { if (this.auto) { this.endStepping(true); this.editor.setRowState([]); this.editor.setRows(this.displayRows(this.auto.rows)); } });
         this.$('step-btn').addEventListener('click', () => this.startStepping());
         this.$('step-prev').addEventListener('click', () => this.showStep(this.stepIndex - 1));
         this.$('step-next').addEventListener('click', () => this.showStep(this.stepIndex + 1));
@@ -143,8 +146,9 @@ class MsaController {
         this.endStepping(true);
         this.selectedCol = null;
         this.computeAuto(false);
-        // gap-containing raw rows: keep the typed alignment; plain sequences: show unaligned (left-justified)
-        this.editor.init(seqs.map(s => s.name), rawRows ? rawRows : this.auto.rows, type);
+        // rows are displayed in guide-tree leaf order, so the tree can be drawn next to them
+        const src = rawRows ? rawRows : this.auto.rows;
+        this.editor.init(this.dispNames, this.order.map(i => src[i]), type);
         this.editor.container.focus();
     }
 
@@ -156,8 +160,10 @@ class MsaController {
         this.auto.stats = this.M.columnStats(this.auto.rows, this.type, this.statOpts());
         this.auto.sp = this.M.sumOfPairs(this.auto.rows, p).total;
         this.auto.ms = performance.now() - t0;
+        this.order = this.auto.order;
+        this.dispNames = this.order.map(i => this.seqs[i].name);
         this.renderTree();
-        if (reload) { this.endStepping(true); this.editor.setRows(this.auto.rows); }
+        if (reload) { this.endStepping(true); this.editor.names = this.dispNames; this.editor.setRows(this.displayRows(this.auto.rows)); }
         if (this.currentExample) this.renderQuiz(this.currentExample);
     }
 
@@ -186,7 +192,7 @@ class MsaController {
         const conserved = this.stats.columns.filter(c => c.conserved).length;
         const best = this.M.bestColumn(this.stats);
         let minI = 1, minPair = '';
-        for (let i = 0; i < I.length; i++) for (let j = i + 1; j < I.length; j++) if (I[i][j] < minI) { minI = I[i][j]; minPair = `${this.seqs[i].name} / ${this.seqs[j].name}`; }
+        for (let i = 0; i < I.length; i++) for (let j = i + 1; j < I.length; j++) if (I[i][j] < minI) { minI = I[i][j]; minPair = `${this.dispNames[i]} / ${this.dispNames[j]}`; }
         const rows = [
             ['Sequences × columns', `${this.rows.length} × ${this.rows[0].length}`],
             ['Sum-of-pairs score', `<strong>${sp.toFixed(0)}</strong>`],
@@ -247,30 +253,48 @@ class MsaController {
             <p class="dp-hint">Letter height in the logo = frequency × R. The PSSM row is log₂(freq+β ÷ background); β spreads pseudocounts by background frequency.</p>`;
     }
 
+    displayRows(rowsInOriginalOrder) { return this.order.map(i => rowsInOriginalOrder[i]); }
+
     renderTree() {
-        const tree = this.auto.tree;
-        const leaves = [];
-        const collect = n => { if (!n.left) leaves.push(n); else { collect(n.left); collect(n.right); } };
-        collect(tree);
-        const W = 260, rowH = 18, H = leaves.length * rowH + 10, nameW = 90;
+        this.$('newick').textContent = this.M.newick(this.auto.tree) + ';';
+        this.drawTree();
+    }
+
+    /**
+     * Guide tree drawn in the editor's left column, leaves on the sequence
+     * rows. Internal nodes carry their merge number; while stepping, the
+     * current merge is highlighted and later merges are greyed out.
+     */
+    drawTree() {
+        if (!this.auto || !this.editor.rows.length) { this.editor.setTree('', 0); return; }
+        const W = 170, tree = this.auto.tree, k = this.stepIndex;
+        const centres = this.editor.rowCentres();
+        if (centres.length !== this.order.length) { this.editor.setTree('', 0); return; }
+        const H = this.editor.body.getBoundingClientRect().height;
         const maxH = tree.height || 1e-6;
-        const x = h => 8 + (1 - h / maxH) * (W - nameW - 16);
-        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" class="ms-tree">`;
-        const ypos = new Map();
-        leaves.forEach((l, i) => ypos.set(l, 12 + i * rowH));
+        const x = h => 10 + (1 - h / maxH) * (W - 34);
+        let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" class="ms-guide">`;
+        const state = n => k < 0 ? 'done' : n.step < k ? 'done' : n.step === k ? 'current' : 'pending';
+        const stroke = { done: '#4a5568', current: '#2563eb', pending: '#cbd5e0' };
         const draw = n => {
-            if (!n.left) { const y = ypos.get(n); svg += `<text x="${(W - nameW + 4).toFixed(1)}" y="${y + 3}" font-size="10">${n.name}</text>`; return y; }
-            const yl = draw(n.left), yr = draw(n.right), xn = x(n.height), y = (yl + yr) / 2;
-            svg += `<line x1="${xn}" y1="${yl}" x2="${xn}" y2="${yr}" stroke="#4a5568"/>`;
-            svg += `<line x1="${xn}" y1="${yl}" x2="${x(n.left.height)}" y2="${yl}" stroke="#4a5568"/><line x1="${xn}" y1="${yr}" x2="${x(n.right.height)}" y2="${yr}" stroke="#4a5568"/>`;
-            svg += `<text x="${xn - 2}" y="${y - 3}" font-size="8" fill="#718096" text-anchor="end">${(1 - 2 * n.height).toFixed(2)}</text>`;
-            ypos.set(n, y);
-            return y;
+            if (!n.left) {
+                const y = centres[this.order.indexOf(n.members[0])];
+                return { y, x: W - 24 };
+            }
+            const L = draw(n.left), R = draw(n.right), xn = x(n.height), y = (L.y + R.y) / 2, st = state(n);
+            const c = stroke[st], w = st === 'current' ? 2.5 : 1.5;
+            svg += `<path d="M${L.x},${L.y} H${xn} V${R.y} H${R.x}" fill="none" stroke="${c}" stroke-width="${w}"${st === 'pending' ? ' stroke-dasharray="3,3"' : ''}/>`;
+            svg += `<circle cx="${xn}" cy="${y}" r="7" fill="${st === 'current' ? '#2563eb' : st === 'done' ? '#fff' : '#f7fafc'}" stroke="${c}" stroke-width="1.5"/>`;
+            svg += `<text x="${xn}" y="${y + 3}" font-size="8" text-anchor="middle" fill="${st === 'current' ? '#fff' : c}">${n.step + 1}</text>`;
+            return { y, x: xn };
         };
-        draw(tree);
+        const root = draw(tree);
+        // leaf stubs to the name column
+        const leafStub = n => { if (!n.left) { const y = centres[this.order.indexOf(n.members[0])]; svg += `<line x1="${W - 24}" y1="${y}" x2="${W - 4}" y2="${y}" stroke="#4a5568" stroke-width="1.5"/>`; } else { leafStub(n.left); leafStub(n.right); } };
+        leafStub(tree);
+        svg += `<line x1="${root.x}" y1="${root.y}" x2="${root.x - 8}" y2="${root.y}" stroke="#4a5568" stroke-width="1.5"/>`;
         svg += '</svg>';
-        this.$('tree').innerHTML = svg + '<p class="dp-hint">Branch labels: identity of the two merged groups (1 − distance). Merges happen bottom-up; closest pairs first.</p>';
-        this.$('newick').textContent = this.M.newick(tree) + ';';
+        this.editor.setTree(svg, W);
     }
 
     // ------------------------------------------------------------ progressive stepper
@@ -279,6 +303,7 @@ class MsaController {
         this.$('stepper').hidden = false;
         this.$('step-btn').hidden = true;
         this.editor.setReadOnly(true);
+        this.editor.logoSvg = ''; this.editor.consensus = ''; this.editor.shading = null;
         this.showStep(0);
     }
 
@@ -286,14 +311,16 @@ class MsaController {
         const steps = this.auto.steps;
         k = Math.max(0, Math.min(steps.length - 1, k));
         this.stepIndex = k;
+        // replay merges 0..k: every sequence is either still raw (pending) or inside its group's current profile
+        const cur = this.seqs.map(s => s.seq);
+        const state = this.seqs.map(() => 'pending');
+        for (let t = 0; t <= k; t++) steps[t].members.forEach((idx, x) => { cur[idx] = steps[t].after[x]; state[idx] = t === k ? 'current' : 'done'; });
+        this.editor.setRowState(this.order.map(i => state[i]));
+        this.editor.setRows(this.displayRows(cur), true);
         const st = steps[k];
-        const names = st.members.map(i => this.seqs[i].name);
-        this.editor.logoSvg = ''; this.editor.consensus = ''; this.editor.shading = null;
-        this.editor.names = names;
-        this.editor.setRows(st.after, true);
         const nm = idx => idx.map(i => this.seqs[i].name).join(', ');
-        this.$('step-explain').innerHTML = `<strong>Merge ${k + 1} of ${steps.length}:</strong> profile {${nm(st.a)}} (${st.before.rowsA[0].length} columns) aligned with profile {${nm(st.b)}} (${st.before.rowsB[0].length} columns) → ${st.after[0].length} columns, profile score ${st.score.toFixed(1)}. ` +
-            (k === 0 ? 'The first merge joins the two most similar sequences (deepest split of the guide tree).' : 'Gaps introduced earlier are kept ("once a gap, always a gap"); new gap columns are inserted in whole profiles.');
+        this.$('step-explain').innerHTML = `<strong>Merge ${k + 1} of ${steps.length}</strong> (node ${k + 1} in the tree): profile {${nm(st.a)}} (${st.before.rowsA[0].length} columns) + profile {${nm(st.b)}} (${st.before.rowsB[0].length} columns) → ${st.after[0].length} columns, profile score ${st.score.toFixed(1)}. ` +
+            (k === 0 ? 'The first merge joins the two closest sequences – the deepest split of the guide tree.' : 'Grey sequences have not been added yet; gaps introduced in earlier merges are kept ("once a gap, always a gap") and new gap columns are inserted into whole profiles.');
         this.$('step-prev').disabled = k === 0;
         this.$('step-next').disabled = k === steps.length - 1;
     }
@@ -304,7 +331,9 @@ class MsaController {
         this.$('stepper').hidden = true;
         this.$('step-btn').hidden = false;
         this.editor.setReadOnly(false);
-        if (was && !silent) { this.editor.names = this.seqs.map(s => s.name); this.editor.setRows(this.auto.rows); }
+        this.editor.setRowState([]);
+        if (was && !silent) this.editor.setRows(this.displayRows(this.auto.rows));
+        else if (was) this.drawTree();
     }
 
     // ------------------------------------------------------------ scanning

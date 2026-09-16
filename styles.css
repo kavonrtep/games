@@ -1829,3 +1829,10 @@ kbd {
 .ms-detail tr.dim { color: #a0aec0; }
 .ms-tree { display: block; max-width: 100%; }
 .ms-newick { font-size: 10px; white-space: pre-wrap; word-break: break-all; color: #4a5568; background: #f7fafc; padding: 6px; border-radius: 4px; margin-top: 6px; }
+.me-body { display: flex; align-items: stretch; }
+.me-tree { flex-shrink: 0; position: relative; background: #fafbfc; border-right: 1px solid #e2e8f0; }
+.me-tree svg { display: block; }
+.me-scroll { flex: 1 1 auto; min-width: 0; }
+.me-seq.state-pending .me-cell, .me-seq.state-pending .me-name { opacity: 0.35; }
+.me-seq.state-current { background: rgba(37, 99, 235, 0.07); }
+.me-seq.state-current .me-name { color: #2563eb; }

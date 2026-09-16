@@ -170,7 +170,7 @@ const MsaEngine = (() => {
      * merge: { a: [indices], b: [indices], before: {rowsA, rowsB}, after: rows, score }.
      */
     function progressive(seqs, params) {
-        if (seqs.length === 1) return { tree: { members: [0], name: seqs[0].name, height: 0 }, steps: [], rows: [seqs[0].seq], D: [[0]] };
+        if (seqs.length === 1) return { tree: { members: [0], name: seqs[0].name, height: 0 }, steps: [], rows: [seqs[0].seq], D: [[0]], order: [0] };
         const D = distanceMatrix(seqs, params);
         const tree = upgma(D, seqs.map(s => s.name));
         const steps = [];
@@ -180,12 +180,14 @@ const MsaEngine = (() => {
             const res = alignProfiles(L.rows, R.rows, params);
             const members = L.members.concat(R.members);
             const rows = res.rowsA.concat(res.rowsB);
-            steps.push({ a: L.members, b: R.members, before: { rowsA: L.rows, rowsB: R.rows }, after: rows, members, score: res.score });
+            node.step = steps.length;          // which merge this node represents
+            steps.push({ a: L.members, b: R.members, before: { rowsA: L.rows, rowsB: R.rows }, after: rows, members, score: res.score, node });
             return { members, rows };
         };
         const final = build(tree);
         const rows = seqs.map((_, idx) => final.rows[final.members.indexOf(idx)]);
-        return { tree, steps, rows, D };
+        // order = sequence indices in guide-tree leaf order (left to right)
+        return { tree, steps, rows, D, order: final.members };
     }
 
     // ------------------------------------------------------------ scoring an MSA

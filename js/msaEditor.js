@@ -23,8 +23,11 @@ class MsaEditor {
         this.shading = null;          // per-column 0..1 conservation for background shading
         this.container.classList.add('me');
         this.container.tabIndex = 0;
-        this.container.innerHTML = `<div class="me-scroll"><div class="me-grid"></div></div><div class="me-empty">Paste sequences or load an example.</div>`;
+        this.container.innerHTML = `<div class="me-body"><div class="me-tree"></div><div class="me-scroll"><div class="me-grid"></div></div></div><div class="me-empty">Paste sequences or load an example.</div>`;
+        this.body = this.container.querySelector('.me-body');
+        this.tree = this.container.querySelector('.me-tree');
         this.scroll = this.container.querySelector('.me-scroll');
+        this.rowState = [];           // per row: undefined | 'pending' | 'current' | 'done'
         this.grid = this.container.querySelector('.me-grid');
         this.empty = this.container.querySelector('.me-empty');
         this.container.addEventListener('keydown', e => this.onKey(e));
@@ -43,6 +46,13 @@ class MsaEditor {
     setConsensus(s) { this.consensus = s || ''; this.render(); }
     setShading(values) { this.shading = values; this.render(); }
     setReadOnly(ro) { this.readOnly = ro; this.container.classList.toggle('readonly', ro); }
+    setTree(svg, width) { this.tree.innerHTML = svg || ''; this.tree.style.width = (svg ? width : 0) + 'px'; }
+    setRowState(states) { this.rowState = states || []; }
+    // vertical centre of every sequence row, relative to the editor body (for drawing the tree leaves)
+    rowCentres() {
+        const b = this.body.getBoundingClientRect();
+        return [...this.grid.querySelectorAll('.me-seq')].map(r => { const rc = r.getBoundingClientRect(); return rc.top - b.top + rc.height / 2; });
+    }
     length() { return this.rows.length ? this.rows[0].length : 0; }
 
     normalize() {
@@ -173,7 +183,8 @@ class MsaEditor {
         // sequences
         this.rows.forEach((r, i) => {
             const active = i === this.cursor.row;
-            h += `<div class="me-row me-seq${active ? ' active' : ''}" data-row="${i}"><div class="me-name" title="${this.names[i]}">${this.names[i]}</div><div class="me-cells" style="width:${L * cw}px">`;
+            const state = this.rowState[i] ? ' state-' + this.rowState[i] : '';
+            h += `<div class="me-row me-seq${active ? ' active' : ''}${state}" data-row="${i}"><div class="me-name" title="${this.names[i]}">${this.names[i]}</div><div class="me-cells" style="width:${L * cw}px">`;
             for (let k = 0; k < L; k++) {
                 const c = r[k];
                 const cls = ['me-cell', this.charClass(c)];
@@ -186,5 +197,6 @@ class MsaEditor {
             h += `<span class="${endCls}" data-col="${L}">&nbsp;</span></div></div>`;
         });
         this.grid.innerHTML = h;
+        if (this.opts.onRender) this.opts.onRender();
     }
 }
