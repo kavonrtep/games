@@ -21,6 +21,8 @@ class DotplotCanvas {
         this.showBlocks = false;
         this.highlightedBlock = null;   // block index or null
         this.cursor = null;             // {i, j} selected cell
+        this.overlays = [];             // answer annotations: {s1:[a,b], s2:[c,d], color?, label?} (1-based)
+        this.showLetters = { seq1: true, seq2: true };   // quiz can hide the bases on the axes
 
         this.margin = { top: 44, right: 40, bottom: 36, left: 44 };   // updated in resize()
         this.ribbonHeight = 130;
@@ -48,6 +50,7 @@ class DotplotCanvas {
         this.result = result;
         this.cursor = null;
         this.highlightedBlock = null;
+        this.overlays = [];
         this.resize();
         this.draw();
     }
@@ -56,6 +59,17 @@ class DotplotCanvas {
         this.blocks = blocks || [];
         this.showBlocks = !!show;
         this.highlightedBlock = null;
+        this.resize();
+        this.draw();
+    }
+
+    setOverlays(list) {
+        this.overlays = list || [];
+        this.draw();
+    }
+
+    setLetterVisibility(seq1, seq2) {
+        this.showLetters = { seq1: !!seq1, seq2: !!seq2 };
         this.resize();
         this.draw();
     }
@@ -76,6 +90,7 @@ class DotplotCanvas {
         this.blocks = [];
         this.showBlocks = false;
         this.cursor = null;
+        this.overlays = [];
         this.resize();
         this.draw();
     }
@@ -86,8 +101,10 @@ class DotplotCanvas {
         this._redrawTimer = setTimeout(() => { this.resize(); this.draw(); }, 120);
     }
 
+    // true when the sequences are short enough for base letters on the axes
     lettersVisible() {
-        return !!(this.result && this.result.n <= this.letterLimit && this.result.m <= this.letterLimit);
+        return !!(this.result && this.result.n <= this.letterLimit && this.result.m <= this.letterLimit
+                  && (this.showLetters.seq1 || this.showLetters.seq2));
     }
 
     resize() {
@@ -162,7 +179,35 @@ class DotplotCanvas {
         this.drawSegments(this.result.forward.segments, false);
         this.drawSegments(this.result.reverse.segments, true);
         this.drawHighlightedBlock();
+        this.drawOverlays();
         if (this.showBlocks) this.drawRibbons();
+    }
+
+    // Boxes drawn over the plot after a quiz answer, in 1-based original coordinates.
+    drawOverlays() {
+        if (!this.overlays.length) return;
+        const ctx = this.ctx;
+        const { x, y } = this.plot;
+        const { cw, ch } = this.cellSize();
+        ctx.font = 'bold 11px sans-serif';
+        ctx.textBaseline = 'alphabetic';
+        for (const o of this.overlays) {
+            const color = o.color || '#2563eb';
+            const bx = x + (o.s1[0] - 1) * cw, by = y + (o.s2[0] - 1) * ch;
+            const bw = (o.s1[1] - o.s1[0] + 1) * cw, bh = (o.s2[1] - o.s2[0] + 1) * ch;
+            ctx.fillStyle = color + '22';
+            ctx.fillRect(bx, by, bw, bh);
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 3]);
+            ctx.strokeRect(bx, by, bw, bh);
+            ctx.setLineDash([]);
+            if (o.label) {
+                ctx.fillStyle = color;
+                ctx.textAlign = 'left';
+                ctx.fillText(o.label, bx + 3, Math.max(y + 11, by - 3));
+            }
+        }
     }
 
     drawEmpty() {
@@ -170,7 +215,7 @@ class DotplotCanvas {
         ctx.fillStyle = '#a0aec0';
         ctx.textAlign = 'center';
         ctx.font = '16px sans-serif';
-        ctx.fillText('Enter two DNA sequences or load an example', this.width / 2, this.height / 2 - 8);
+        ctx.fillText(this.emptyText || 'Enter two DNA sequences or load an example', this.width / 2, this.height / 2 - 8);
         ctx.font = '13px sans-serif';
         ctx.fillText('green = same strand, red = reverse complement', this.width / 2, this.height / 2 + 14);
         ctx.textAlign = 'left';
@@ -199,15 +244,19 @@ class DotplotCanvas {
         if (letters) {
             const fontPx = Math.max(8, Math.min(13, Math.floor(Math.min(cw, ch) * 0.9)));
             ctx.font = `${fontPx}px monospace`;
-            ctx.textAlign = 'center';
-            for (let i = 0; i < n; i++) ctx.fillText(seq1[i], x + (i + 0.5) * cw, y - 9);
-            ctx.textAlign = 'right';
-            for (let j = 0; j < m; j++) ctx.fillText(seq2[j], x - 6, y + (j + 0.5) * ch);
-            // complement of seq2 on the right, same order
-            ctx.fillStyle = '#dc2626';
-            ctx.textAlign = 'left';
-            const comp = DotplotEngine.complement(seq2);
-            for (let j = 0; j < m; j++) ctx.fillText(comp[j], x + w + 6, y + (j + 0.5) * ch);
+            if (this.showLetters.seq1) {
+                ctx.textAlign = 'center';
+                for (let i = 0; i < n; i++) ctx.fillText(seq1[i], x + (i + 0.5) * cw, y - 9);
+            }
+            if (this.showLetters.seq2) {
+                ctx.textAlign = 'right';
+                for (let j = 0; j < m; j++) ctx.fillText(seq2[j], x - 6, y + (j + 0.5) * ch);
+                // complement of seq2 on the right, same order
+                ctx.fillStyle = '#dc2626';
+                ctx.textAlign = 'left';
+                const comp = DotplotEngine.complement(seq2);
+                for (let j = 0; j < m; j++) ctx.fillText(comp[j], x + w + 6, y + (j + 0.5) * ch);
+            }
         }
 
         // numeric ticks (always) – drawn just outside the letters
@@ -245,7 +294,7 @@ class DotplotCanvas {
         ctx.translate(x + w + (letters ? 40 : 16), y + h / 2);
         ctx.rotate(Math.PI / 2);
         ctx.fillStyle = '#dc2626';
-        ctx.fillText(letters ? 'complement of Seq 2 (read ↑ for reverse complement)' : 'reverse-complement strand', 0, 0);
+        ctx.fillText(letters && this.showLetters.seq2 ? 'complement of Seq 2 (read ↑ for reverse complement)' : 'reverse-complement strand', 0, 0);
         ctx.restore();
 
         // parameter caption

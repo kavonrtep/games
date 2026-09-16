@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dotplot Quiz</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Dotplot Quiz</h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="dotplot.html" class="back-link dp-right-link">Dotplot Trainer →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= left panel -->
+            <div class="left-panel dp-left">
+
+                <section id="start-screen">
+                    <h2>Test your dotplot reading</h2>
+                    <p class="dp-intro">Every question shows a dotplot of freshly generated sequences with a hidden event. You get immediate feedback and an explanation after each answer. Practise first in the <a href="dotplot.html">Dotplot Trainer</a> if the patterns are new to you.</p>
+
+                    <h3>12-question session</h3>
+                    <p class="dp-hint">Two questions per level, from recognising events to interpreting genomic regions. The seed decides which sequences you get – share the link to give someone the same set.</p>
+                    <div class="dp-answer-row">
+                        <label for="seed-input">Seed</label>
+                        <input type="text" id="seed-input" maxlength="40" spellcheck="false">
+                        <button id="new-seed" title="Pick a different random seed">⟳</button>
+                    </div>
+                    <button id="start-session" class="primary">Start session</button>
+
+                    <h3>Drill one skill</h3>
+                    <p class="dp-hint">Unlimited questions of one type, useful right after learning a concept.</p>
+                    <div class="dp-answer-row">
+                        <select id="drill-type"></select>
+                        <button id="start-drill">Start drill</button>
+                    </div>
+
+                    <div id="history-box" hidden>
+                        <h3>Your previous sessions</h3>
+                        <div id="history-content"></div>
+                    </div>
+                </section>
+
+                <section id="question-screen" hidden>
+                    <div class="dp-progress">
+                        <span id="progress-text"></span>
+                        <div class="dp-progress-bar"><div id="progress-fill"></div></div>
+                    </div>
+                    <h2 id="q-title"></h2>
+                    <p id="q-prompt" class="dp-prompt"></p>
+                    <div id="answer-area"></div>
+                    <div id="hint-box" class="dp-feedback" hidden></div>
+                    <div id="feedback-box" class="dp-feedback" hidden></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="check-btn" class="primary">Check</button>
+                        <button id="hint-btn" title="Shows a hint – the question then counts at most half a point">Hint</button>
+                        <button id="next-btn" hidden>Next question →</button>
+                        <button id="quit-btn">End</button>
+                    </div>
+                    <p class="dp-hint" id="running-score"></p>
+                </section>
+
+                <section id="summary-screen" hidden>
+                    <h2>Session summary</h2>
+                    <p id="summary-score" class="dp-summary-score"></p>
+                    <div id="summary-skills"></div>
+                    <p id="summary-compare" class="dp-hint"></p>
+                    <div class="dp-buttons input-controls">
+                        <button id="again-same" class="primary">Same set again</button>
+                        <button id="again-new">New session</button>
+                        <button id="drill-weakest">Drill weakest skill</button>
+                    </div>
+                    <p class="dp-hint">Session link: <a id="summary-link" href="#"></a></p>
+                </section>
+            </div>
+
+            <!-- ============================================ right panel -->
+            <div class="right-panel dp-right">
+                <section class="dotplot-section">
+                    <h2 id="plot-title">Dotplot</h2>
+                    <div id="plot-area">
+                        <div class="dp-canvas-wrap">
+                            <canvas id="dotplot-canvas" width="500" height="500"></canvas>
+                            <div id="dp-tooltip" class="dp-tooltip" hidden></div>
+                        </div>
+                        <p class="dp-hint" id="cell-readout">Hover over the plot to read coordinates; click a cell to keep a cross-hair, then use ← ↑ → ↓ &lt; &gt; [ ] to move it.</p>
+                    </div>
+                    <div id="grid-area" hidden></div>
+
+                    <div id="param-panel" class="dp-param-panel" hidden>
+                        <h3>Parameters</h3>
+                        <div class="dp-mode">
+                            <label><input type="radio" name="mode" value="runlength" checked> Minimum diagonal length</label>
+                            <label><input type="radio" name="mode" value="window"> Window / threshold</label>
+                        </div>
+                        <div id="runlength-controls" class="controls-grid">
+                            <div class="control-group">
+                                <label for="min-run">Minimum diagonal length: <span id="min-run-value">3</span></label>
+                                <input type="range" id="min-run" min="1" max="20" value="3">
+                            </div>
+                        </div>
+                        <div id="window-controls" class="controls-grid" hidden>
+                            <div class="control-group">
+                                <label for="window-size">Window size: <span id="window-size-value">9</span></label>
+                                <input type="range" id="window-size" min="1" max="31" value="9">
+                            </div>
+                            <div class="control-group">
+                                <label for="threshold">Threshold: <span id="threshold-value">6</span></label>
+                                <input type="range" id="threshold" min="1" max="9" value="6">
+                            </div>
+                        </div>
+                        <p class="dp-hint" id="param-stats"></p>
+                    </div>
+
+                    <div id="seq-panel" class="dp-seq-panel" hidden>
+                        <div id="seq1-line"></div>
+                        <div id="seq2-line"></div>
+                    </div>
+
+                    <div class="match-info">
+                        <div class="legend-item"><span class="legend-color forward"></span><span>Same-strand match</span></div>
+                        <div class="legend-item"><span class="legend-color reverse"></span><span>Reverse-complement match</span></div>
+                        <div class="legend-item"><span class="legend-color hollow"></span><span>Tolerated mismatch (window mode)</span></div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/dotplotEngine.js"></script>
+    <script src="js/dotplotCanvas.js"></script>
+    <script src="js/dotplotQuizGenerators.js"></script>
+    <script src="js/dotplotQuiz.js"></script>
+</body>
+</html>

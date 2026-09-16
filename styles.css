@@ -1620,3 +1620,60 @@ kbd {
 #alignment-blocks-list { max-height: 320px; overflow-y: auto; }
 
 .sequence-label-compact { width: 52px; }
+
+/* =========================================================================
+   Dotplot Quiz (dotplot-quiz.html)
+   ========================================================================= */
+.back-link.dp-right-link { left: auto; right: 20px; }
+.dp-intro { margin-bottom: 14px; line-height: 1.5; }
+#start-screen h3 { margin: 16px 0 4px; font-size: 1.05em; color: #2d3748; }
+#seed-input { flex: 1; min-width: 120px; padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-family: monospace; }
+#start-screen .dp-answer-row { margin-bottom: 8px; }
+#drill-type { flex: 1; padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 4px; background: white; }
+
+.dp-progress { margin-bottom: 8px; font-size: 0.9em; color: #4a5568; }
+.dp-progress-bar { height: 6px; background: #e2e8f0; border-radius: 3px; margin-top: 4px; overflow: hidden; }
+#progress-fill { height: 100%; background: #4c6ef5; width: 0; transition: width 0.3s; }
+.dp-prompt { line-height: 1.55; margin-bottom: 12px; }
+
+.dp-checklist { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+.dp-checklist label {
+    display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px;
+    border: 1px solid #e2e8f0; border-radius: 4px; cursor: pointer; background: white; line-height: 1.4;
+}
+.dp-checklist label:hover { background: #f7fafc; }
+.dp-checklist label.correct { border-color: #22c55e; background: #f0fdf4; }
+.dp-checklist label.wrong { border-color: #dc2626; background: #fef2f2; }
+.dp-checklist input { margin-top: 3px; }
+.dp-checklist code { font-size: 0.85em; word-break: break-all; }
+
+.dp-field { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+.dp-field label { flex: 1 1 200px; font-size: 0.95em; }
+.dp-field input[type="number"], .dp-field select { padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.95em; background: white; }
+.dp-field input[type="number"] { width: 100px; }
+.dp-field select { max-width: 100%; }
+.dp-mark { font-weight: 600; min-width: 24px; }
+.dp-mark.correct { color: #16a34a; }
+.dp-mark.wrong { color: #dc2626; }
+
+.dp-explain { margin-top: 6px; }
+.dp-explain ul { margin: 4px 0 0 18px; }
+.dp-summary-score { font-size: 1.4em; font-weight: 600; color: #2d3748; margin-bottom: 10px; }
+
+.dp-param-panel { margin-top: 12px; padding-top: 10px; border-top: 1px solid #e2e8f0; }
+.dp-param-panel h3 { font-size: 1em; margin-bottom: 6px; color: #2d3748; }
+.dp-param-panel input:disabled { opacity: 0.5; }
+.dp-seq-panel { margin-top: 10px; font-size: 0.85em; }
+.dp-seq-panel code { word-break: break-all; font-size: 0.95em; }
+
+.dp-grid { border-collapse: collapse; margin: 0 auto 8px; font-family: monospace; user-select: none; }
+.dp-grid th, .dp-grid td { width: 36px; height: 36px; border: 1px solid #cbd5e0; text-align: center; }
+.dp-grid th { background: #f7fafc; font-weight: 700; font-size: 14px; position: relative; }
+.dp-grid th small { display: block; font-size: 8px; color: #a0aec0; font-weight: normal; line-height: 1; }
+.dp-grid td { cursor: pointer; background: white; }
+.dp-grid td:hover { background: #edf2f7; }
+.dp-grid td.on { background: #22c55e; box-shadow: inset 0 0 0 3px white; border-radius: 0; }
+.dp-grid td.on::after { content: ''; }
+.dp-grid td.missed { background: #fee2e2; box-shadow: inset 0 0 0 2px #dc2626; }
+.dp-grid td.extra { background: #fca5a5; }
+.dp-grid td.extra::after { content: '✕'; color: #7f1d1d; font-size: 14px; }
