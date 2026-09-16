@@ -1682,7 +1682,7 @@ kbd {
    Alignment trainers (needleman-wunsch.html, smith-waterman.html)
    ========================================================================= */
 .dp-sub { font-size: 0.6em; opacity: 0.8; font-weight: 300; margin-left: 8px; }
-.at-main { flex: 0 0 58%; }
+.at-main { flex: 0 0 58%; min-width: 0; }
 .at-side { flex: 1 1 auto; min-width: 0; }
 .at-badge { font-size: 0.65em; font-weight: 600; padding: 2px 8px; border-radius: 10px; background: #edf2f7; color: #4a5568; vertical-align: middle; margin-left: 6px; }
 .at-badge.protein { background: #ede9fe; color: #5b21b6; }

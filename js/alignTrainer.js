@@ -61,10 +61,19 @@ class AlignTrainer {
 
     populateExamples() {
         const sel = this.$('example-selector');
-        for (const [key, ex] of Object.entries(ALIGNMENT_EXAMPLES[this.mode])) {
-            const o = document.createElement('option');
-            o.value = key; o.textContent = ex.name;
-            sel.appendChild(o);
+        const groups = { basic: 'Basics', rich: 'Multiple edits', parameters: 'Parameters matter', protein: 'Protein' };
+        const examples = Object.entries(ALIGNMENT_EXAMPLES[this.mode]);
+        for (const [g, label] of Object.entries(groups)) {
+            const items = examples.filter(([, ex]) => (ex.group || 'basic') === g);
+            if (!items.length) continue;
+            const og = document.createElement('optgroup');
+            og.label = label;
+            for (const [key, ex] of items) {
+                const o = document.createElement('option');
+                o.value = key; o.textContent = ex.name;
+                og.appendChild(o);
+            }
+            sel.appendChild(og);
         }
     }
 
@@ -99,7 +108,7 @@ class AlignTrainer {
         const s1 = this.E.cleanSequence(this.$('sequence1').value, type);
         const s2 = this.E.cleanSequence(this.$('sequence2').value, type);
         if (s1.length < 2 || s2.length < 2) { this.toast('Enter two sequences of at least 2 residues', 'error'); return; }
-        if (s1.length > 50 || s2.length > 50) { this.toast('Sequences are limited to 50 residues so the matrix stays readable', 'error'); return; }
+        if (s1.length > 60 || s2.length > 60) { this.toast('Sequences are limited to 60 residues so the matrix stays readable', 'error'); return; }
         this.seq1 = s1; this.seq2 = s2; this.type = type;
         this.$('sequence1').value = s1; this.$('sequence2').value = s2;
         this.active = true;

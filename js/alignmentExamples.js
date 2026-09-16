@@ -13,6 +13,7 @@
 const ALIGNMENT_EXAMPLES = {
     global: {
         'identical': {
+            group: 'basic',
             name: 'Identical DNA sequences',
             description: 'The trivial case: every position matches.',
             seq1: 'ATCGATGCT', seq2: 'ATCGATGCT',
@@ -23,6 +24,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'snps': {
+            group: 'basic',
             name: 'Similar DNA with point mutations',
             description: 'Same length, a few substitutions – gaps do not help.',
             seq1: 'ATCGATCGAATCGT', seq2: 'ATGGATCGTATAGT',
@@ -34,6 +36,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'indel': {
+            group: 'basic',
             name: 'Insertion / deletion',
             description: 'Seq 1 carries three extra bases.',
             seq1: 'ATCGCGTATGCAACG', seq2: 'ATCGATGCAACG',
@@ -45,6 +48,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'length-difference': {
+            group: 'basic',
             name: 'Very different lengths',
             description: 'A 12-mer against a 6-mer: global alignment must pay for six gaps.',
             seq1: 'ATCGATCGATCG', seq2: 'ATCGAA',
@@ -56,6 +60,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'unrelated': {
+            group: 'basic',
             name: 'Unrelated DNA',
             description: 'Two random-like sequences.',
             seq1: 'GCTAGCTAGCTATGCG', seq2: 'ACATAAGGTACCTAGAG',
@@ -66,6 +71,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'tandem': {
+            group: 'basic',
             name: 'Tandem repeat, different copy number',
             description: 'Both sequences repeat GCTAG; one copy differs.',
             seq1: 'GCTAGCTGCTAGCTGCTAGCT', seq2: 'TAGCTGCTAGCTGCTAGCTGCTAG',
@@ -76,6 +82,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'gap-open-extend': {
+            group: 'parameters',
             name: 'One long gap vs. several short ones (affine)',
             description: 'A 5-bp insertion: affine gaps prefer one long gap.',
             seq1: 'ATCGAAAAATCG', seq2: 'ATCGATCG',
@@ -88,6 +95,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'titv': {
+            group: 'parameters',
             name: 'Transitions vs. transversions',
             description: 'Substitutions that are all transitions (A↔G, C↔T).',
             seq1: 'ATCGATCGAT', seq2: 'GTCAATCAGT',
@@ -100,6 +108,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'overhang': {
+            group: 'parameters',
             name: 'Overlapping reads (free end gaps)',
             description: 'The end of Seq 1 overlaps the start of Seq 2.',
             seq1: 'GGATCCAGTTAGCTTACCTGAC', seq2: 'AGCTTACCTGACGTAACGATTG',
@@ -111,7 +120,93 @@ const ALIGNMENT_EXAMPLES = {
                 { q: 'What is the optimal score with penalised end gaps instead?', type: 'number', answer: c => c.E.globalAlign(c.s1, c.s2, Object.assign({}, c.params, { endGaps: 'penalized' })).score, explanation: () => 'Twenty terminal gaps now cost −40: global alignment is the wrong tool for overlaps.' }
             ]
         },
+        'multi-indel-dna': {
+            group: 'rich',
+            name: 'Three indels and a SNP (40 bp)',
+            description: 'Related DNA with a 3-bp deletion, a 3-bp insertion, a 1-bp deletion and one substitution.',
+            seq1: 'GATTACAGGCTTACGATCCGATGGCAATTGCAGTACCGTAC',
+            seq2: 'GATTACATTACGATCCTTAGATGGCAATCGCAGTACGTAC',
+            expected: 'Three separate gap runs (3, 3 and 1 symbols) and one mismatch; 7 gap symbols to place in total.',
+            notes: 'A realistic editing task: the diagonal breaks three times. Place the long gaps first (they rescue the most matches), then the single one. The matrix values tell you where each jump has to happen. This example is stable across parameters – the same alignment is optimal for gap −1, −2 and −3.',
+            questions: [
+                { q: 'How many gap symbols does the optimal alignment contain?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gaps, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many separate gaps (gap openings)?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gapOpenings, explanation: () => 'A 3-bp deletion, a 3-bp insertion and a 1-bp deletion.' },
+                { q: 'What is the optimal score?', type: 'number', answer: c => c.opt.score, explanation: () => 'Read the bottom-right cell.' }
+            ]
+        },
+        'protein-indels': {
+            group: 'rich',
+            name: 'Protein: Ras-like pair with two indels (48 aa)',
+            description: 'A Ras G-domain fragment against an edited relative: conservative substitutions, a 2-residue deletion and a 2-residue insertion.',
+            seq1: 'MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDG',
+            seq2: 'MREYKIVVLGSGGVGKSALTVQFVQNHFVEDPTLQDGGSYRKEVEIDG',
+            params: { gapModel: 'affine', gapOpen: -10, gapExtend: -1 },
+            expected: 'Two gaps of two residues each; about a quarter of the columns are mismatches, most of them scoring positive.',
+            notes: 'Protein editing with BLOSUM62: the score line shows that L/I, K/R, V/I and D/E cost little or even score positive, so gaps are worth opening only for real indels. Switch to linear gaps with −8: the algorithm now splits the deletion into two single gaps (V-E-) to grab one extra E/E match – something affine penalties (open −10) forbid. Which alignment looks more like a single evolutionary event?',
+            questions: [
+                { q: 'How many gap openings does the affine-gap optimum have?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gapOpenings, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many gap openings with LINEAR gaps of −8 (all else equal)?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { gapModel: 'linear', gap: -8 }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gapOpenings; }, explanation: () => 'Linear gaps have no opening cost, so splitting a gap is free whenever it buys a match.' },
+                { q: 'What is the BLOSUM62 score of the K↔R column?', type: 'number', answer: c => c.E.subScore(c.params, 'K', 'R'), explanation: () => 'Lysine and arginine are both positively charged: +2, a conservative substitution.' }
+            ]
+        },
+        'protein-divergent': {
+            group: 'parameters',
+            name: 'Protein: loop insertion – gap model decides (≈50 aa)',
+            description: 'Two diverged G-domain fragments: one carries a 5-residue loop insertion and a 3-residue deletion.',
+            seq1: 'GKSALTIQLIQNHFVDEYDPTIEDSYRKQVVIDGETCLLDILDTAGQEEY',
+            seq2: 'SSSALNIQVLQSHFLDDYDVYAPLQTFEESYRVDSGETAFITLLDTDAQEEH',
+            params: { gapModel: 'affine', gapOpen: -10, gapExtend: -1 },
+            expected: 'With affine gaps: one 5-residue gap and one 3-residue gap, 55 % identity.',
+            notes: 'The same pair gives three different answers. Affine (open −10, extend −1): two clean indels. Linear gap −8: the 5-residue insertion is cheaper to absorb as mismatches than to pay 5 × 8 for a gap, so only two single gaps remain and identity drops to 42 %. Linear gap −4: gaps become cheap and get scattered into five separate pieces (61 % identity). Identity is a property of the alignment, not of the sequences – it depends on the parameters.',
+            questions: [
+                { q: 'How many gap symbols with the affine parameters?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gaps, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many gap symbols with linear gap −8?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { gapModel: 'linear', gap: -8 }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gaps; }, explanation: () => 'A 5-residue gap would cost 40; the mismatches cost less, so the insertion is hidden.' },
+                { q: 'How many gap openings with linear gap −4?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { gapModel: 'linear', gap: -4 }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gapOpenings; }, explanation: () => 'Cheap linear gaps are scattered wherever they buy a positive column.' }
+            ]
+        },
+        'gap-penalty-flip': {
+            group: 'parameters',
+            name: 'Gap penalty decides: gaps or mismatches?',
+            description: 'A 3-bp insertion and a 3-bp deletion – or five substitutions? Depends on the gap penalty.',
+            seq1: 'ATGGCCACCATAGC', seq2: 'ATGCAAGCCACCAT',
+            params: { gap: -1 },
+            expected: 'Gap −1: six gap symbols, no mismatches (score 16). Gap −3: two gaps and five mismatches (score 5).',
+            notes: 'Move the gap slider from −1 to −3 and watch the target score and the matrix. At −1 the shared block GCCACCAT is aligned perfectly using 3 + 3 gaps; at −3 those six gaps would cost 18, more than the eight matches gain, so the algorithm prefers a shifted, mismatch-rich alignment. Neither is "right" – the parameters encode your belief about how likely indels are relative to substitutions.',
+            questions: [
+                { q: 'How many gap symbols with gap −1?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gaps, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many gap symbols with gap −3?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { gap: -3 }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gaps; }, explanation: c => { const p = Object.assign({}, c.params, { gap: -3 }); const r = c.E.globalAlign(c.s1, c.s2, p); return `${r.aligned1} / ${r.aligned2}`; } },
+                { q: 'What is the optimal score with gap −3?', type: 'number', answer: c => c.E.globalAlign(c.s1, c.s2, Object.assign({}, c.params, { gap: -3 })).score, explanation: c => { const p = Object.assign({}, c.params, { gap: -3 }); const r = c.E.globalAlign(c.s1, c.s2, p); const sc = c.E.scoreAlignment(r.aligned1, r.aligned2, p); return `${sc.matches} matches (+${sc.matches * 2}), ${sc.mismatches} mismatches (−${sc.mismatches}), ${sc.gaps} gaps (−${sc.gaps * 3}) = ${r.score}.`; } }
+            ]
+        },
+        'mismatch-penalty-flip': {
+            group: 'parameters',
+            name: 'Mismatch penalty decides',
+            description: 'Same length, four differences: substitutions, or two gaps and two substitutions?',
+            seq1: 'TCACCTTACCATCTGT', seq2: 'TCACCTAGCCATGTAT',
+            params: { substitution: { kind: 'simple', match: 2, mismatch: -1 }, gap: -2 },
+            expected: 'Mismatch −1: an ungapped alignment with four mismatches. Mismatch −3: two gaps replace two of the mismatches.',
+            notes: 'With a mild mismatch penalty the ungapped alignment wins. Make mismatches expensive (−3) and it becomes worth paying two gaps (−4) to convert two mismatches (−6) into a match. Transition/transversion scoring is the biological version of this: it makes some mismatches cheaper than others.',
+            questions: [
+                { q: 'How many mismatches in the optimal alignment with mismatch −1?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).mismatches, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many gap symbols with mismatch −3?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { substitution: { kind: 'simple', match: 2, mismatch: -3 } }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gaps; }, explanation: c => { const p = Object.assign({}, c.params, { substitution: { kind: 'simple', match: 2, mismatch: -3 } }); const r = c.E.globalAlign(c.s1, c.s2, p); return `${r.aligned1} / ${r.aligned2}`; } }
+            ]
+        },
+        'affine-vs-linear': {
+            group: 'parameters',
+            name: 'Linear vs. affine: one gap or three?',
+            description: 'A 3-bp deletion: linear gaps scatter it, affine gaps keep it together.',
+            seq1: 'CGTCCTCAGCGCACATA', seq2: 'CGTCCTCACCGCTA',
+            params: { gapModel: 'affine', gapOpen: -5, gapExtend: -1 },
+            expected: 'Affine: one gap of three symbols (score 18). Linear gap −2: three single gaps (score 19).',
+            notes: 'Linear penalties charge per symbol, so three gaps of 1 cost the same as one gap of 3 – and splitting them buys extra matches. Affine penalties charge −5 to open and only −1 to extend: one gap of 3 costs 7, three separate gaps cost 15. The single-gap alignment is what a single deletion event would produce. Switch the gap model and compare.',
+            questions: [
+                { q: 'How many gap openings with affine gaps?', type: 'number', answer: c => c.E.scoreAlignment(c.opt.aligned1, c.opt.aligned2, c.params).gapOpenings, explanation: c => `${c.opt.aligned1} / ${c.opt.aligned2}` },
+                { q: 'How many gap openings with linear gap −2?', type: 'number', answer: c => { const p = Object.assign({}, c.params, { gapModel: 'linear', gap: -2 }); const r = c.E.globalAlign(c.s1, c.s2, p); return c.E.scoreAlignment(r.aligned1, r.aligned2, p).gapOpenings; }, explanation: c => { const p = Object.assign({}, c.params, { gapModel: 'linear', gap: -2 }); const r = c.E.globalAlign(c.s1, c.s2, p); return `${r.aligned1} / ${r.aligned2}`; } },
+                { q: 'Cost of one gap of length 3 with open −5 / extend −1?', type: 'number', answer: c => c.E.gapCost(c.params, 3), explanation: () => '−5 + 2 × (−1) = −7.' }
+            ]
+        },
         'protein-durbin': {
+            group: 'protein',
             name: 'Protein: HEAGAWGHEE vs PAWHEAE (textbook example)',
             description: 'The classic example from Durbin et al. (they use BLOSUM50 and gap −8; here BLOSUM62).',
             seq1: 'HEAGAWGHEE', seq2: 'PAWHEAE',
@@ -124,6 +219,7 @@ const ALIGNMENT_EXAMPLES = {
             ]
         },
         'protein-conservative': {
+            group: 'protein',
             name: 'Protein: conservative substitutions',
             description: 'Two peptides that differ by chemically similar residues.',
             seq1: 'MKVLIAGDRE', seq2: 'MRILVSGEKD',

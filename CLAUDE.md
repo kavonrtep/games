@@ -50,7 +50,7 @@ are redirects kept for old links.
   vertical (j, rows). Coordinates shown to students are 1-based.
 - Shared CSS lives in `styles.css`; page-specific rules are appended in
   labelled sections. Do not inject CSS from JS.
-- Keep sequences short enough to be readable (≤ 50 residues for the matrix
+- Keep sequences short enough to be readable (≤ 60 residues for the matrix
   view, ≤ 500 bp for dotplots).
 
 ## Development
