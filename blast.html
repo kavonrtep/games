@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BLAST Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>BLAST Explorer <span class="dp-sub">words · hits · extension · statistics</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="smith-waterman.html" class="back-link dp-right-link">Local alignment →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="pipeline">The search, step by step</button>
+                    <button class="bl-tab" data-tab="experiments">Experiments</button>
+                    <button class="bl-tab" data-tab="quiz">Check your understanding</button>
+                </div>
+
+                <!-- ---------------- pipeline -->
+                <section id="tab-pipeline" class="bl-panel">
+                    <div class="bl-steps" id="steps">
+                        <button class="bl-step active" data-step="1"><span>1</span>Words</button>
+                        <button class="bl-step" data-step="2"><span>2</span>Scan</button>
+                        <button class="bl-step" data-step="3"><span>3</span>Seeds</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Ungapped extension</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Gapped extension</button>
+                        <button class="bl-step" data-step="6"><span>6</span>Statistics &amp; report</button>
+                    </div>
+                    <div id="step-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="step-prev">◀ Previous</button>
+                        <button id="step-next" class="primary">Next ▶</button>
+                    </div>
+                </section>
+
+                <!-- ---------------- experiments -->
+                <section id="tab-experiments" class="bl-panel" hidden>
+                    <div class="bl-exp" id="exp-wordsize">
+                        <h3>1 · Word size: sensitivity versus work</h3>
+                        <p class="dp-hint">The same query and database searched with different word sizes / programs. Longer words mean fewer lookups to follow up – and homologs that share no exact word are simply never seen.</p>
+                        <button class="primary" id="run-wordsize">Run the comparison</button>
+                        <div id="wordsize-result"></div>
+                    </div>
+                    <div class="bl-exp" id="exp-translated">
+                        <h3>2 · Nucleotide or protein search?</h3>
+                        <p class="dp-hint">A coding sequence and its ortholog with mostly synonymous (third-position) differences: identical proteins, DNA ≈ 70 % identical. blastn against tblastx on the same pair.</p>
+                        <button class="primary" id="run-translated">Run blastn and tblastx</button>
+                        <div id="translated-result"></div>
+                    </div>
+                    <div class="bl-exp" id="exp-evalue">
+                        <h3>3 · E-value and the size of the database</h3>
+                        <p class="dp-hint">The best hit of the current search, re-evaluated as if the database were larger, and the score distribution of shuffled queries (what "chance" looks like) against the Karlin–Altschul prediction.</p>
+                        <div class="dp-buttons input-controls">
+                            <button class="primary" id="run-shuffle">Shuffle the query 100× and score</button>
+                        </div>
+                        <div id="evalue-result"></div>
+                    </div>
+                    <div class="bl-exp" id="exp-masking">
+                        <h3>4 · Low-complexity sequence and masking</h3>
+                        <p class="dp-hint">A query with a (CA)<sub>12</sub> microsatellite searched with and without DUST-style masking.</p>
+                        <button class="primary" id="run-masking">Run with and without masking</button>
+                        <div id="masking-result"></div>
+                    </div>
+                    <div class="bl-exp" id="exp-sw">
+                        <h3>5 · BLAST versus Smith–Waterman</h3>
+                        <p class="dp-hint">For every database sequence: the true best local alignment score (full dynamic programming) next to what BLAST found, and how many matrix cells each method looked at.</p>
+                        <button class="primary" id="run-sw">Compare with Smith–Waterman</button>
+                        <div id="sw-result"></div>
+                    </div>
+                </section>
+
+                <!-- ---------------- quiz -->
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Questions are computed from the current scenario, program and parameters. Change them and the questions change too.</p>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section class="scoring-controls">
+                    <h2>Scenario</h2>
+                    <div class="at-example" style="margin-bottom:8px">
+                        <select id="scenario"></select>
+                        <button id="reroll" title="Generate new random sequences for the same scenario">⟳</button>
+                    </div>
+                    <p class="dp-hint" id="scenario-note"></p>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Program</label>
+                        <div class="dp-mode" id="program-radios">
+                            <label><input type="radio" name="program" value="megablast"> megablast</label>
+                            <label><input type="radio" name="program" value="dc-megablast"> discontiguous megablast</label>
+                            <label><input type="radio" name="program" value="blastn" checked> blastn</label>
+                            <label><input type="radio" name="program" value="blastp"> blastp</label>
+                        </div>
+                        <p class="dp-hint" id="program-note"></p>
+                    </div>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Parameters</label>
+                        <div class="controls-grid">
+                            <div class="control-group"><label for="word">Word size w: <span id="word-value">11</span></label><input type="range" id="word" min="2" max="28" value="11"></div>
+                            <div class="control-group" id="t-group"><label for="T">Neighbourhood threshold T: <span id="T-value">11</span></label><input type="range" id="T" min="5" max="20" value="11"></div>
+                            <div class="control-group"><label for="xdrop">X-drop (ungapped): <span id="xdrop-value">20</span></label><input type="range" id="xdrop" min="3" max="40" value="20"></div>
+                            <div class="control-group" id="a-group"><label for="A">Two-hit distance A: <span id="A-value">40</span></label><input type="range" id="A" min="10" max="80" value="40"></div>
+                        </div>
+                        <div class="dp-mode" id="dna-scoring">
+                            <span class="at-inline-label">Match / mismatch:</span>
+                            <label><input type="radio" name="scoring" value="1:-2"> +1 / −2</label>
+                            <label><input type="radio" name="scoring" value="2:-3" checked> +2 / −3</label>
+                            <label><input type="radio" name="scoring" value="1:-3"> +1 / −3</label>
+                            <label><input type="radio" name="scoring" value="1:-1"> +1 / −1</label>
+                        </div>
+                        <label class="ms-check"><input type="checkbox" id="two-hit"> two-hit rule (extend only diagonals with two hits within A)</label>
+                        <label class="ms-check"><input type="checkbox" id="mask"> mask low-complexity regions (DUST/SEG-like)</label>
+                        <div class="control-group" style="margin-top:8px"><label for="dbsize">Pretend the database is <span id="dbsize-value">1×</span> its size (for E-values)</label><input type="range" id="dbsize" min="0" max="9" value="0"></div>
+                        <div class="control-group"><label for="ecut">Report hits with E ≤ <span id="ecut-value">10</span></label><input type="range" id="ecut" min="-6" max="2" value="1"></div>
+                    </div>
+                </section>
+
+                <section>
+                    <h2>Query &amp; database</h2>
+                    <div id="query-view" class="bl-seqview"></div>
+                    <div id="db-view" class="bl-dblist"></div>
+                    <p class="dp-hint">Grey tags say what was planted in each sequence, so every "found / missed" can be checked. Lower-case = masked.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/blastEngine.js"></script>
+    <script src="js/blastLab.js"></script>
+</body>
+</html>

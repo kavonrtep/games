@@ -19,11 +19,11 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `msa.html` | MSA workbench: multi-row gap editor, progressive alignment with stepper, consensus, PSSM, sequence logo, PSSM scan | `msaController.js`, `msaEngine.js`, `msaEditor.js`, `msaLogo.js` |
 | `dotplot.html` | Dotplot trainer with examples, quiz questions and "name the event" game | `dotplotController.js` |
 | `dotplot-quiz.html` | Seeded self-assessment on dotplots (16 question types) | `dotplotQuiz.js`, `dotplotQuizGenerators.js` |
-| `blast-demo.html` | BLAST seed-and-extend demo | `blast*.js`, `kmer*.js`, `seedIdentifier.js`, `alignmentExtender.js` |
+| `blast.html` | BLAST Explorer: faithful small-scale pipeline (words/neighbourhoods, scan, two-hit, X-drop, gapped, Karlin–Altschul statistics) on databases with planted homologs, plus experiments (word size, translated search, E-value vs database size, masking, BLAST vs SW) and quiz | `blastLab.js`, `blastEngine.js` |
 | `assembly.html` | de Bruijn graph assembly demo | `assembly*.js`, `deBruijnAlgorithm.js` |
 
-`advanced-global-alignment.html`, `dotplot-demo.html` and `dotplot-explorer.html`
-are redirects kept for old links.
+`advanced-global-alignment.html`, `dotplot-demo.html`, `dotplot-explorer.html` and
+`blast-demo.html` are redirects kept for old links.
 
 ## Shared modules
 
@@ -35,6 +35,8 @@ are redirects kept for old links.
   fill-it-yourself modes).
 - `js/dotplotEngine.js` – dotplot computation (run-length and window/threshold
   modes, expected chance hits). `js/dotplotCanvas.js` – canvas renderer.
+- `js/blastEngine.js` – BLAST pipeline, scenario generator, statistics,
+  masking, six-frame translation. Builds on `alignEngine.js`.
 - `js/msaEngine.js` – FASTA parsing, UPGMA guide tree, profile–profile
   progressive alignment, column statistics (entropy, information, PSSM,
   consensus) and PSSM scanning; `js/msaLogo.js` renders SVG logos.

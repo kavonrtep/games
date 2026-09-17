@@ -31,11 +31,11 @@ Status: ☐ idea · ◐ in progress · ☑ done
 
 ## Week 4 · BLAST
 
-- ☐ **5. E-value playground** (M). Random database, distribution of best
+- ☑ **5. E-value playground** (M) → part of `blast.html` (experiments 3 and 5). Random database, distribution of best
   local scores (Gumbel), E = K·m·n·e^(−λS); change database size, query
   length, word size and predict the E-value; shuffle control; dust/
   low-complexity toggle. Reuses `alignEngine.js`.
-- ☐ **6. Which BLAST? + six-frame translation** (S). Pick
+- ◐ **6. Which BLAST? + six-frame translation** (S) → translated-search experiment in `blast.html`; a program-chooser quiz could still be added. Pick
   blastn/blastp/blastx/tblastn/tblastx for a query/database pair and see
   what is actually compared; ORF finder.
 
