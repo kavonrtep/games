@@ -175,12 +175,12 @@ class BlastLab {
         c.querySelectorAll('[data-hsp]').forEach(el => el.addEventListener('click', () => { this.selectedHsp = +el.dataset.hsp; this.showStep(this.step); }));
         const wi = c.querySelector('#word-index');
         if (wi) wi.addEventListener('input', () => { this.wordIndex = +wi.value; this.showStep(1); });
-        const canvas = c.querySelector('canvas.bl-hitmap');
-        if (canvas) this.drawHitMap(canvas, this.step);
+        c.querySelectorAll('canvas.bl-hitmap').forEach(cv => this.drawHitMap(cv, this.step, cv.dataset.only === '' ? null : +cv.dataset.only));
         const play = c.querySelector('#xdrop-play');
         if (play) play.addEventListener('click', () => this.animateXdrop());
         const svg = c.querySelector('#xdrop-chart');
         if (svg) this.drawXdrop(svg);
+        this.centerStrip();
     }
 
     // ---- step 1: words
@@ -214,59 +214,83 @@ class BlastLab {
             <div class="bl-lesson"><strong>Principle.</strong> Instead of comparing every query position with every database position (Smith–Waterman: ${(r.query.length * r.stats.dbLength / this.dbFactor()).toLocaleString()} cells here), BLAST only follows up positions that share a word. ${P.type === 'DNA' ? 'Longer words → fewer chance hits → faster, but a homolog with no identical stretch of w bases is invisible.' : 'The neighbourhood trades table size for sensitivity: lower T finds more distant homologs and costs more lookups.'}</div>`;
     }
 
-    // ---- hit map (steps 2–5)
-    hitMapHtml() { return `<canvas class="bl-hitmap" width="800" height="100"></canvas><div class="bl-legend"><span><i class="hit"></i> hit</span><span><i class="seed"></i> seed</span><span><i class="hsp"></i> HSP (ungapped)</span><span><i class="aln"></i> gapped alignment</span><span><i class="sel"></i> selected</span></div>`; }
+    // ---- dotplots (steps 2–5)
+    hitMapHtml(only = null) {
+        const cap = only === null
+            ? '<strong>Dotplots</strong> of the query (vertical, top → bottom) against every database sequence (horizontal), drawn at the same scale on both axes. Each short diagonal dash is a word hit.'
+            : `<strong>Dotplot</strong> of the query (vertical) against ${this.result.db[only].name} (horizontal), same scale on both axes.`;
+        return `<p class="bl-dpcap">${cap}</p><canvas class="bl-hitmap" data-only="${only === null ? '' : only}"></canvas>
+            <div class="bl-legend"><span><i class="hit"></i> word hit</span><span><i class="seed"></i> seed</span><span><i class="hsp"></i> HSP (ungapped)</span><span><i class="aln"></i> gapped alignment</span><span><i class="sel"></i> selected</span></div>`;
+    }
 
-    drawHitMap(canvas, step) {
-        const r = this.result;
-        const db = r.db, n = db.length;
-        const rowH = 58, labelW = 150, pad = 8;
+    drawHitMap(canvas, step, only = null) {
+        const r = this.result, db = r.db;
+        const idx = only === null ? db.map((_, i) => i) : [only];
         const width = canvas.parentElement.clientWidth || 800;
         const dpr = window.devicePixelRatio || 1;
-        const height = n * rowH + pad;
+        const qLen = r.query.length, maxLen = Math.max(...idx.map(i => db[i].seq.length));
+        const gapX = 18, titleH = 16, axisL = 14, cols = only !== null ? 1 : Math.max(1, Math.min(idx.length, Math.floor(width / 220)));
+        const cellW = (width - gapX * (cols - 1)) / cols;
+        // one scale for both axes (and for all plots), so diagonals are at 45° and lengths are comparable
+        const sc = only !== null ? Math.min((width - axisL - 10) / maxLen, 420 / qLen) : Math.min((cellW - axisL - 6) / maxLen, 210 / qLen);
+        const plotH = qLen * sc, cellH = titleH + plotH + 16;
+        const rows = Math.ceil(idx.length / cols), height = rows * cellH;
         canvas.width = width * dpr; canvas.height = height * dpr;
         canvas.style.width = width + 'px'; canvas.style.height = height + 'px';
         const ctx = canvas.getContext('2d');
         ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
         ctx.clearRect(0, 0, width, height);
-        const maxLen = Math.max(...db.map(s => s.seq.length));
-        const plotW = width - labelW - 20, qLen = r.query.length;
-        const sx = plotW / maxLen;
-        const boxH = rowH - 14, sy = boxH / qLen;
         const span = r.wordTable.span;
         const seeds = new Set();
         r.seeds.forEach(ss => ss.seeds.forEach(sd => sd.hits.forEach(h => seeds.add(`${ss.subject}:${h.qpos}:${h.spos}`))));
         const sel = r.results[this.selectedHsp];
-        db.forEach((s, i) => {
-            const y0 = pad / 2 + i * rowH + 4, x0 = labelW;
-            ctx.fillStyle = '#4a5568'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
-            ctx.fillText(s.name, labelW - 8, y0 + boxH / 2 + 4);
-            ctx.strokeStyle = '#cbd5e0'; ctx.lineWidth = 1;
-            ctx.strokeRect(x0, y0, s.seq.length * sx, boxH);
-            // hits
-            const ps = r.scan.perSubject[i];
-            ctx.lineWidth = 1.6;
-            for (const h of ps.hits) {
-                const isSeed = seeds.has(`${i}:${h.qpos}:${h.spos}`);
-                ctx.strokeStyle = step >= 3 && isSeed ? '#2563eb' : '#718096';
-                ctx.beginPath(); ctx.moveTo(x0 + h.spos * sx, y0 + h.qpos * sy); ctx.lineTo(x0 + (h.spos + span) * sx, y0 + (h.qpos + span) * sy); ctx.stroke();
-            }
+        const seg = (x0, y0, q1, s1, q2, s2) => { ctx.beginPath(); ctx.moveTo(x0 + s1 * sc, y0 + q1 * sc); ctx.lineTo(x0 + s2 * sc, y0 + q2 * sc); ctx.stroke(); };
+        idx.forEach((i, k) => {
+            const s = db[i];
+            const x0 = (k % cols) * (cellW + gapX) + axisL, y0 = Math.floor(k / cols) * cellH + titleH;
+            const w = s.seq.length * sc;
+            ctx.fillStyle = '#2d3748'; ctx.font = '600 11px sans-serif'; ctx.textAlign = 'left';
+            ctx.fillText(s.name, x0, y0 - 5);
+            ctx.fillStyle = '#fff'; ctx.fillRect(x0, y0, w, plotH);
+            ctx.strokeStyle = '#a0aec0'; ctx.lineWidth = 1; ctx.strokeRect(x0 + 0.5, y0 + 0.5, w, plotH);
+            ctx.save(); ctx.fillStyle = '#718096'; ctx.font = '9px sans-serif'; ctx.translate(x0 - 4, y0 + plotH / 2); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'center'; ctx.fillText('query', 0, 0); ctx.restore();
+            ctx.fillStyle = '#718096'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right'; ctx.fillText(`${s.seq.length}`, x0 + w, y0 + plotH + 10);
+            ctx.textAlign = 'left'; ctx.fillText('subject →', x0, y0 + plotH + 10);
+            ctx.lineCap = 'round';
+            // HSPs as a wide translucent band underneath, so hits and the alignment path stay visible on top
+            const band = Math.max(6, sc * 4);
             if (step >= 4) {
-                ctx.strokeStyle = '#d97706'; ctx.lineWidth = 2;
-                for (const h of r.hsps.filter(x => x.subject === i)) { ctx.beginPath(); ctx.moveTo(x0 + h.sStart * sx, y0 + h.qStart * sy); ctx.lineTo(x0 + (h.sEnd + 1) * sx, y0 + (h.qEnd + 1) * sy); ctx.stroke(); }
+                ctx.globalAlpha = 0.45; ctx.lineWidth = band;
+                for (const h of r.hsps.filter(x => x.subject === i)) {
+                    ctx.strokeStyle = step === 4 && sel && h === sel.hsp ? '#dc2626' : '#f59e0b';
+                    seg(x0, y0, h.qStart + 0.5, h.sStart + 0.5, h.qEnd + 0.5, h.sEnd + 0.5);
+                }
+                ctx.globalAlpha = 1;
+            }
+            ctx.lineWidth = Math.max(1.2, Math.min(2.5, sc * 0.8));
+            for (const h of r.scan.perSubject[i].hits) {
+                ctx.strokeStyle = step >= 3 && seeds.has(`${i}:${h.qpos}:${h.spos}`) ? '#2563eb' : '#718096';
+                seg(x0, y0, h.qpos, h.spos, h.qpos + span, h.spos + span);
             }
             if (step >= 5) {
                 for (const g of r.results.filter(x => x.subject === i)) {
-                    ctx.strokeStyle = g === sel ? '#dc2626' : '#16a34a'; ctx.lineWidth = g === sel ? 3.5 : 2.5;
-                    ctx.beginPath(); ctx.moveTo(x0 + (g.sStart - 1) * sx, y0 + (g.qStart - 1) * sy); ctx.lineTo(x0 + g.sEnd * sx, y0 + g.qEnd * sy); ctx.stroke();
+                    ctx.strokeStyle = g === sel ? '#dc2626' : '#16a34a'; ctx.lineWidth = g === sel ? 2 : 1.5;
+                    this.drawAlnPath(ctx, g, x0, y0, sc);
                 }
-            } else if (step === 4 && sel) {
-                const h = sel.hsp;
-                if (h.subject === i) { ctx.strokeStyle = '#dc2626'; ctx.lineWidth = 3.5; ctx.beginPath(); ctx.moveTo(x0 + h.sStart * sx, y0 + h.qStart * sy); ctx.lineTo(x0 + (h.sEnd + 1) * sx, y0 + (h.qEnd + 1) * sy); ctx.stroke(); }
             }
         });
-        ctx.fillStyle = '#718096'; ctx.font = '10px sans-serif'; ctx.textAlign = 'left';
-        ctx.fillText('subject →  (box height = query, top to bottom)', labelW, height - 1);
+    }
+
+    // the gapped alignment drawn column by column: diagonal steps for pairs, horizontal/vertical for gaps
+    drawAlnPath(ctx, g, x0, y0, sc) {
+        let q = g.qStart - 1, sp = g.sStart - 1;
+        ctx.beginPath(); ctx.moveTo(x0 + sp * sc, y0 + q * sc);
+        for (let k = 0; k < g.aligned1.length; k++) {
+            if (g.aligned1[k] !== '-') q++;
+            if (g.aligned2[k] !== '-') sp++;
+            ctx.lineTo(x0 + sp * sc, y0 + q * sc);
+        }
+        ctx.stroke();
     }
 
     // ---- step 2: scan
@@ -275,10 +299,10 @@ class BlastLab {
         const per = r.scan.perSubject.map((ps, i) => `<tr><td>${r.db[i].name}</td><td>${this.truthTag(r.db[i].truth)}</td><td>${r.db[i].seq.length - r.wordTable.span + 1}</td><td><strong>${ps.hits.length}</strong></td><td>${ps.hits.filter(h => h.exact).length}</td></tr>`).join('');
         return `
             <h3>Step 2 – Scan the database</h3>
-            <p>Every window of every database sequence is looked up in the query's word table: <strong>${s.lookups.toLocaleString()}</strong> lookups gave <strong>${s.hits}</strong> hits. A hit is a pair (query position, subject position); on the hit map it sits on a diagonal, because it says "these ${r.wordTable.span} letters line up here".</p>
+            <p>Every window of every database sequence is looked up in the query's word table: <strong>${s.lookups.toLocaleString()}</strong> lookups gave <strong>${s.hits}</strong> hits. A hit is a pair (query position, subject position); in the dotplot it is a short diagonal dash, because it says "these ${r.wordTable.span} letters line up here".</p>
             ${this.hitMapHtml()}
             <table class="bl-table"><thead><tr><th>subject</th><th>planted</th><th>windows looked up</th><th>hits</th><th>exact</th></tr></thead><tbody>${per}</tbody></table>
-            <div class="bl-lesson"><strong>Reading the map.</strong> Related sequences show hits lined up on one diagonal; unrelated ones show scattered hits that happen by chance. With four bases a random ${r.wordTable.span}-mer matches a given query word with probability 4<sup>−${r.wordTable.span}</sup>${r.params.type === 'DNA' ? ` = 1 in ${Math.pow(4, r.wordTable.span).toLocaleString()}` : ''}${r.params.type === 'PROTEIN' ? ' – for proteins the neighbourhood raises that considerably' : ''}. Try w = 7 to see chance hits appear, w = 20 to see homologs vanish.</div>`;
+            <div class="bl-lesson"><strong>Reading the dotplots.</strong> Related sequences show hits lined up on one diagonal; unrelated ones show scattered hits that happen by chance. With four bases a random ${r.wordTable.span}-mer matches a given query word with probability 4<sup>−${r.wordTable.span}</sup>${r.params.type === 'DNA' ? ` = 1 in ${Math.pow(4, r.wordTable.span).toLocaleString()}` : ''}${r.params.type === 'PROTEIN' ? ' – for proteins the neighbourhood raises that considerably' : ''}. Try w = 7 to see chance hits appear, w = 20 to see homologs vanish.</div>`;
     }
 
     // ---- step 3: seeds
@@ -306,7 +330,8 @@ class BlastLab {
         for (let k = 0; k < span; k++) seedScore += this.B.sub(this.result.params, this.result.query[seed.qpos + k].toUpperCase(), this.result.db[h.subject].seq[seed.spos + k].toUpperCase());
         const right = h.traceR.map(t => ({ q: t.q, score: t.score, best: t.best }));
         const left = h.traceL.map(t => ({ q: t.q, score: t.score, best: t.best }));
-        return { h, seed, seedScore, right, left, span };
+        const bestR = Math.max(seedScore, ...right.map(t => Math.max(t.best, t.score)));
+        return { h, seed, seedScore, right, left, span, bestR, beyondR: h.beyondR || [], beyondL: h.beyondL || [] };
     }
 
     renderUngapped() {
@@ -314,75 +339,128 @@ class BlastLab {
         if (!r.results.length) return `<h3>Step 4 – Ungapped extension</h3><p>No seeds to extend with these parameters – lower the word size${P.type === 'PROTEIN' ? ' or T' : ''}.</p>`;
         const list = r.results.map((x, k) => `<button class="bl-hspbtn ${k === this.selectedHsp ? 'sel' : ''}" data-hsp="${k}">${r.db[x.subject].name} · diag ${x.hsp.diag >= 0 ? '+' : ''}${x.hsp.diag} · ungapped score ${x.hsp.score}</button>`).join('');
         const s = this.xdropSeries();
-        const q = r.query.toUpperCase(), sub = r.db[s.h.subject].seq.toUpperCase();
-        const aQ = q.slice(s.h.qStart, s.h.qEnd + 1), aS = sub.slice(s.h.sStart, s.h.sEnd + 1);
-        const mid = aQ.split('').map((c, i) => c === aS[i] ? '|' : (this.B.sub(P, c, aS[i]) > 0 ? '+' : ' ')).join('');
         return `
             <h3>Step 4 – Extend the seed without gaps (X-drop)</h3>
             <p>From the seed word the alignment grows along its diagonal in both directions, adding the score of each new pair. The extension stops when the running score has dropped <strong>X = ${P.xDrop}</strong> below the best score seen so far; the alignment is then trimmed back to that best point. The result is a <strong>high-scoring segment pair (HSP)</strong>.</p>
             <div class="bl-chips">${list}</div>
             ${this.hitMapHtml()}
-            <div class="bl-xdrop"><svg id="xdrop-chart" width="760" height="220"></svg><div class="dp-buttons input-controls"><button id="xdrop-play">▶ Replay the extension</button></div></div>
-            <pre class="bl-aln">Query ${String(s.h.qStart + 1).padStart(4)} ${aQ} ${s.h.qEnd + 1}\n           ${mid}\nSbjct ${String(s.h.sStart + 1).padStart(4)} ${aS} ${s.h.sEnd + 1}</pre>
-            <p>HSP score <strong>${s.h.score}</strong> over ${s.h.length} positions (seed word scored ${s.seedScore}; extension explored ${s.right.length + s.left.length} further positions).</p>
-            <div class="bl-lesson"><strong>Limitation.</strong> X-drop is greedy: a stretch of mismatches longer than X can afford is never crossed, even if a strong match lies beyond it. Lower X to see HSPs fragment; raise it and extensions run longer (more work) for little gain.</div>`;
+            <div class="bl-xdrop"><svg id="xdrop-chart" viewBox="0 0 760 230" width="760" height="230"></svg>
+            <div class="dp-buttons input-controls"><button id="xdrop-play" class="primary">▶ Replay the extension</button></div></div>
+            <h4>The same extension in the alignment</h4>
+            <div id="xdrop-strip">${this.extensionStrip()}</div>
+            <p>HSP score <strong>${s.h.score}</strong> over ${s.h.length} positions (seed word scored ${s.seedScore}; the extension looked at ${s.right.length + s.left.length} further pairs and kept those up to the best point on each side).</p>
+            <div class="bl-lesson"><strong>Limitation.</strong> X-drop is greedy: a stretch of mismatches longer than X can afford is never crossed, even if a strong match lies beyond it – which is exactly what happens at an insertion or deletion: the diagonal changes, every pair after the indel is a random pair, and the score falls. The faded columns show what lay beyond the stop point. Lower X to see HSPs fragment; raise it and extensions run longer (more work) for little gain.</div>`;
     }
 
-    // The chart follows the algorithm's order: seed, then steps to the right, then steps to the left
-    // (the left extension continues from the best score reached on the right).
-    drawXdrop(svg, reveal = { r: Infinity, l: Infinity }) {
+    // columns of the ungapped extension along the diagonal, coloured by role, revealed in algorithm order
+    extensionStrip(reveal = { r: Infinity, l: Infinity, done: true }) {
+        const s = this.xdropSeries();
+        if (!s) return '';
+        const r = this.result, P = r.params, h = s.h;
+        const q = r.query.toUpperCase(), sub = r.db[h.subject].seq.toUpperCase();
+        const off = s.seed.spos - s.seed.qpos;
+        const cols = new Map();
+        for (let k = 0; k < s.span; k++) cols.set(s.seed.qpos + k, { kind: 'seed', vis: true });
+        s.right.forEach((t, k) => cols.set(t.q, { kind: t.q <= h.qEnd ? 'hsp' : 'trim', vis: k + 1 <= reveal.r, run: t.score }));
+        s.left.forEach((t, k) => cols.set(t.q, { kind: t.q >= h.qStart ? 'hsp' : 'trim', vis: k + 1 <= reveal.l, run: t.score }));
+        s.beyondR.forEach(t => cols.set(t.q, { kind: 'beyond', vis: reveal.done, run: t.score }));
+        s.beyondL.forEach(t => cols.set(t.q, { kind: 'beyond', vis: reveal.done, run: t.score }));
+        const keys = [...cols.keys()].sort((a, b) => a - b);
+        const lo = keys[0], hi = keys[keys.length - 1];
+        const cell = (cls, txt, title = '') => `<span class="bl-xc ${cls}"${title ? ` title="${title}"` : ''}>${txt}</span>`;
+        let rq = '', rm = '', rs = '', rp = '', rr = '';
+        for (let qi = lo; qi <= hi; qi++) {
+            const c = cols.get(qi), si = qi + off;
+            if (!c || !c.vis) { rq += cell('bl-xhide', ''); rm += cell('bl-xhide', ''); rs += cell('bl-xhide', ''); rp += cell('bl-xhide', ''); rr += cell('bl-xhide', ''); continue; }
+            const a = q[qi], b = sub[si], sc = this.B.sub(P, a, b);
+            const cls = 'bl-x' + c.kind;
+            rq += cell(cls, a, `query ${qi + 1}`);
+            rm += cell(cls + ' bl-xmid', a === b ? '|' : sc > 0 ? '+' : '');
+            rs += cell(cls, b, `subject ${si + 1}`);
+            rp += cell(cls + (sc > 0 ? ' bl-xpos' : sc < 0 ? ' bl-xneg' : ''), sc > 0 ? '+' + sc : sc);
+            rr += cell(cls + ' bl-xrun', c.kind === 'seed' ? '' : c.run);
+        }
+        const row = (label, html) => `<div class="bl-xrow"><span class="bl-xlab">${label}</span>${html}</div>`;
+        return `<div class="bl-xstrip">${row('Query', rq)}${row('', rm)}${row('Sbjct', rs)}${row('pair score', rp)}${row('running', rr)}</div>
+            <div class="bl-legend bl-xlegend"><span><i class="bl-xseed"></i> seed word</span><span><i class="bl-xhsp"></i> kept in the HSP</span><span><i class="bl-xtrim"></i> explored, then trimmed off (after the best point)</span><span><i class="bl-xbeyond"></i> beyond the X-drop stop – never looked at by BLAST</span></div>`;
+    }
+
+    // The chart follows the algorithm's order: seed, steps to the right, then steps to the left
+    // (the left extension starts from the best score reached on the right). After the replay the
+    // faded continuation shows what the running score would have done beyond each stop point.
+    drawXdrop(svg, reveal = { r: Infinity, l: Infinity, done: true }) {
         const s = this.xdropSeries();
         if (!s) return;
         const P = this.result.params;
-        const pts = [{ i: 0, score: s.seedScore, best: s.seedScore, label: 'seed' }];
-        s.right.forEach((t, k) => pts.push({ i: k + 1, score: t.score, best: Math.max(t.best, t.score), side: 'R', q: t.q }));
-        const nR = s.right.length;
-        s.left.forEach((t, k) => pts.push({ i: nR + k + 1, score: t.score, best: Math.max(t.best, t.score), side: 'L', q: t.q }));
-        const shown = pts.filter(p => p.i === 0 || (p.side === 'R' && p.i <= reveal.r) || (p.side === 'L' && p.i - nR <= reveal.l));
-        const W = 760, H = 220, ml = 44, mr = 14, mt = 18, mb = 34;
-        const N = pts.length - 1 || 1;
-        const minS = Math.min(0, ...pts.map(p => p.best - P.xDrop)), maxS = Math.max(...pts.map(p => p.best)) + 2;
+        const nR = s.right.length, nBR = s.beyondR.length, nL = s.left.length;
+        const pts = [{ i: 0, score: s.seedScore, best: s.seedScore }];
+        s.right.forEach((t, k) => pts.push({ i: k + 1, score: t.score, best: Math.max(t.best, t.score), side: 'R', k: k + 1 }));
+        const bR = s.beyondR.map((t, k) => ({ i: nR + k + 1, score: t.score }));
+        const Lstart = nR + nBR;
+        s.left.forEach((t, k) => pts.push({ i: Lstart + k + 1, score: t.score, best: Math.max(t.best, t.score), side: 'L', k: k + 1 }));
+        const bL = s.beyondL.map((t, k) => ({ i: Lstart + nL + k + 1, score: t.score }));
+        const shownR = pts.filter(p => p.i === 0 || (p.side === 'R' && p.k <= reveal.r));
+        const shownL = pts.filter(p => p.side === 'L' && p.k <= reveal.l);
+        const W = 760, H = 230, ml = 44, mr = 14, mt = 18, mb = 38;
+        const N = Math.max(1, Lstart + nL + bL.length);
+        const all = pts.concat(bR, bL);
+        const minS = Math.min(0, ...pts.map(p => p.best - P.xDrop), ...all.map(p => p.score)), maxS = Math.max(...pts.map(p => p.best)) + 2;
         const x = i => ml + i / N * (W - ml - mr);
         const y = v => mt + (1 - (v - minS) / ((maxS - minS) || 1)) * (H - mt - mb);
-        const line = (arr, color, key, dash) => arr.length > 1 ? `<polyline fill="none" stroke="${color}" stroke-width="2"${dash ? ' stroke-dasharray="4,3"' : ''} points="${arr.map(p => `${x(p.i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ')}"/>` : '';
+        const line = (arr, color, key, extra = '') => arr.length > 1 ? `<polyline fill="none" stroke="${color}" stroke-width="2" ${extra} points="${arr.map(p => `${x(p.i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(' ')}"/>` : '';
         let h = `<rect x="0" y="0" width="${W}" height="${H}" fill="white"/>`;
         h += `<line x1="${ml}" y1="${y(0)}" x2="${W - mr}" y2="${y(0)}" stroke="#cbd5e0"/>`;
-        // phase bands
         h += `<rect x="${x(0)}" y="${mt}" width="${x(nR) - x(0)}" height="${H - mt - mb}" fill="rgba(37,99,235,0.05)"/>`;
         h += `<text x="${x(0) + 4}" y="${H - mb + 12}" font-size="10" fill="#2563eb">→ extending right (${nR} steps)</text>`;
-        if (s.left.length) h += `<text x="${x(nR) + 4}" y="${H - mb + 12}" font-size="10" fill="#7a3e1d">← extending left (${s.left.length} steps)</text>`;
-        const R = shown.filter(p => p.side !== 'L'), L = shown.filter(p => p.i === nR || p.side === 'L');
-        for (const arr of [R, L]) {
-            h += line(arr.map(p => ({ i: p.i, v: p.best - P.xDrop })), '#dc2626', 'v', true);
+        if (nL) h += `<text x="${x(Lstart) + 4}" y="${H - mb + 12}" font-size="10" fill="#7a3e1d">← extending left (${nL} steps)</text>`;
+        const Lline = shownL.length ? [{ i: Lstart, score: s.bestR, best: s.bestR }].concat(shownL) : [];
+        for (const arr of [shownR, Lline]) {
+            h += line(arr.map(p => ({ i: p.i, v: p.best - P.xDrop })), '#dc2626', 'v', 'stroke-dasharray="4,3"');
             h += line(arr, '#16a34a', 'best');
             h += line(arr, '#d97706', 'score');
         }
-        h += `<circle cx="${x(0)}" cy="${y(s.seedScore)}" r="4" fill="#2563eb"/><text x="${x(0) + 6}" y="${y(s.seedScore) - 6}" font-size="10" fill="#2563eb">seed word = ${s.seedScore}</text>`;
-        const last = shown[shown.length - 1];
+        if (reveal.done) {
+            const fade = (arr, from) => arr.length ? line([from].concat(arr), '#a0aec0', 'score', 'stroke-dasharray="2,3"') : '';
+            h += fade(bR, pts.find(p => p.side === 'R' && p.k === nR) || pts[0]);
+            h += fade(bL, pts.find(p => p.side === 'L' && p.k === nL) || { i: Lstart, score: s.bestR });
+            if (bR.length) h += `<text x="${x(nR + 1)}" y="${y(bR[bR.length - 1].score) + 12}" font-size="9" fill="#718096">beyond the stop</text>`;
+            if (bL.length) h += `<text x="${x(Lstart + nL + 1)}" y="${y(bL[bL.length - 1].score) + 12}" font-size="9" fill="#718096">beyond the stop</text>`;
+        }
+        h += `<circle cx="${x(0)}" cy="${y(s.seedScore)}" r="4" fill="#2563eb"/><text x="${x(0) + 6}" y="${y(s.seedScore) + 16}" font-size="10" fill="#2563eb">seed word = ${s.seedScore}</text>`;
+        const last = shownL.length ? shownL[shownL.length - 1] : shownR[shownR.length - 1];
         if (last && last.i > 0) h += `<circle cx="${x(last.i)}" cy="${y(last.score)}" r="4" fill="#d97706"/>`;
-        if (reveal.r === Infinity && reveal.l === Infinity) {
+        if (reveal.done) {
             const bestPt = pts.reduce((b, p) => p.score > b.score ? p : b, pts[0]);
             h += `<text x="${Math.min(x(bestPt.i), W - 120)}" y="${y(bestPt.score) - 6}" font-size="10" fill="#16a34a">HSP score ${s.h.score}</text>`;
         }
-        h += `<text x="${W / 2}" y="${H - 4}" font-size="10" text-anchor="middle" fill="#4a5568">extension steps in the order the algorithm takes them; stops when the running score falls to the dashed line</text>`;
+        h += `<text x="${W / 2}" y="${H - 6}" font-size="10" text-anchor="middle" fill="#4a5568">extension steps in the order the algorithm takes them; each side stops when the running score falls to the dashed red line</text>`;
         h += `<text x="8" y="${y(maxS - 2) + 4}" font-size="10" fill="#4a5568">${maxS - 2}</text><text x="8" y="${y(0) + 4}" font-size="10" fill="#4a5568">0</text>`;
-        h += `<g font-size="10"><rect x="${W - 190}" y="${mt}" width="180" height="46" fill="white" stroke="#e2e8f0"/><line x1="${W - 182}" y1="${mt + 12}" x2="${W - 160}" y2="${mt + 12}" stroke="#d97706" stroke-width="2"/><text x="${W - 154}" y="${mt + 15}">running score</text><line x1="${W - 182}" y1="${mt + 25}" x2="${W - 160}" y2="${mt + 25}" stroke="#16a34a" stroke-width="2"/><text x="${W - 154}" y="${mt + 28}">best so far</text><line x1="${W - 182}" y1="${mt + 38}" x2="${W - 160}" y2="${mt + 38}" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><text x="${W - 154}" y="${mt + 41}">best − X (stop line)</text></g>`;
+        h += `<g font-size="10"><rect x="${W - 190}" y="${mt}" width="180" height="58" fill="white" stroke="#e2e8f0"/><line x1="${W - 182}" y1="${mt + 12}" x2="${W - 160}" y2="${mt + 12}" stroke="#d97706" stroke-width="2"/><text x="${W - 154}" y="${mt + 15}">running score</text><line x1="${W - 182}" y1="${mt + 25}" x2="${W - 160}" y2="${mt + 25}" stroke="#16a34a" stroke-width="2"/><text x="${W - 154}" y="${mt + 28}">best so far</text><line x1="${W - 182}" y1="${mt + 38}" x2="${W - 160}" y2="${mt + 38}" stroke="#dc2626" stroke-width="2" stroke-dasharray="4,3"/><text x="${W - 154}" y="${mt + 41}">best − X (stop line)</text><line x1="${W - 182}" y1="${mt + 51}" x2="${W - 160}" y2="${mt + 51}" stroke="#a0aec0" stroke-width="2" stroke-dasharray="2,3"/><text x="${W - 154}" y="${mt + 54}">beyond the stop</text></g>`;
         svg.innerHTML = h;
+    }
+
+    // keep the seed in view in the (horizontally scrolling) extension strip
+    centerStrip() {
+        const box = this.$('step-content').querySelector('.bl-xstrip');
+        const seed = box && box.querySelector('.bl-xseed');
+        if (seed) box.scrollLeft = Math.max(0, seed.offsetLeft - box.clientWidth / 2);
     }
 
     animateXdrop() {
         const svg = this.$('step-content').querySelector('#xdrop-chart');
+        const strip = this.$('xdrop-strip');
         const s = this.xdropSeries();
         if (!svg || !s) return;
         if (this.anim) clearInterval(this.anim);
         let r = 0, l = 0;
-        this.drawXdrop(svg, { r: 0, l: 0 });
+        const draw = rev => { this.drawXdrop(svg, rev); if (strip) { const old = strip.querySelector('.bl-xstrip'), x = old ? old.scrollLeft : 0; strip.innerHTML = this.extensionStrip(rev); const nw = strip.querySelector('.bl-xstrip'); if (nw) nw.scrollLeft = x; } };
+        draw({ r: 0, l: 0, done: false });
         this.anim = setInterval(() => {
             if (r < s.right.length) r++;
             else if (l < s.left.length) l++;
-            else { clearInterval(this.anim); this.anim = null; this.drawXdrop(svg); return; }
-            this.drawXdrop(svg, { r, l });
-        }, 110);
+            else { clearInterval(this.anim); this.anim = null; draw({ r: Infinity, l: Infinity, done: true }); return; }
+            draw({ r, l, done: false });
+        }, 180);
     }
 
     // ---- step 5: gapped extension
@@ -404,16 +482,35 @@ class BlastLab {
         const r = this.result;
         if (!r.results.length) return '<h3>Step 5 – Gapped extension</h3><p>No HSPs to extend.</p>';
         const g = r.results[this.selectedHsp];
-        const list = r.results.map((x, k) => `<button class="bl-hspbtn ${k === this.selectedHsp ? 'sel' : ''}" data-hsp="${k}">${r.db[x.subject].name} · HSP ${x.hsp.score} → gapped ${x.score}</button>`).join('');
+        const list = r.results.map((x, k) => `<button class="bl-hspbtn ${k === this.selectedHsp ? 'sel' : ''}" data-hsp="${k}">${r.db[x.subject].name} · ${x.hspsIncluded.length > 1 ? `${x.hspsIncluded.length} HSPs` : `HSP ${x.hsp.score}`} → gapped ${x.score}</button>`).join('');
+        // every HSP of this subject and what happened to it
+        const subjHsps = r.hsps.filter(h => h.subject === g.subject);
+        const role = h => {
+            if (h === g.hsp) return '<strong>starting point</strong> of the selected gapped alignment';
+            const inside = g.qStart <= h.qStart + 1 && g.qEnd >= h.qEnd + 1 && g.sStart <= h.sStart + 1 && g.sEnd >= h.sEnd + 1;
+            if (g.hspsIncluded.includes(h) || inside) return 'lies inside the selected gapped alignment – not extended again';
+            const other = r.results.find(x => x.hspsIncluded.includes(h));
+            return other ? 'starting point of another gapped alignment' : 'not extended (not among the best HSPs)';
+        };
+        const hspRows = subjHsps.map((h, k) => `<tr class="${g.hspsIncluded.includes(h) || /inside|starting point<\/strong>/.test(role(h)) ? 'sel' : ''}"><td>${k + 1}</td><td>${h.diag >= 0 ? '+' : ''}${h.diag}</td><td>${h.qStart + 1}–${h.qEnd + 1}</td><td>${h.sStart + 1}–${h.sEnd + 1}</td><td>${h.length}</td><td>${h.score}</td><td>${role(h)}</td></tr>`).join('');
+        const inc = g.hspsIncluded;
+        const hspLen = inc.reduce((t, h) => t + h.length, 0);
+        const diags = new Set(inc.map(h => h.diag));
         return `
             <h3>Step 5 – Gapped extension</h3>
-            <p>An HSP whose score is high enough is used as the centre of a proper local alignment: dynamic programming (Smith–Waterman with affine gaps, open ${r.params.gapOpen}, extend ${r.params.gapExtend}) is run only in a window of ±${r.opts.gappedWindow} around the HSP, not over the whole sequences. Gaps can now bridge indels that the ungapped extension had to stop at.</p>
+            <p>An HSP whose score is high enough is used as the centre of a proper local alignment: dynamic programming (Smith–Waterman with affine gaps, open ${r.params.gapOpen}, extend ${r.params.gapExtend}) is run only in a window of ±${r.opts.gappedWindow} around the HSP, not over the whole sequences. Gaps can now bridge the insertions and deletions at which the ungapped extension had to stop, and join HSPs that lie on neighbouring diagonals into one alignment.</p>
             <div class="bl-chips">${list}</div>
-            ${this.hitMapHtml()}
+            ${this.hitMapHtml(g.subject)}
+            <h4>HSPs found on ${r.db[g.subject].name}</h4>
+            <table class="bl-table"><thead><tr><th>#</th><th>diagonal</th><th>query</th><th>subject</th><th>length</th><th>score</th><th>role</th></tr></thead><tbody>${hspRows}</tbody></table>
+            <p>${inc.length > 1
+                ? `The gapped alignment joins <strong>${inc.length} HSPs</strong> (${inc.map(h => h.length).join(' + ')} = ${hspLen} positions${diags.size > 1 ? ` on ${diags.size} different diagonals` : ''}) into one alignment of <strong>${g.length} columns with ${g.gaps} gap position${g.gaps === 1 ? '' : 's'}</strong>. In the dotplot the path steps sideways (gap in the query) or down (gap in the subject) where the diagonals change.`
+                : g.gaps ? `The gapped alignment (${g.length} columns, ${g.gaps} gap positions) extends the ${g.hsp.length}-position HSP across ${g.gaps === 1 ? 'a gap' : 'gaps'}.`
+                : `This alignment needs no gap: it is the HSP, possibly extended a little at the ends.`}</p>
             <pre class="bl-aln">${this.alignmentBlock(g)}</pre>
             <table class="bl-table"><tbody>
-                <tr><td>Ungapped HSP score</td><td>${g.hsp.score} over ${g.hsp.length} positions</td></tr>
-                <tr><td>Gapped alignment score</td><td><strong>${g.score}</strong> over ${g.length} columns</td></tr>
+                <tr><td>Ungapped HSP${inc.length > 1 ? 's' : ''}</td><td>${inc.map(h => `score ${h.score} over ${h.length} positions (query ${h.qStart + 1}–${h.qEnd + 1})`).join('<br>')}</td></tr>
+                <tr><td>Gapped alignment score</td><td><strong>${g.score}</strong> over ${g.length} columns (query ${g.qStart}–${g.qEnd}, subject ${g.sStart}–${g.sEnd})</td></tr>
                 <tr><td>Identities / positives / gaps</td><td>${g.identities}/${g.length} (${Math.round(g.identities / g.length * 100)} %) · ${g.positives}/${g.length} · ${g.gaps}</td></tr>
                 <tr><td>Matrix cells computed for this alignment</td><td>${g.cells.toLocaleString()} (a full Smith–Waterman of these two sequences: ${(r.query.length * r.db[g.subject].seq.length).toLocaleString()})</td></tr>
             </tbody></table>
@@ -424,7 +521,7 @@ class BlastLab {
     renderStats() {
         const r = this.result, s = r.stats, P = r.params;
         const ka = s.kaG, cut = this.ecut();
-        const rows = r.results.filter(x => x.evalue <= cut).map((x, k) => `<tr class="${k === this.selectedHsp ? 'sel' : ''}" data-hsp="${k}"><td>${r.db[x.subject].name}</td><td>${this.truthTag(r.db[x.subject].truth)}</td><td>${x.score}</td><td>${x.bits.toFixed(1)}</td><td><strong>${this.fmtE(x.evalue)}</strong></td><td>${x.identities}/${x.length} (${Math.round(x.identities / x.length * 100)} %)</td><td>${x.gaps}</td><td>${x.qStart}–${x.qEnd}</td><td>${x.sStart}–${x.sEnd}</td></tr>`).join('');
+        const rows = r.results.map((x, k) => ({ x, k })).filter(o => o.x.evalue <= cut).map(({ x, k }) => `<tr class="${k === this.selectedHsp ? 'sel' : ''}" data-hsp="${k}"><td>${r.db[x.subject].name}</td><td>${this.truthTag(r.db[x.subject].truth)}</td><td>${x.score}</td><td>${x.bits.toFixed(1)}</td><td><strong>${this.fmtE(x.evalue)}</strong></td><td>${x.identities}/${x.length} (${Math.round(x.identities / x.length * 100)} %)</td><td>${x.gaps}</td><td>${x.qStart}–${x.qEnd}</td><td>${x.sStart}–${x.sEnd}</td></tr>`).join('');
         const best = r.results[this.selectedHsp];
         const missed = r.db.filter((d, i) => d.truth && (d.truth.kind === 'homolog' || d.truth.kind === 'synonymous') && !r.results.some(x => x.subject === i && x.evalue <= cut));
         const bitsFormula = best ? `S′ = (λ·S − ln K) / ln 2 = (${ka.lambda} × ${best.score} − ln ${ka.K}) / 0.693 = <strong>${best.bits.toFixed(1)} bits</strong>` : '';
@@ -441,6 +538,11 @@ class BlastLab {
             </tbody></table>
             <h4>Hit table (E ≤ ${this.ecutLabel(+this.$('ecut').value)})</h4>
             ${rows ? `<table class="bl-table bl-hits"><thead><tr><th>subject</th><th>planted</th><th>score</th><th>bits</th><th>E</th><th>identities</th><th>gaps</th><th>query</th><th>subject</th></tr></thead><tbody>${rows}</tbody></table>` : '<p class="dp-hint">Nothing passes the E-value cutoff.</p>'}
+            ${best && best.evalue <= cut ? `<h4>Alignment of the selected hit – ${r.db[best.subject].name} <span class="dp-hint">(click a row to choose another)</span></h4>
+            <pre class="bl-aln">Score = ${best.bits.toFixed(1)} bits (${best.score}), Expect = ${this.fmtE(best.evalue)}
+Identities = ${best.identities}/${best.length} (${Math.round(best.identities / best.length * 100)}%), Positives = ${best.positives}/${best.length} (${Math.round(best.positives / best.length * 100)}%), Gaps = ${best.gaps}/${best.length} (${Math.round(best.gaps / best.length * 100)}%)
+
+${this.alignmentBlock(best)}</pre>` : ''}
             ${missed.length ? `<p class="reverse-color"><strong>Missed:</strong> ${missed.map(d => `${d.name} (${this.truthTag(d.truth)})`).join(', ')} – planted homologs that produced no reportable alignment with these parameters.</p>` : '<p class="forward-color"><strong>All planted homologs found.</strong></p>'}
             <div class="bl-lesson"><strong>Reading E-values.</strong> E ≈ 10<sup>−30</sup>: unmistakable. E ≈ 0.001: probably real. E ≈ 1: one such hit is expected by chance in this database – it means nothing on its own. E scales with the database: drag the "pretend the database is larger" slider and watch a decent hit become noise. Bit scores do not change with database size – that is why they are the better number to compare between searches.</div>`;
     }

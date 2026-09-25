@@ -219,7 +219,22 @@ const BlastEngine = (() => {
         }
         const finalScore = bestL;
         const qStart = bestStart, qEnd = bestEnd, sStart = s0 - (q0 - bestStart), sEnd = s0 + (bestEnd - q0);
-        return { qStart, qEnd, sStart, sEnd, score: finalScore, diag: seed.diag, seed, traceR, traceL, length: qEnd - qStart + 1 };
+        // for teaching only: what the running score would have done had the extension not stopped
+        const beyond = (trace, dir) => {
+            const out = [];
+            const last = trace[trace.length - 1];
+            if (!last || last.score > last.best - p.xDrop) return out;       // ended at a sequence end, not by X-drop
+            let cur = last.score;
+            for (let qi = last.q + dir, k = 0; k < 15; qi += dir, k++) {
+                const si = s0 + (qi - q0);
+                if (qi < 0 || si < 0 || qi >= q.length || si >= s.length) break;
+                cur += sub(p, q[qi], s[si]);
+                out.push({ q: qi, score: cur });
+            }
+            return out;
+        };
+        const beyondR = beyond(traceR, 1), beyondL = beyond(traceL, -1);
+        return { qStart, qEnd, sStart, sEnd, score: finalScore, diag: seed.diag, seed, traceR, traceL, beyondR, beyondL, length: qEnd - qStart + 1 };
     }
 
     function hsps(query, db, seedResult, p, span) {
@@ -288,6 +303,9 @@ const BlastEngine = (() => {
         let gappedCells = 0;
         const perSubjectDone = {};
         for (const h of hs.slice(0, o.maxGapped)) {
+            // as in BLAST: an HSP that lies inside a gapped alignment already made is not extended again
+            const host = results.find(x => x.subject === h.subject && x.qStart <= h.qStart + 1 && x.qEnd >= h.qEnd + 1 && x.sStart <= h.sStart + 1 && x.sEnd >= h.sEnd + 1);
+            if (host) { host.hspsIncluded.push(h); continue; }
             const g = extendGapped(q, dbm[h.subject].seq, h, p, o.gappedWindow);
             gappedCells += g.cells;
             // the same gapped alignment is often reached from several HSPs – keep one
@@ -295,7 +313,7 @@ const BlastEngine = (() => {
             if (perSubjectDone[key]) continue;
             perSubjectDone[key] = true;
             const bits = bitScore(g.score, kaG);
-            results.push(Object.assign({ subject: h.subject, hsp: h, bits, evalue: evalue(bits, eff.m, eff.n), ungappedBits: bitScore(h.score, kaU) }, g));
+            results.push(Object.assign({ subject: h.subject, hsp: h, hspsIncluded: [h], bits, evalue: evalue(bits, eff.m, eff.n), ungappedBits: bitScore(h.score, kaU) }, g));
         }
         results.sort((a, b) => a.evalue - b.evalue);
         return {
@@ -378,6 +396,17 @@ const BlastEngine = (() => {
         return a.join('');
     }
     function randomProtein(rng, len) { return rng.seq(len, AA); }
+    // n indels of 1–4 residues, away from the ends (so the gapped extension has something to bridge)
+    function addIndels(rng, seq, n, alphabet) {
+        let s = seq;
+        const slots = [];
+        for (let k = 0; k < n; k++) slots.push(Math.round((k + 1) * s.length / (n + 1)) + rng.int(-4, 4));
+        for (const pos of slots.sort((a, b) => b - a)) {
+            const len = rng.int(1, 4);
+            s = rng.chance(0.5) ? s.slice(0, pos) + rng.seq(len, alphabet) + s.slice(pos) : s.slice(0, pos) + s.slice(pos + len);
+        }
+        return s;
+    }
     function randomCoding(rng, ncodons) { let s = 'ATG'; while (s.length < ncodons * 3) { const c = rng.seq(3); if (CODON[c] !== '*') s += c; } return s; }
     // synonymous variant: change third positions where the amino acid is preserved
     function synonymousVariant(rng, dna, fraction) {
@@ -399,9 +428,9 @@ const BlastEngine = (() => {
             build(rng) {
                 const core = rng.seq(70), query = rng.seq(10) + core + rng.seq(10);
                 const db = [];
-                for (const id of [0.95, 0.85, 0.75, 0.65, 0.50]) db.push({ name: `homolog_${Math.round(id * 100)}`, seq: rng.seq(rng.int(20, 60)) + mutateDna(rng, core, id) + rng.seq(rng.int(20, 60)), truth: { kind: 'homolog', identity: id } });
+                for (const [id, nIndel] of [[0.95, 1], [0.85, 1], [0.75, 2], [0.65, 2], [0.50, 1]]) db.push({ name: `homolog_${Math.round(id * 100)}`, seq: rng.seq(rng.int(20, 60)) + addIndels(rng, mutateDna(rng, core, id), nIndel, 'ACGT') + rng.seq(rng.int(20, 60)), truth: { kind: 'homolog', identity: id, indels: nIndel } });
                 for (let k = 1; k <= 3; k++) db.push({ name: `unrelated_${k}`, seq: rng.seq(rng.int(120, 180)), truth: { kind: 'unrelated' } });
-                return { query, db, note: 'The database holds five copies of the query core at planted identities (95–50 %) inside random flanks, plus three unrelated sequences.' };
+                return { query, db, note: 'The database holds five copies of the query core at planted identities (95–50 %) inside random flanks, each with one or two small insertions/deletions, plus three unrelated sequences.' };
             }
         },
         'protein-family': {
@@ -410,9 +439,9 @@ const BlastEngine = (() => {
             build(rng) {
                 const core = randomProtein(rng, 60), query = randomProtein(rng, 8) + core + randomProtein(rng, 8);
                 const db = [];
-                for (const id of [0.90, 0.70, 0.50, 0.35]) db.push({ name: `homolog_${Math.round(id * 100)}`, seq: randomProtein(rng, rng.int(15, 40)) + mutateProtein(rng, core, id) + randomProtein(rng, rng.int(15, 40)), truth: { kind: 'homolog', identity: id } });
+                for (const [id, nIndel] of [[0.90, 1], [0.70, 1], [0.50, 2], [0.35, 1]]) db.push({ name: `homolog_${Math.round(id * 100)}`, seq: randomProtein(rng, rng.int(15, 40)) + addIndels(rng, mutateProtein(rng, core, id), nIndel, AA) + randomProtein(rng, rng.int(15, 40)), truth: { kind: 'homolog', identity: id, indels: nIndel } });
                 for (let k = 1; k <= 3; k++) db.push({ name: `unrelated_${k}`, seq: randomProtein(rng, rng.int(100, 150)), truth: { kind: 'unrelated' } });
-                return { query, db, note: 'Four homologs of the query core with mostly conservative substitutions, plus three unrelated proteins.' };
+                return { query, db, note: 'Four homologs of the query core with mostly conservative substitutions and one or two small insertions/deletions each, plus three unrelated proteins.' };
             }
         },
         'low-complexity': {

@@ -1914,6 +1914,23 @@ kbd {
 .bl-exp h4 { font-size: 0.95em; margin: 10px 0 4px; }
 .bl-two { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 @media (max-width: 900px) { .bl-two { grid-template-columns: 1fr; } }
+.bl-dpcap { font-size: 0.88em; color: #4a5568; margin: 8px 0 4px; }
+.bl-xstrip { position: relative; overflow-x: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 4px; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+.bl-xrow { display: flex; white-space: nowrap; }
+.bl-xlab { flex: 0 0 70px; position: sticky; left: 0; background: #fff; z-index: 1; font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #718096; text-align: right; padding-right: 6px; line-height: 20px; }
+.bl-xc { display: inline-block; flex-shrink: 0; width: 19px; height: 20px; line-height: 20px; text-align: center; font-size: 12px; }
+.bl-xrow:nth-child(4) .bl-xc, .bl-xrow:nth-child(5) .bl-xc { font-size: 9px; }
+.bl-xmid { color: #4a5568; }
+.bl-xseed { background: #dbeafe; font-weight: 700; }
+.bl-xhsp { background: #fdebc8; }
+.bl-xtrim { background: #f1f5f9; color: #64748b; }
+.bl-xbeyond { background: repeating-linear-gradient(135deg, #fff, #fff 3px, #f1f5f9 3px, #f1f5f9 6px); color: #a0aec0; }
+.bl-xpos { color: #15803d; font-weight: 700; }
+.bl-xneg { color: #b91c1c; }
+.bl-xbeyond.bl-xpos, .bl-xbeyond.bl-xneg { font-weight: 400; opacity: 0.6; }
+.bl-xrun { color: #b45309; }
+.bl-xhide { visibility: hidden; }
+.bl-xlegend i { width: 14px !important; height: 12px !important; border: 1px solid #e2e8f0; }
 
 /* =========================================================================
    HMM Explorer (hmm.html)
