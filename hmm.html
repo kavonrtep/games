@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HMM Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>HMM Explorer <span class="dp-sub">hidden states · pair HMM · profile HMM</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="msa.html" class="back-link dp-right-link">MSA Workbench →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="basics">1 · HMM basics</button>
+                    <button class="bl-tab" data-tab="pair">2 · Pair HMM: alignment</button>
+                    <button class="bl-tab" data-tab="profile">3 · Profile HMM: families</button>
+                    <button class="bl-tab" data-tab="quiz">Check your understanding</button>
+                </div>
+
+                <section id="tab-basics" class="bl-panel">
+                    <div class="bl-steps" data-part="basics">
+                        <button class="bl-step active" data-step="1"><span>1</span>Hidden states</button>
+                        <button class="bl-step" data-step="2"><span>2</span>Generating</button>
+                        <button class="bl-step" data-step="3"><span>3</span>One path</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Viterbi</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Forward</button>
+                        <button class="bl-step" data-step="6"><span>6</span>Posterior</button>
+                        <button class="bl-step" data-step="7"><span>7</span>Learning</button>
+                    </div>
+                    <div id="basics-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button class="step-prev" data-part="basics">◀ Previous</button>
+                        <button class="step-next primary" data-part="basics">Next ▶</button>
+                    </div>
+                </section>
+
+                <section id="tab-pair" class="bl-panel" hidden>
+                    <div class="bl-steps" data-part="pair">
+                        <button class="bl-step active" data-step="1"><span>1</span>The pair HMM</button>
+                        <button class="bl-step" data-step="2"><span>2</span>Alignment = path</button>
+                        <button class="bl-step" data-step="3"><span>3</span>Viterbi = Gotoh</button>
+                        <button class="bl-step" data-step="4"><span>4</span>All alignments</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Posterior confidence</button>
+                    </div>
+                    <div id="pair-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button class="step-prev" data-part="pair">◀ Previous</button>
+                        <button class="step-next primary" data-part="pair">Next ▶</button>
+                    </div>
+                </section>
+
+                <section id="tab-profile" class="bl-panel" hidden>
+                    <div class="bl-steps" data-part="profile">
+                        <button class="bl-step active" data-step="1"><span>1</span>Architecture</button>
+                        <button class="bl-step" data-step="2"><span>2</span>Probabilities</button>
+                        <button class="bl-step" data-step="3"><span>3</span>A generator</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Aligning</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Scores &amp; E-values</button>
+                        <button class="bl-step" data-step="6"><span>6</span>PSSM vs HMM</button>
+                        <button class="bl-step" data-step="7"><span>7</span>HMMER vs BLAST</button>
+                    </div>
+                    <div id="profile-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button class="step-prev" data-part="profile">◀ Previous</button>
+                        <button class="step-next primary" data-part="profile">Next ▶</button>
+                    </div>
+                </section>
+
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Every question is generated with fresh numbers and checked by the same engine that drives the three parts. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row">
+                        <button id="quiz-new" class="primary">New questions</button>
+                        <span class="dp-hint" id="quiz-seed"></span>
+                    </div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <!-- part 1 -->
+                <section class="scoring-controls" data-for="basics">
+                    <h2>Model</h2>
+                    <div class="at-example" style="margin-bottom:8px">
+                        <select id="b-model"></select>
+                    </div>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Transition probabilities</label>
+                        <div class="controls-grid">
+                            <div class="control-group"><label for="b-stay0">Stay in <span class="b-name0"></span>: <span id="b-stay0-value"></span></label><input type="range" id="b-stay0" min="0.5" max="0.995" step="0.005"></div>
+                            <div class="control-group"><label for="b-stay1">Stay in <span class="b-name1"></span>: <span id="b-stay1-value"></span></label><input type="range" id="b-stay1" min="0.5" max="0.995" step="0.005"></div>
+                        </div>
+                        <p class="dp-hint">Leaving probability = 1 − stay. Expected run length in a state = 1 / (1 − stay).</p>
+                    </div>
+                    <div class="at-param-group">
+                        <label class="at-param-title">Emission probabilities</label>
+                        <div id="b-emit"></div>
+                        <p class="dp-hint">Edit a value and press Enter: the row is rescaled to sum to 1.</p>
+                        <button id="b-reset-model">Reset model</button>
+                    </div>
+                </section>
+                <section data-for="basics">
+                    <h2>Sequence</h2>
+                    <div class="control-group"><label for="b-length">Length: <span id="b-length-value"></span></label><input type="range" id="b-length" min="8" max="200" step="1"></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="b-generate" class="primary">Generate a new sequence</button>
+                    </div>
+                    <div class="dp-answer-row" style="margin-top:8px">
+                        <input type="text" id="b-own" spellcheck="false" placeholder="…or type your own" class="hm-textin">
+                        <button id="b-use-own">Use</button>
+                    </div>
+                    <div id="b-seqinfo" class="dp-hint"></div>
+                </section>
+
+                <!-- part 2 -->
+                <section class="scoring-controls" data-for="pair" hidden>
+                    <h2>Sequences <span id="p-type" class="at-badge"></span></h2>
+                    <div class="at-example" style="margin-bottom:8px"><select id="p-example"></select></div>
+                    <div class="hm-inputs">
+                        <label for="p-x">Sequence 1 (x, horizontal)</label>
+                        <input type="text" id="p-x" spellcheck="false" class="hm-textin">
+                        <label for="p-y">Sequence 2 (y, vertical)</label>
+                        <input type="text" id="p-y" spellcheck="false" class="hm-textin">
+                        <div class="dp-buttons input-controls" style="margin-top:6px">
+                            <button id="p-apply" class="primary">Use these sequences</button>
+                            <button id="p-sample" title="Let the pair HMM generate an aligned pair">Generate a pair from the model</button>
+                        </div>
+                    </div>
+                    <p class="dp-hint" id="p-note"></p>
+                </section>
+                <section class="scoring-controls" data-for="pair" hidden>
+                    <h2>Pair-HMM parameters</h2>
+                    <div class="controls-grid">
+                        <div class="control-group"><label for="p-delta">δ – open a gap: <span id="p-delta-value"></span></label><input type="range" id="p-delta" min="0.005" max="0.2" step="0.005"></div>
+                        <div class="control-group"><label for="p-epsilon">ε – extend a gap: <span id="p-epsilon-value"></span></label><input type="range" id="p-epsilon" min="0.05" max="0.9" step="0.05"></div>
+                        <div class="control-group"><label for="p-tau">τ – end: <span id="p-tau-value"></span></label><input type="range" id="p-tau" min="0.005" max="0.1" step="0.005"></div>
+                        <div class="control-group" id="p-pid-group"><label for="p-pid">P(identical pair) in M: <span id="p-pid-value"></span></label><input type="range" id="p-pid" min="0.3" max="0.99" step="0.01"></div>
+                    </div>
+                    <p class="dp-hint" id="p-emit-note"></p>
+                </section>
+
+                <!-- part 3 -->
+                <section class="scoring-controls" data-for="profile" hidden>
+                    <h2>Family alignment <span id="f-type" class="at-badge"></span></h2>
+                    <div class="at-example" style="margin-bottom:8px"><select id="f-example"></select><button id="f-reroll" title="New random family" hidden>⟳</button></div>
+                    <textarea id="f-msa" rows="6" spellcheck="false" class="hm-msa-in"></textarea>
+                    <div class="dp-buttons input-controls">
+                        <button id="f-build" class="primary">Build the model from this alignment</button>
+                    </div>
+                    <p class="dp-hint" id="f-note"></p>
+                </section>
+                <section class="scoring-controls" data-for="profile" hidden>
+                    <h2>hmmbuild settings</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="f-occ">Match column if residues in ≥ <span id="f-occ-value"></span> % of sequences</label><input type="range" id="f-occ" min="10" max="100" step="5" value="50"></div>
+                        <div class="control-group"><label for="f-epseudo">Emission pseudocount A: <span id="f-epseudo-value"></span></label><input type="range" id="f-epseudo" min="0" max="10" step="0.5" value="1"></div>
+                        <div class="control-group"><label for="f-tpseudo">Transition pseudocount: <span id="f-tpseudo-value"></span></label><input type="range" id="f-tpseudo" min="0" max="3" step="0.1" value="1"></div>
+                    </div>
+                    <div class="dp-mode" id="f-mode">
+                        <span class="at-inline-label">Alignment mode:</span>
+                        <label><input type="radio" name="f-mode" value="local" checked> local (hmmsearch default)</label>
+                        <label><input type="radio" name="f-mode" value="glocal"> glocal (whole model)</label>
+                    </div>
+                    <p class="dp-hint">HMMER's hmmbuild uses the same 50 % rule (<code>--symfrac 0.5</code>) but weights sequences and uses Dirichlet-mixture priors instead of simple pseudocounts.</p>
+                </section>
+                <section data-for="profile" hidden>
+                    <h2>Query sequence</h2>
+                    <div class="dp-answer-row">
+                        <input type="text" id="f-query" spellcheck="false" class="hm-textin">
+                        <button id="f-query-apply">Align</button>
+                    </div>
+                    <div class="dp-options" id="f-query-presets" style="margin-top:6px"></div>
+                </section>
+
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">Questions cover all three parts: probabilities of paths, Viterbi and Forward cells, what posterior probabilities mean, pair-HMM gap parameters, building a profile from counts, bit scores and E-values. Use the tabs to look things up – that is the point.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/alignEditor.js"></script>
+    <script src="js/msaEngine.js"></script>
+    <script src="js/msaExamples.js"></script>
+    <script src="js/msaLogo.js"></script>
+    <script src="js/blastEngine.js"></script>
+    <script src="js/hmmEngine.js"></script>
+    <script src="js/hmmExamples.js"></script>
+    <script src="js/hmmViews.js"></script>
+    <script src="js/hmmBasics.js"></script>
+    <script src="js/hmmPair.js"></script>
+    <script src="js/hmmProfile.js"></script>
+    <script src="js/hmmQuiz.js"></script>
+    <script src="js/hmmApp.js"></script>
+</body>
+</html>

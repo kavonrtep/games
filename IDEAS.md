@@ -17,7 +17,7 @@ Status: ☐ idea · ◐ in progress · ☑ done
   click a column for counts/entropy/information. Quiz: most conserved
   column, consensus at column k, PSSM score of residue X at column k.
   Bonus: scan a sequence with the PSSM (score trace). → `msa.html`
-- ☐ **2. Profile search: PSSM vs. profile HMM** (M–L). Slide the PSSM along
+- ☑ **2. Profile search: PSSM vs. profile HMM** (M–L) → part 3 of `hmm.html`. Slide the PSSM along
   a sequence; build a tiny profile HMM (match/insert/delete) from the same
   MSA and step Viterbi through it; show why the HMM copes with insertions.
   Topics: PSI-BLAST, HMM states, PSSM vs. HMM.
