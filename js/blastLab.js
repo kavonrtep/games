@@ -472,7 +472,8 @@ class BlastLab {
             const a = g.aligned1.slice(k, k + width), b = g.aligned2.slice(k, k + width);
             const mid = a.split('').map((c, i) => c === '-' || b[i] === '-' ? ' ' : c === b[i] ? '|' : (this.B.sub(P, c, b[i]) > 0 ? '+' : ' ')).join('');
             const qa = a.replace(/-/g, '').length, sa = b.replace(/-/g, '').length;
-            out += `${qName} ${String(qpos).padStart(4)}  ${a}  ${qpos + qa - 1}\n           ${mid}\n${sName} ${String(spos).padStart(4)}  ${b}  ${spos + sa - 1}\n\n`;
+            // the midline must start exactly under the first residue: name + space + 4-digit position + 2 spaces
+            out += `${qName} ${String(qpos).padStart(4)}  ${a}  ${qpos + qa - 1}\n${' '.repeat(qName.length + 7)}${mid}\n${sName} ${String(spos).padStart(4)}  ${b}  ${spos + sa - 1}\n\n`;
             qpos += qa; spos += sa;
         }
         return out;
@@ -690,8 +691,32 @@ ${this.alignmentBlock(best)}</pre>` : ''}
             qs.push({ q: `Bit score of the best hit (${r.db[b.subject].name})? (±0.5)`, type: 'number', answer: +b.bits.toFixed(1), tolerance: 0.5, explanation: `S′ = (λS − ln K)/ln 2 with λ = ${s.kaG.lambda}, K = ${s.kaG.K}, S = ${b.score}.` });
             qs.push({ q: 'If the database were 1000× larger, what would the E-value of that hit be? (within a factor of 2)', type: 'number', answer: this.B.evalue(b.bits, eff10.m, eff10.n), tolerance: this.B.evalue(b.bits, eff10.m, eff10.n), explanation: 'E is proportional to the database length: about 1000× the current value (slightly more because the effective length correction changes too).' });
         }
+        if (r.results.length) {
+            const g = r.results[0], name = r.db[g.subject].name;
+            qs.push({ q: `How many ungapped HSPs does the gapped alignment of the best hit (${name}) contain? (Step 5)`, type: 'number', answer: g.hspsIncluded.length, tolerance: 0,
+                      explanation: g.hspsIncluded.length > 1 ? `${g.hspsIncluded.length} HSPs on neighbouring diagonals (${g.hspsIncluded.map(h => h.length).join(' + ')} positions) are joined by gaps into one alignment of ${g.length} columns; BLAST does not extend an HSP again once it lies inside an alignment already made.` : 'A single HSP: the gapped extension started from it and no other HSP of this subject lies inside the alignment.' });
+            qs.push({ q: `How many gap positions (– in either sequence) does that gapped alignment have?`, type: 'number', answer: g.gaps, tolerance: 0,
+                      explanation: `Count the dashes in the alignment of step 5 or 6: ${g.gaps}. They mark the planted insertions/deletions where the ungapped extension had to stop.` });
+            const h = g.hsp;
+            qs.push({ q: `The ungapped extension of the HSP that started the best hit ended with best score ${h.score}. With X = ${P.xDrop}, at or below which running score does the second (left) side of the extension stop?`, type: 'number', answer: h.score - P.xDrop, tolerance: 0,
+                      explanation: `X-drop stops as soon as the running score is ≤ best − X = ${h.score} − ${P.xDrop} = ${h.score - P.xDrop}; the alignment is then trimmed back to the position of the best score.` });
+            const beyond = (h.beyondR || []).concat(h.beyondL || []);
+            if (beyond.length) qs.push({ q: 'In the replay, the faded columns beyond the X-drop stop point…', type: 'choice',
+                options: ['were never looked at by BLAST – they show that continuing would mostly lower the score further', 'were added to the HSP after the stop', 'are where the gapped extension begins its search'], answer: 0,
+                explanation: 'X-drop assumes that once the score has fallen X below the best, the rest of the diagonal is unlikely to recover. Beyond an indel it is right: the diagonal no longer pairs related residues. The gapped extension (step 5) is what bridges the indel.' });
+        }
+        qs.push({ q: 'A homolog has a 3-residue deletion in the middle of the region similar to the query. What do the ungapped and gapped extensions produce?', type: 'choice',
+                  options: ['two HSPs on neighbouring diagonals, joined by the gapped extension into one alignment with a gap', 'one long HSP across the deletion', 'no HSP at all, because deletions stop the word scan'], answer: 0,
+                  explanation: 'After the deletion the diagonal shifts by three, so the ungapped extension scores random pairs and stops (X-drop). A second seed on the shifted diagonal gives a second HSP; dynamic programming around the HSP connects both with a gap.' });
         qs.push({ q: 'Which quantity does NOT change when the same alignment is found in a 1000× larger database?', type: 'choice', options: ['the bit score', 'the E-value', 'the p-value'], answer: 0, explanation: 'Bit scores depend only on the alignment and the scoring system; E and p include the search space.' });
         qs.push({ q: 'A DNA query encodes a protein and you want its homologs in other species. Which program?', type: 'choice', options: ['tblastx or blastx (translated)', 'megablast', 'blastn with a very small word size'], answer: 0, explanation: 'Synonymous changes hide DNA similarity; the protein is what is conserved.' });
+        // rotate the options of choice questions so the correct one is not always first
+        qs.forEach((q, idx) => {
+            if (q.type !== 'choice') return;
+            const n = q.options.length, rot = (idx * 2 + 1) % n;
+            q.options = q.options.map((_, k) => q.options[(k + rot) % n]);
+            q.answer = (q.answer - rot + n) % n;
+        });
         box.innerHTML = '';
         qs.forEach((q, idx) => {
             const item = document.createElement('div'); item.className = 'dp-question';
