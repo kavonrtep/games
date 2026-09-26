@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OLC Assembly Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>OLC Assembly Lab <span class="dp-sub">overlap · layout · consensus</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="assembly.html" class="back-link dp-right-link">de Bruijn graphs →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="puzzle">1 · Do it yourself</button>
+                    <button class="bl-tab" data-tab="algorithm">2 · The algorithm</button>
+                    <button class="bl-tab" data-tab="repeats">3 · Repeats</button>
+                    <button class="bl-tab" data-tab="stats">4 · Coverage &amp; N50</button>
+                    <button class="bl-tab" data-tab="quiz">Quiz</button>
+                </div>
+
+                <!-- ---------------- tab 1: puzzle -->
+                <section id="tab-puzzle" class="bl-panel">
+                    <p>A genome of about 100 bp was sequenced; here are its reads, in random order. <strong>Drag each read left or right</strong> until it overlaps its neighbours letter for letter, and <strong>flip</strong> (⇄) reads that came from the other strand – a flipped read shows its reverse complement. The consensus row on top is the majority of the reads in every column: green letters agree with it, red letters disagree.</p>
+                    <div class="dp-buttons input-controls olc-toolbar">
+                        <select id="pz-level"></select>
+                        <button id="pz-new">New puzzle</button>
+                        <button id="pz-hint">Hint: place one read</button>
+                        <button id="pz-check" class="primary">Check my assembly</button>
+                        <button id="pz-answer">Show the answer</button>
+                    </div>
+                    <p class="dp-hint" id="pz-level-note"></p>
+                    <div class="olc-pg-head"><h4>Overlap graph of your reads</h4>
+                        <span class="olc-pg-legend"><i style="background:#2563eb"></i>same strand: end of A matches start of B <i style="background:#ea580c"></i>opposite strands – flip one ⇄ <i style="background:#16a34a"></i>already satisfied by your layout</span></div>
+                    <div id="pz-graph" class="olc-graph-wrap"></div>
+                    <p class="dp-hint">Every line is an overlap the assembler found by comparing the reads (number = overlap length; dashed = with mismatches). <strong>Click a line</strong> to put its two reads together on the board, <strong>click a read</strong> to select it. Like the assembler, you have to decide which overlaps to follow – look for a path through all reads.</p>
+                    <div id="pz-status" class="olc-status"></div>
+                    <div id="board" class="olc-board"></div>
+                    <div id="pz-result"></div>
+                </section>
+
+                <!-- ---------------- tab 2: algorithm -->
+                <section id="tab-algorithm" class="bl-panel" hidden>
+                    <div class="bl-steps" id="olc-steps">
+                        <button class="bl-step active" data-step="1"><span>1</span>Overlaps</button>
+                        <button class="bl-step" data-step="2"><span>2</span>Orientation</button>
+                        <button class="bl-step" data-step="3"><span>3</span>Overlap graph</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Layout</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Consensus</button>
+                    </div>
+                    <p class="dp-hint">The steps work on the reads of your current puzzle (tab 1). Change the puzzle there to see the algorithm on other reads.</p>
+                    <div id="algo-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="algo-prev">◀ Previous</button>
+                        <button id="algo-next" class="primary">Next ▶</button>
+                    </div>
+                </section>
+
+                <!-- ---------------- tab 3: repeats -->
+                <section id="tab-repeats" class="bl-panel" hidden>
+                    <div id="rep-content"></div>
+                </section>
+
+                <!-- ---------------- tab 4: statistics -->
+                <section id="tab-stats" class="bl-panel" hidden>
+                    <div id="stats-content"></div>
+                </section>
+
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Questions with fresh numbers and sequences each time; answers are computed. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row"><button id="quiz-new" class="primary">New questions</button><span class="dp-hint" id="quiz-seed"></span></div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section data-for="puzzle algorithm">
+                    <h2>Overlap – layout – consensus</h2>
+                    <ol class="hm-list">
+                        <li><strong>Overlap:</strong> compare every read with every other read; find where the end of one matches the beginning of another.</li>
+                        <li><strong>Layout:</strong> arrange the reads using the overlaps – a path through the <em>overlap graph</em>.</li>
+                        <li><strong>Consensus:</strong> stack the reads and take the majority base in every column; errors of single reads are outvoted.</li>
+                    </ol>
+                    <p class="dp-hint">OLC is how long reads (PacBio HiFi, Nanopore) are assembled – Canu, Hifiasm, Flye (a variant). Short reads are assembled with de Bruijn graphs instead: there are too many of them to compare all pairs. See the Assembly Explorer.</p>
+                </section>
+                <section data-for="puzzle" id="pz-side">
+                    <h2>Your assembly</h2>
+                    <div id="pz-summary"></div>
+                    <p class="dp-hint">Keyboard: click a read, then ← → move it, <kbd>F</kbd> flips it.</p>
+                </section>
+                <section data-for="algorithm" hidden>
+                    <h2>Overlap settings</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="al-minol">minimum overlap: <span id="al-minol-value"></span></label><input type="range" id="al-minol" min="4" max="16"></div>
+                        <div class="control-group"><label for="al-mis">allowed mismatches in an overlap: <span id="al-mis-value"></span></label><input type="range" id="al-mis" min="0" max="30" step="5"></div>
+                    </div>
+                    <p class="dp-hint">Too short a minimum overlap accepts chance matches between unrelated reads; too long misses true overlaps. Allowing mismatches tolerates sequencing errors – and also slightly different repeat copies.</p>
+                </section>
+                <section data-for="repeats" hidden class="scoring-controls">
+                    <h2>Genome &amp; reads</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="rp-R">repeat length (2 copies): <span id="rp-R-value"></span></label><input type="range" id="rp-R" min="10" max="40" step="2"></div>
+                        <div class="control-group"><label for="rp-L">read length: <span id="rp-L-value"></span></label><input type="range" id="rp-L" min="18" max="50" step="2"></div>
+                        <div class="control-group"><label for="rp-cov">coverage: <span id="rp-cov-value"></span></label><input type="range" id="rp-cov" min="3" max="10"></div>
+                        <div class="control-group"><label for="rp-ins">mate-pair insert size: <span id="rp-ins-value"></span></label><input type="range" id="rp-ins" min="40" max="140" step="5"></div>
+                    </div>
+                    <button id="rp-new">⟳ New genome</button>
+                    <p class="dp-hint">Genome of 170 bp: three unique segments separated by two identical copies of the repeat. Reads come from both strands, without errors.</p>
+                </section>
+                <section data-for="stats" hidden>
+                    <h2>Notation</h2>
+                    <table class="bl-table km-notation">
+                        <tr><td>G</td><td>genome length</td></tr>
+                        <tr><td>N, L</td><td>number and length of reads</td></tr>
+                        <tr><td>c = N·L/G</td><td>coverage</td></tr>
+                        <tr><td>T, θ = T/L</td><td>shortest overlap that the assembler detects</td></tr>
+                    </table>
+                </section>
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">Overlaps and reverse complements, the number of comparisons, transitive edges, consensus, repeats and mate pairs, Lander–Waterman, N50 and L50.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/olcEngine.js"></script>
+    <script src="js/olcViews.js"></script>
+    <script src="js/olcQuiz.js"></script>
+    <script src="js/olcController.js"></script>
+</body>
+</html>

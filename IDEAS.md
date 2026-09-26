@@ -45,7 +45,7 @@ Status: ☐ idea · ◐ in progress · ☑ done
   (repeat fraction, heterozygosity), reads (coverage, error rate), count
   k-mers, histogram; read off coverage peak, genome size, error peak,
   heterozygous half-peak, repeat multiples. Mirrors the jellyfish practical.
-- ☐ **8. Overlap–layout–consensus by hand** (M). Draggable reads, overlaps
+- ☑ **8. Overlap–layout–consensus by hand** (M) → `olc.html`. Draggable reads, overlaps
   from the local aligner, consensus; repeat-induced misassembly resolved by
   mate pairs; N50/L50 mini-game; Lander–Waterman coverage. Extends 1.8.
 - ☐ **9. FASTQ & Phred decoder** (S). Decode quality strings, trim by

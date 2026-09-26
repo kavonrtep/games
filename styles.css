@@ -2145,3 +2145,65 @@ kbd {
 .km-in { color: #1f1e1b; background: #e0e7ff; }
 .km-hl { background: #fde68a !important; color: #1f1e1b; font-weight: 700; }
 .km-code { background: #fde68a; padding: 0 4px; border-radius: 3px; }
+
+/* =========================================================================
+   OLC Assembly Lab (olc.html)
+   ========================================================================= */
+.olc-toolbar { align-items: center; gap: 8px; }
+.olc-toolbar select { padding: 6px 8px; border: 1px solid #cbd5e0; border-radius: 4px; background: #fff; }
+.olc-status { font-size: 0.88em; margin: 6px 0; }
+.olc-board { border: 1px solid #e2e8f0; border-radius: 6px; background: #fff; }
+.olc-bscroll { overflow-x: auto; }
+.olc-bgrid { padding: 6px 0; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+.olc-prow { display: flex; align-items: center; height: 22px; }
+.olc-plab { position: sticky; left: 0; z-index: 3; flex: 0 0 104px; background: #fff; font-family: 'Source Sans 3', sans-serif; font-size: 12px; color: #4a5568; text-align: right; padding-right: 8px; display: flex; justify-content: flex-end; align-items: center; gap: 6px; }
+.olc-ptrack { position: relative; height: 20px; display: block; background: repeating-linear-gradient(90deg, transparent 0 74px, #f1f5f9 74px 75px); }
+.olc-strip { position: absolute; top: 1px; height: 18px; display: flex; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 3px; cursor: grab; touch-action: none; user-select: none; transition: box-shadow 0.1s; }
+.olc-strip.sel { border-color: #4f46e5; box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.3); }
+.olc-strip:active { cursor: grabbing; }
+.olc-c { display: inline-block; flex-shrink: 0; width: 15px; height: 18px; line-height: 18px; text-align: center; font-size: 12px; }
+#pz-cons .olc-c, #pz-depth .olc-c { position: absolute; top: 1px; }
+.olc-pcons { background: #fbf8f2; }
+.olc-pcons .olc-c { font-weight: 700; }
+.olc-cok { color: #15803d; }
+.olc-cbad { color: #fff; background: #dc2626; border-radius: 2px; }
+.olc-pdepth .olc-c { font-size: 9px; color: #718096; }
+.olc-ok { color: #15803d; }
+.olc-err { color: #fff; background: #dc2626; }
+.olc-flip { padding: 0 5px; font-size: 12px; line-height: 16px; background: #fff; border: 1px solid #cbd5e0; color: #4a5568; border-radius: 3px; }
+.olc-flip.on { background: #7a3e1d; color: #fff; border-color: #7a3e1d; }
+.olc-truth { font-size: 12px; margin: 6px 0; overflow-x: auto; }
+.olc-truth > div { display: flex; gap: 8px; white-space: nowrap; }
+.olc-block { overflow-x: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 0; margin: 6px 0; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+.olc-brow { display: flex; white-space: nowrap; }
+.olc-blab { position: sticky; left: 0; z-index: 1; flex: 0 0 76px; background: #fff; font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #4a5568; text-align: right; padding-right: 6px; line-height: 18px; }
+.olc-cons .olc-c { font-weight: 700; background: #fbf8f2; }
+.olc-fixed { background: #fde68a !important; }
+.olc-tie { background: #e2e8f0 !important; color: #718096; }
+.olc-depth .olc-c { font-size: 9px; color: #718096; }
+.olc-depth .d1 { background: #fee2e2; } .olc-depth .d2 { background: #fef3c7; }
+.olc-contained { opacity: 0.6; }
+.olc-matrix-wrap { overflow-x: auto; margin: 6px 0; }
+.olc-matrix { border-collapse: collapse; font-size: 11px; }
+.olc-matrix th, .olc-matrix td { border: 1px solid #e2e8f0; min-width: 32px; height: 24px; text-align: center; padding: 0 3px; }
+.olc-matrix th { background: #f7fafc; color: #4a5568; font-weight: 600; }
+.olc-matrix td.olc-diag { background: #f1f5f9; }
+.olc-matrix td.olc-ov { background: #eef2ff; color: #1e3a8a; font-weight: 600; cursor: pointer; }
+.olc-matrix td.olc-ov:hover { background: #c7d2fe; }
+.olc-matrix td.olc-ov.sel { outline: 2px solid #dc2626; outline-offset: -2px; }
+.olc-matrix td.olc-ct { color: #7a3e1d; }
+.olc-matrix sup { font-size: 8px; color: #7a3e1d; }
+.olc-graph-wrap { overflow-x: auto; margin: 6px 0; }
+.olc-graph, .olc-dot, .olc-chart, .olc-gbar { display: block; max-width: 100%; height: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.olc-dot-c { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 6px; }
+.olc-rep { color: #b45309; }
+.olc-lw-controls { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; margin: 8px 0; font-size: 0.92em; }
+.olc-lw-controls select { padding: 3px 6px; border: 1px solid #cbd5e0; border-radius: 4px; }
+.olc-pg-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; margin-top: 6px; }
+.olc-pg-head h4 { margin: 0; font-size: 1em; color: #1f1e1b; }
+.olc-pg-legend { font-size: 0.8em; color: #4a5568; display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; }
+.olc-pg-legend i { display: inline-block; width: 16px; height: 4px; margin-left: 6px; }
+.olc-pgraph { display: block; max-width: 100%; height: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.olc-pedge, .olc-pnode { cursor: pointer; }
+.olc-pedge:hover line:last-of-type { stroke-width: 5; }
+.olc-pnode:hover circle { fill: #fde68a; }
