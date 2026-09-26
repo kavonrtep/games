@@ -21,6 +21,7 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `dotplot-quiz.html` | Seeded self-assessment on dotplots (16 question types) | `dotplotQuiz.js`, `dotplotQuizGenerators.js` |
 | `blast.html` | BLAST Explorer: faithful small-scale pipeline (words/neighbourhoods, scan, two-hit, X-drop, gapped, Karlin–Altschul statistics) on databases with planted homologs, plus experiments (word size, translated search, E-value vs database size, masking, BLAST vs SW) and quiz | `blastLab.js`, `blastEngine.js` |
 | `hmm.html` | HMM Explorer, three tabs + quiz: HMM basics (CpG islands / casino: generating, one path, Viterbi, Forward, posterior, counting and Baum–Welch), pair HMM (alignment as a path, Viterbi = Gotoh with log-odds scores, Forward, posterior heat map), profile HMM (Plan7 from an MSA, counting with pseudocounts, generator + HMMER file, Viterbi trellis, bit scores and simulated E-values, PSSM vs HMM, HMMER vs BLAST on a synthetic family) | `hmmBasics.js`, `hmmPair.js`, `hmmProfile.js`, `hmmQuiz.js`, `hmmApp.js`, `hmmViews.js` |
+| `kmer-spectrum.html` | k-mer Spectrum Lab: the method in 7 steps (counting k-mers on a tiny genome, histogram and C_k, genome size from the peak, errors and cut-off, heterozygous peaks and r, repeat peaks and divergence, GenomeScope-like model fit) and a free genome lab (ploidy, heterozygosity, repeats, coverage, errors, k; truth colouring, peak picking, compare k) + quiz | `kmerController.js`, `kmerViews.js`, `kmerQuiz.js` |
 | `assembly.html` | Assembly Explorer: building a de Bruijn graph step by step (reads → k-mers → graph → contigs, clickable k-mers), repeats (k ≥ R + 2, contigs-vs-k sweep), sequencing errors (tips/bubbles, k-mer count histogram, coverage threshold), quiz. Genome, reads, graph and contigs share one horizontal scale | `assemblyController.js`, `assemblyGraphVisualizer.js`, `assemblyQuiz.js`, `assemblyExamples.js` |
 
 `advanced-global-alignment.html`, `dotplot-demo.html`, `dotplot-explorer.html` and
@@ -48,6 +49,11 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
   reads with substitution errors, de Bruijn graph with repeat/chance/error
   classification, unitigs with coverage threshold, contig placement in the
   genome (repeat / error / chimeric), k sweep, k-mer count spectrum.
+- `js/kmerEngine.js` – diploid genome simulator (SNPs, repeat families with
+  diverged copies), reads from both strands with errors, canonical k-mer
+  counting in a typed-array hash (k ≤ 26 as exact numbers; the app offers
+  9–25), histogram split by true copy number, peak/valley helpers and a
+  ploidy-aware Poisson/NB mixture fit (genome size, heterozygosity, repeats).
 - `js/msaEngine.js` – FASTA parsing, UPGMA guide tree, profile–profile
   progressive alignment, column statistics (entropy, information, PSSM,
   consensus) and PSSM scanning; `js/msaLogo.js` renders SVG logos.

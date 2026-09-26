@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>k-mer Spectrum Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>k-mer Spectrum Lab <span class="dp-sub">genome size · heterozygosity · repeats · errors</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="assembly.html" class="back-link dp-right-link">Assembly Explorer →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="principle">1 · The principle, step by step</button>
+                    <button class="bl-tab" data-tab="lab">2 · Genome lab</button>
+                    <button class="bl-tab" data-tab="quiz">Check your understanding</button>
+                </div>
+
+                <section id="tab-principle" class="bl-panel">
+                    <div class="bl-steps" id="km-steps">
+                        <button class="bl-step active" data-step="1"><span>1</span>Counting k-mers</button>
+                        <button class="bl-step" data-step="2"><span>2</span>The histogram</button>
+                        <button class="bl-step" data-step="3"><span>3</span>Genome size</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Errors</button>
+                        <button class="bl-step" data-step="5"><span>5</span>Heterozygosity</button>
+                        <button class="bl-step" data-step="6"><span>6</span>Repeats</button>
+                        <button class="bl-step" data-step="7"><span>7</span>Fitting a model</button>
+                    </div>
+                    <div id="step-content" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="step-prev">◀ Previous</button>
+                        <button id="step-next" class="primary">Next ▶</button>
+                    </div>
+                </section>
+
+                <section id="tab-lab" class="bl-panel" hidden>
+                    <p>Design a genome, sequence it and look at its k-mer spectrum. Then estimate its properties – first by hand from the peak (click the bar you take for the single-copy peak), then with the model – and compare with the truth.</p>
+                    <div class="dp-buttons input-controls km-toolbar">
+                        <label class="ms-check"><input type="checkbox" id="lab-truth"> colour by true origin</label>
+                        <label class="km-inline">y axis <select id="lab-ymode"><option value="distinct">distinct k-mers h(n)</option><option value="log">h(n), log scale</option><option value="share">k-mer occurrences n·h(n)</option></select></label>
+                        <label class="ms-check"><input type="checkbox" id="lab-model" checked> show model fit</label>
+                        <label class="km-inline">x axis up to <select id="lab-xmax"><option value="auto">auto</option><option>50</option><option>100</option><option>200</option><option>400</option><option>800</option></select></label>
+                        <button id="lab-compare-k">Compare k = 15 / 21 / 25</button>
+                    </div>
+                    <div id="lab-status" class="km-status"></div>
+                    <div id="lab-hist" class="km-hist-wrap"></div>
+                    <div id="lab-legend"></div>
+                    <div id="lab-results"></div>
+                </section>
+
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Questions with fresh numbers each time; answers are computed. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row"><button id="quiz-new" class="primary">New questions</button><span class="dp-hint" id="quiz-seed"></span></div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section data-for="principle">
+                    <h2>What this method does</h2>
+                    <p>Count every k-mer (word of length k) in the raw reads – no assembly, no reference – and plot how many different k-mers were seen once, twice, three times… The shape of this <strong>k-mer spectrum</strong> tells you:</p>
+                    <ul class="hm-list">
+                        <li>the <strong>genome size</strong> (step 3),</li>
+                        <li>the <strong>sequencing error</strong> rate (step 4),</li>
+                        <li>the <strong>heterozygosity</strong> of a diploid genome (step 5),</li>
+                        <li>how <strong>repetitive</strong> the genome is (step 6).</li>
+                    </ul>
+                    <p class="dp-hint">In the practical: <code>jellyfish count</code> + <code>jellyfish histo</code>, then GenomeScope. Every step here uses a genome and reads simulated in your browser, so the true answer is always known.</p>
+                </section>
+                <section data-for="principle">
+                    <h2>Notation</h2>
+                    <table class="bl-table km-notation">
+                        <tr><td>G</td><td>genome size (haploid)</td></tr>
+                        <tr><td>L</td><td>read length</td></tr>
+                        <tr><td>N</td><td>number of reads</td></tr>
+                        <tr><td>C = N·L/G</td><td>coverage (sequencing depth)</td></tr>
+                        <tr><td>C<sub>k</sub> = C·(L−k+1)/L</td><td>k-mer coverage: how often one k-mer of the genome is seen</td></tr>
+                        <tr><td>h(n)</td><td>number of distinct k-mers seen exactly n times</td></tr>
+                    </table>
+                </section>
+
+                <section class="scoring-controls" data-for="lab" hidden>
+                    <h2>Genome</h2>
+                    <div class="at-example" style="margin-bottom:8px"><select id="lab-preset"></select><button id="lab-reroll" title="New random genome and reads">⟳</button></div>
+                    <p class="dp-hint" id="lab-preset-note"></p>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="p-G">genome size: <span id="p-G-value"></span></label><input type="range" id="p-G" min="0" max="4" step="1"></div>
+                        <div class="dp-mode"><span class="at-inline-label">ploidy:</span><label><input type="radio" name="p-ploidy" value="1"> haploid</label><label><input type="radio" name="p-ploidy" value="2"> diploid</label></div>
+                        <div class="control-group"><label for="p-het">heterozygosity (SNPs per bp): <span id="p-het-value"></span></label><input type="range" id="p-het" min="0" max="3" step="0.1"></div>
+                        <div class="control-group"><label for="p-rep">repeat content: <span id="p-rep-value"></span></label><input type="range" id="p-rep" min="0" max="60" step="5"></div>
+                        <div class="control-group"><label for="p-copies">copies per repeat family: <span id="p-copies-value"></span></label><input type="range" id="p-copies" min="2" max="10" step="1"></div>
+                        <div class="control-group"><label for="p-div">divergence between repeat copies: <span id="p-div-value"></span></label><input type="range" id="p-div" min="0" max="10" step="0.5"></div>
+                    </div>
+                </section>
+                <section class="scoring-controls" data-for="lab" hidden>
+                    <h2>Sequencing &amp; counting</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="p-cov">coverage C: <span id="p-cov-value"></span></label><input type="range" id="p-cov" min="5" max="100" step="5"></div>
+                        <div class="control-group"><label for="p-L">read length L: <span id="p-L-value"></span></label><input type="range" id="p-L" min="0" max="3" step="1"></div>
+                        <div class="control-group"><label for="p-err">sequencing error rate: <span id="p-err-value"></span></label><input type="range" id="p-err" min="0" max="2" step="0.1"></div>
+                        <div class="control-group"><label for="p-k">k: <span id="p-k-value"></span></label><input type="range" id="p-k" min="9" max="25" step="2"></div>
+                    </div>
+                    <p class="dp-hint">k-mers are counted as canonical k-mers (a k-mer and its reverse complement are one), as <code>jellyfish count -C</code> does.</p>
+                </section>
+
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">k-mer coverage, genome size from the peak, errors, heterozygous and repeat peaks, and what the spectrum can and cannot tell you.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/kmerEngine.js"></script>
+    <script src="js/kmerViews.js"></script>
+    <script src="js/kmerQuiz.js"></script>
+    <script src="js/kmerController.js"></script>
+</body>
+</html>

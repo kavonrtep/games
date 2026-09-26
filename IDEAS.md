@@ -41,7 +41,7 @@ Status: ☐ idea · ◐ in progress · ☑ done
 
 ## Weeks 5–7 · Assembly
 
-- ☐ **7. k-mer spectrum & genome-size estimator** (M). Simulate genome
+- ☑ **7. k-mer spectrum & genome-size estimator** (M) → `kmer-spectrum.html`. Simulate genome
   (repeat fraction, heterozygosity), reads (coverage, error rate), count
   k-mers, histogram; read off coverage peak, genome size, error peak,
   heterozygous half-peak, repeat multiples. Mirrors the jellyfish practical.

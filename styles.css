@@ -2120,3 +2120,28 @@ kbd {
 .as-legend-list i { flex: 0 0 11px; height: 11px; border-radius: 50%; display: inline-block; transform: translateY(1px); }
 .as-example code { background: #fde68a; padding: 0 3px; border-radius: 2px; }
 @media (max-width: 900px) { .as-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* =========================================================================
+   k-mer Spectrum Lab (kmer-spectrum.html)
+   ========================================================================= */
+.km-hist-wrap { overflow-x: auto; margin: 8px 0; }
+.km-hist { display: block; max-width: 100%; height: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.km-bin { cursor: pointer; }
+.km-bin:hover { fill: rgba(250, 204, 21, 0.25); }
+.km-legend { display: flex; flex-wrap: wrap; gap: 4px 14px; font-size: 0.82em; color: #4a5568; margin: 2px 0 8px; }
+.km-legend span { display: inline-flex; align-items: center; gap: 5px; }
+.km-legend i { width: 12px; height: 12px; border-radius: 2px; display: inline-block; }
+.km-inline { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; font-size: 0.9em; }
+.km-toolbar { align-items: center; gap: 12px; }
+.km-status { font-size: 0.85em; color: #7a3e1d; min-height: 1.3em; }
+.km-notation td { padding: 3px 6px; font-size: 0.88em; }
+.km-notation td:first-child { white-space: nowrap; font-family: 'Newsreader', Georgia, serif; }
+.km-diagram { display: block; max-width: 100%; height: auto; }
+.km-grid { overflow-x: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 4px; margin: 8px 0; font-family: 'JetBrains Mono', 'Courier New', monospace; }
+.km-row { display: flex; white-space: nowrap; }
+.km-lab { flex: 0 0 56px; font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #718096; text-align: right; padding-right: 6px; line-height: 18px; }
+.km-c { display: inline-block; flex-shrink: 0; width: 15px; height: 18px; line-height: 18px; text-align: center; font-size: 12px; }
+.km-read { color: #a0aec0; background: #f7fafc; }
+.km-in { color: #1f1e1b; background: #e0e7ff; }
+.km-hl { background: #fde68a !important; color: #1f1e1b; font-weight: 700; }
+.km-code { background: #fde68a; padding: 0 4px; border-radius: 3px; }
