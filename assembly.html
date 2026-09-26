@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Assembly Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Assembly Explorer <span class="dp-sub">reads · k-mers · de Bruijn graph · contigs</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="blast.html" class="back-link dp-right-link">BLAST Explorer →</a>
+        </header>
+
+        <div class="game-container">
+            <!-- ============================================= main panel -->
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="basics">1 · Building the graph</button>
+                    <button class="bl-tab" data-tab="repeats">2 · Repeats</button>
+                    <button class="bl-tab" data-tab="errors">3 · Sequencing errors</button>
+                    <button class="bl-tab" data-tab="quiz">Check your understanding</button>
+                </div>
+
+                <section id="tab-basics" class="bl-panel">
+                    <div class="bl-steps" id="as-steps">
+                        <button class="bl-step active" data-step="1"><span>1</span>Reads</button>
+                        <button class="bl-step" data-step="2"><span>2</span>k-mers</button>
+                        <button class="bl-step" data-step="3"><span>3</span>The graph</button>
+                        <button class="bl-step" data-step="4"><span>4</span>Contigs</button>
+                    </div>
+                    <div id="basics-text" class="bl-step-content"></div>
+                    <div class="as-view" id="view-basics"></div>
+                    <div id="basics-after" class="bl-step-content"></div>
+                    <div class="dp-buttons input-controls">
+                        <button id="as-prev">◀ Previous</button>
+                        <button id="as-next" class="primary">Next ▶</button>
+                    </div>
+                </section>
+
+                <section id="tab-repeats" class="bl-panel" hidden>
+                    <h3 class="as-h">Repeats: why k matters</h3>
+                    <p>A repeat is a stretch that occurs more than once in the genome. If a (k−1)-mer lies entirely inside the repeat, all copies produce the <em>same</em> node: the graph cannot tell the copies apart, the path branches, and the assembly stops at every branch. Drag <strong>k</strong> in the side panel and watch the red nodes.</p>
+                    <div class="as-tiles" id="tiles-repeats"></div>
+                    <div class="as-diag" id="diag-repeats"></div>
+                    <div class="as-view" id="view-repeats"></div>
+                    <h4>Number of contigs for every k</h4>
+                    <div id="sweep"></div>
+                    <p class="dp-hint">Green points: the whole genome in one contig. Red: collapsed repeat. The green band starts at k = R + 2: a (k−1)-mer must be longer than the repeat to reach into the unique sequence next to it.</p>
+                    <div class="bl-lesson"><strong>The trade-off.</strong> Small k: short (k−1)-mers are shared by repeat copies – and, if very short, by chance – so the graph tangles. Large k: resolves longer repeats, but every k-mer of the genome must lie inside some read; a read of length L holds only L − k + 1 k-mers, so large k needs long reads and deep coverage. Repeats longer than the reads cannot be resolved by any k – this is what long reads (PacBio, Nanopore) and paired-end or Hi-C links are for. Real assemblers (SPAdes, MEGAHIT) therefore build graphs for several k and combine them.</div>
+                </section>
+
+                <section id="tab-errors" class="bl-panel" hidden>
+                    <h3 class="as-h">Sequencing errors: tips and bubbles</h3>
+                    <p>A single wrong base changes every k-mer that covers it – up to <em>k</em> wrong k-mers, each seen only once or twice. In the graph they form thin detours: a <strong>tip</strong> (dead end) when the error is near the end of a read, a <strong>bubble</strong> (a parallel arm that rejoins the true path) when it is in the middle. True k-mers are seen many times, error k-mers rarely – so a <strong>coverage threshold</strong> separates them.</p>
+                    <div class="as-tiles" id="tiles-errors"></div>
+                    <div class="as-diag" id="diag-errors"></div>
+                    <div class="as-view" id="view-errors"></div>
+                    <h4>How often was each k-mer seen? (k-mer count histogram)</h4>
+                    <div id="spectrum"></div>
+                    <p class="dp-hint">Red: k-mers created by errors; green: true k-mers of the genome. Hover a bar for the numbers. A good threshold lies in the valley between the two groups.</p>
+                    <div class="bl-lesson"><strong>In real assemblers</strong> error correction comes first (k-mers seen once are almost always errors – the same histogram is used to estimate genome size and heterozygosity, e.g. with Jellyfish and GenomeScope), then tips are clipped and bubbles popped in the graph. The price of a high threshold: true k-mers in thinly covered regions are removed as well, and the assembly breaks there. Deeper sequencing separates the two peaks.</div>
+                </section>
+
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Every question is generated with fresh sequences and checked with the same engine that builds the graphs. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row"><button id="quiz-new" class="primary">New questions</button><span class="dp-hint" id="quiz-seed"></span></div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <!-- ============================================= side panel -->
+            <div class="side-panel at-side">
+                <section class="scoring-controls" id="side-params">
+                    <h2>Genome &amp; reads</h2>
+                    <div class="at-example" style="margin-bottom:8px">
+                        <select id="preset"></select>
+                        <button id="reroll" title="New random genome with the same settings">⟳</button>
+                    </div>
+                    <p class="dp-hint" id="preset-note"></p>
+                    <div class="at-param-group">
+                        <div class="control-group as-k"><label for="k">k-mer size k: <span id="k-value"></span></label><input type="range" id="k" min="3" max="26"></div>
+                        <p class="dp-hint" id="k-hint"></p>
+                    </div>
+                    <div class="at-param-group hm-controls-1">
+                        <label class="at-param-title">Genome</label>
+                        <div class="control-group"><label for="uniqueLen">unique segments: <span id="uniqueLen-value"></span></label><input type="range" id="uniqueLen" min="6" max="30"></div>
+                        <div class="control-group"><label for="repeatLength">repeat length R: <span id="repeatLength-value"></span></label><input type="range" id="repeatLength" min="0" max="20"></div>
+                        <div class="control-group"><label for="repeatCopies">repeat copies: <span id="repeatCopies-value"></span></label><input type="range" id="repeatCopies" min="1" max="3"></div>
+                    </div>
+                    <div class="at-param-group hm-controls-1">
+                        <label class="at-param-title">Sequencing</label>
+                        <div class="control-group"><label for="readLength">read length L: <span id="readLength-value"></span></label><input type="range" id="readLength" min="6" max="26"></div>
+                        <div class="control-group"><label for="coverage">coverage (target): <span id="coverage-value"></span></label><input type="range" id="coverage" min="1" max="20"></div>
+                        <div class="control-group"><label for="errorRate">error rate (% of bases): <span id="errorRate-value"></span></label><input type="range" id="errorRate" min="0" max="8"></div>
+                        <div class="control-group"><label for="pruneThreshold">coverage threshold (keep k-mers seen ≥): <span id="pruneThreshold-value"></span></label><input type="range" id="pruneThreshold" min="1" max="8"></div>
+                    </div>
+                </section>
+                <section id="side-legend">
+                    <h2>Reading the picture</h2>
+                    <ul class="as-legend-list">
+                        <li><i style="background:#4f46e5"></i> (k−1)-mer that occurs once – on the line under its genome position</li>
+                        <li><i style="background:#d97706"></i> (k−1)-mer from a repeat – lifted above the line</li>
+                        <li><i style="background:#dc2626;box-shadow:0 0 0 4px rgba(220,38,38,.2)"></i> collapsed repeat: branch point</li>
+                        <li><i style="background:#ea580c"></i> branch point from a chance repeat (small k)</li>
+                        <li><i style="background:#15803d"></i> with errors: true k-mers, line width = coverage; black ring = an error detour leaves or rejoins here</li>
+                        <li><i style="background:#f87171"></i> error k-mers – below the line; dashed = removed by the threshold</li>
+                    </ul>
+                    <p class="dp-hint">Contig bars: blue = placed once in the genome, orange = a repeat contig (fits several places), pink = made of error k-mers, red = misjoined (joins two distant parts of the genome). Hover a node for its sequence and positions. Reads start at fixed steps (not at random) so that coverage gaps have a clear cause.</p>
+                </section>
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">Questions cover k-mers and coverage, building and reading the graph, repeats and the choice of k, errors and thresholds, and N50. Use the other tabs to check your reasoning.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/deBruijnAlgorithm.js"></script>
+    <script src="js/assemblyExamples.js"></script>
+    <script src="js/assemblyGraphVisualizer.js"></script>
+    <script src="js/assemblyQuiz.js"></script>
+    <script src="js/assemblyController.js"></script>
+</body>
+</html>

@@ -5,7 +5,7 @@ Guidance for Claude Code when working in this repository.
 ## What this is
 
 A set of static, dependency-free web apps (plain HTML/CSS/JS, no build step)
-for teaching bioinformatics students pairwise alignment, dotplots, BLAST and
+for teaching bioinformatics students pairwise alignment, dotplots, BLAST, HMMs and
 genome assembly. It is hosted on GitHub Pages, so everything must run in the
 browser: no server, no bundler, no npm packages. `index.html` is the portal.
 
@@ -21,7 +21,7 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `dotplot-quiz.html` | Seeded self-assessment on dotplots (16 question types) | `dotplotQuiz.js`, `dotplotQuizGenerators.js` |
 | `blast.html` | BLAST Explorer: faithful small-scale pipeline (words/neighbourhoods, scan, two-hit, X-drop, gapped, Karlin–Altschul statistics) on databases with planted homologs, plus experiments (word size, translated search, E-value vs database size, masking, BLAST vs SW) and quiz | `blastLab.js`, `blastEngine.js` |
 | `hmm.html` | HMM Explorer, three tabs + quiz: HMM basics (CpG islands / casino: generating, one path, Viterbi, Forward, posterior, counting and Baum–Welch), pair HMM (alignment as a path, Viterbi = Gotoh with log-odds scores, Forward, posterior heat map), profile HMM (Plan7 from an MSA, counting with pseudocounts, generator + HMMER file, Viterbi trellis, bit scores and simulated E-values, PSSM vs HMM, HMMER vs BLAST on a synthetic family) | `hmmBasics.js`, `hmmPair.js`, `hmmProfile.js`, `hmmQuiz.js`, `hmmApp.js`, `hmmViews.js` |
-| `assembly.html` | de Bruijn graph assembly demo | `assembly*.js`, `deBruijnAlgorithm.js` |
+| `assembly.html` | Assembly Explorer: building a de Bruijn graph step by step (reads → k-mers → graph → contigs, clickable k-mers), repeats (k ≥ R + 2, contigs-vs-k sweep), sequencing errors (tips/bubbles, k-mer count histogram, coverage threshold), quiz. Genome, reads, graph and contigs share one horizontal scale | `assemblyController.js`, `assemblyGraphVisualizer.js`, `assemblyQuiz.js`, `assemblyExamples.js` |
 
 `advanced-global-alignment.html`, `dotplot-demo.html`, `dotplot-explorer.html` and
 `blast-demo.html` are redirects kept for old links.
@@ -43,6 +43,11 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
   equal to Gotoh), Plan7 profile HMM (build from MSA, Viterbi/Forward in bits
   with N/C flanks and local/glocal modes, sampling, E-values with λ = ln 2),
   synthetic protein family generator. Examples in `js/hmmExamples.js`.
+- `js/deBruijnAlgorithm.js` (`DeBruijn`) – seeded genome with planted repeats
+  (flanking bases forced to differ, so k ≥ R + 2 resolves a repeat), tiled
+  reads with substitution errors, de Bruijn graph with repeat/chance/error
+  classification, unitigs with coverage threshold, contig placement in the
+  genome (repeat / error / chimeric), k sweep, k-mer count spectrum.
 - `js/msaEngine.js` – FASTA parsing, UPGMA guide tree, profile–profile
   progressive alignment, column statistics (entropy, information, PSSM,
   consensus) and PSSM scanning; `js/msaLogo.js` renders SVG logos.

@@ -2095,3 +2095,28 @@ kbd {
 .hm-qmsa { font-size: 14px; letter-spacing: 3px; background: #fbf8f2; padding: 6px 10px; border-radius: 4px; display: inline-block; margin: 6px 0; }
 .hm-controls-1 .control-group { margin-bottom: 8px; }
 .hm-controls-1 .control-group input[type=range] { width: 100%; }
+
+/* =========================================================================
+   Assembly Explorer (assembly.html)
+   ========================================================================= */
+.as-h { font-size: 1.15em; color: #1f1e1b; margin-bottom: 4px; }
+.as-view { position: relative; overflow-x: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; margin: 8px 0; }
+.as-canvas { display: block; }
+.as-tip { position: absolute; z-index: 5; pointer-events: none; background: rgba(31, 30, 27, 0.92); color: #fff; font-size: 12px; padding: 6px 8px; border-radius: 4px; max-width: 260px; line-height: 1.4; }
+.as-tip strong { font-family: 'JetBrains Mono', monospace; }
+.as-tiles { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 8px 0; }
+.as-tile { background: #f7fafc; border: 2px solid #e2e8f0; border-radius: 8px; padding: 6px; text-align: center; }
+.as-num { font-size: 1.6em; font-weight: 700; color: #4a5568; line-height: 1.1; }
+.as-cap { font-size: 0.75em; color: #718096; }
+.as-tile.good { border-color: #22c55e; background: #f0fdf4; } .as-tile.good .as-num { color: #15803d; }
+.as-tile.bad { border-color: #f87171; background: #fef2f2; } .as-tile.bad .as-num { color: #b91c1c; }
+.as-diag { padding: 8px 12px; border-radius: 6px; border-left: 4px solid #cbd5e0; background: #f7fafc; line-height: 1.5; font-size: 0.95em; }
+.as-diag.as-clean { border-color: #22c55e; background: #f0fdf4; }
+.as-diag.as-tangle { border-color: #dc2626; background: #fef2f2; }
+.as-diag.as-gap { border-color: #ea580c; background: #fff7ed; }
+.as-chart { display: block; max-width: 100%; height: auto; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.as-legend-list { list-style: none; padding: 0; margin: 0 0 6px; font-size: 0.88em; line-height: 1.5; }
+.as-legend-list li { display: flex; gap: 8px; align-items: baseline; margin-bottom: 3px; }
+.as-legend-list i { flex: 0 0 11px; height: 11px; border-radius: 50%; display: inline-block; transform: translateY(1px); }
+.as-example code { background: #fde68a; padding: 0 3px; border-radius: 2px; }
+@media (max-width: 900px) { .as-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
