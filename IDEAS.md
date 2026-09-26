@@ -53,7 +53,7 @@ Status: ☐ idea · ◐ in progress · ☑ done
 
 ## Mapping
 
-- ☐ **10. Burrows–Wheeler stepper** (M). Rotations → sort → BWT, F/L
+- ☑ **10. Burrows–Wheeler stepper** (M) → `bwt.html` (with k-mer index and suffix trees/arrays). Rotations → sort → BWT, F/L
   columns, LF-mapping, backward search stepped one character at a time;
   suffix array alongside. Quiz: count occurrences.
 - ☐ **11. Read mapping with repeats and MAPQ** (M). Simulated genome with

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genome Index Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Genome Index Lab <span class="dp-sub">k-mers · suffix trees · suffix arrays · BWT</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="blast.html" class="back-link dp-right-link">BLAST Explorer →</a>
+        </header>
+
+        <div class="game-container">
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="kmer">1 · k-mer index</button>
+                    <button class="bl-tab" data-tab="suffix">2 · Suffix tree &amp; array</button>
+                    <button class="bl-tab" data-tab="bwt">3 · BWT</button>
+                    <button class="bl-tab" data-tab="fm">4 · FM-index search</button>
+                    <button class="bl-tab" data-tab="map">5 · Mapping reads</button>
+                    <button class="bl-tab" data-tab="quiz">Quiz</button>
+                </div>
+                <section id="tab-kmer" class="bl-panel"><div id="kmer-content"></div></section>
+                <section id="tab-suffix" class="bl-panel" hidden><div id="suffix-content"></div></section>
+                <section id="tab-bwt" class="bl-panel" hidden><div id="bwt-content"></div></section>
+                <section id="tab-fm" class="bl-panel" hidden><div id="fm-content"></div></section>
+                <section id="tab-map" class="bl-panel" hidden><div id="map-content"></div></section>
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Questions with fresh strings each time; answers are computed with the same engine. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row"><button id="quiz-new" class="primary">New questions</button><span class="dp-hint" id="quiz-seed"></span></div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <div class="side-panel at-side">
+                <section data-for="kmer suffix bwt fm map">
+                    <h2>The problem</h2>
+                    <p>A sequencer gives hundreds of millions of reads; each must be placed in a reference genome of 3 billion bases. Reading the whole genome for every read would take years. A read mapper therefore builds an <strong>index</strong> of the genome once, and then finds each read in time that hardly depends on the genome size.</p>
+                    <p class="dp-hint">The tabs go from the simplest index (a table of k-mers) to the one inside BWA and Bowtie (the FM-index, built on the Burrows–Wheeler transform). Minimizers, seed chaining and mapping quality follow in the next app.</p>
+                </section>
+                <section data-for="suffix bwt fm" hidden class="scoring-controls">
+                    <h2>Text</h2>
+                    <div class="dp-mode" id="txt-choice">
+                        <label><input type="radio" name="txt" value="ACGACGTACG$" checked> ACGACGTACG$ (DNA)</label>
+                        <label><input type="radio" name="txt" value="BANANA$"> BANANA$</label>
+                        <label><input type="radio" name="txt" value="custom"> your own:</label>
+                    </div>
+                    <div class="dp-answer-row"><input type="text" id="txt-own" spellcheck="false" class="hm-textin" placeholder="up to 14 letters" maxlength="14"><button id="txt-use">Use</button></div>
+                    <div class="dp-answer-row" style="margin-top:8px"><label for="pat">pattern:</label><input type="text" id="pat" spellcheck="false" class="hm-textin" maxlength="8"><button id="pat-use">Search</button></div>
+                    <p class="dp-hint">The sentinel $ marks the end of the text and sorts before every letter. The same text is used in tabs 2–4.</p>
+                </section>
+                <section data-for="map" hidden class="scoring-controls">
+                    <h2>Genome &amp; reads</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="mp-rep">repeat length (2 copies): <span id="mp-rep-value"></span></label><input type="range" id="mp-rep" min="0" max="40" step="5"></div>
+                        <div class="control-group"><label for="mp-err">sequencing error rate: <span id="mp-err-value"></span></label><input type="range" id="mp-err" min="0" max="8" step="1"></div>
+                        <div class="control-group"><label for="mp-mm">mismatches allowed in the search: <span id="mp-mm-value"></span></label><input type="range" id="mp-mm" min="0" max="3" step="1"></div>
+                    </div>
+                    <button id="mp-new">⟳ New genome and reads</button>
+                    <p class="dp-hint">A 300 bp genome, 40 reads of 20 bp from both strands.</p>
+                </section>
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">k-mer tables and the pigeonhole principle, suffixes and suffix arrays, the BWT and its inversion, rank queries and backward search, approximate matching.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/bwtEngine.js"></script>
+    <script src="js/bwtViews.js"></script>
+    <script src="js/bwtQuiz.js"></script>
+    <script src="js/bwtController.js"></script>
+</body>
+</html>

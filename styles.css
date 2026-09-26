@@ -2207,3 +2207,38 @@ kbd {
 .olc-pedge, .olc-pnode { cursor: pointer; }
 .olc-pedge:hover line:last-of-type { stroke-width: 5; }
 .olc-pnode:hover circle { fill: #fde68a; }
+
+/* =========================================================================
+   Genome Index Lab (bwt.html)
+   ========================================================================= */
+.bw-text { display: flex; flex-wrap: wrap; gap: 2px; margin: 8px 0; font-family: 'JetBrains Mono', monospace; }
+.bw-tc { display: inline-flex; flex-direction: column; align-items: center; width: 22px; font-size: 15px; font-weight: 700; border-radius: 3px; }
+.bw-tc small { font-size: 9px; font-weight: 400; color: #a0aec0; }
+.bw-tc.bw-hl { background: #dcfce7; }
+.bw-genome { font-family: 'JetBrains Mono', monospace; font-size: 12px; word-break: break-all; line-height: 1.7; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; padding: 6px 8px; margin: 6px 0; }
+.bw-genome .bw-rep { background: #fde68a; }
+.bw-genome .bw-hl { background: #16a34a; color: #fff; }
+.bw-chips .bl-chip { cursor: default; }
+.bw-chips .bw-multi { border-color: #1f1e1b; border-width: 2px; }
+.bw-code { font-family: 'JetBrains Mono', monospace; background: #f1f5f9; padding: 0 4px; border-radius: 3px; }
+.bw-small td, .bw-small th { padding: 2px 6px; font-size: 0.85em; }
+.bw-tree-wrap { overflow-x: auto; margin: 6px 0; }
+.bw-tree { display: block; background: #fff; border: 1px solid #e2e8f0; border-radius: 4px; }
+.bw-matrix { border-collapse: collapse; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+.bw-matrix th, .bw-matrix td { width: 20px; height: 20px; text-align: center; padding: 0 2px; }
+.bw-matrix th { font-family: 'Source Sans 3', sans-serif; font-size: 11px; color: #718096; font-weight: 600; }
+.bw-matrix .bw-rn, .bw-matrix .bw-sa { color: #a0aec0; font-size: 10px; }
+.bw-matrix .bw-sa { color: #7a3e1d; }
+.bw-matrix td.bw-F { background: #eef2ff; font-weight: 700; }
+.bw-matrix td.bw-L { background: #fef3c7; font-weight: 700; }
+.bw-matrix td.bw-mid { color: #a0aec0; }
+.bw-matrix tr.bw-in td { background: #dcfce7; }
+.bw-matrix tr.bw-in td.bw-pre { background: #16a34a; color: #fff; font-weight: 700; }
+.bw-matrix tr.bw-row td { outline: 2px solid #dc2626; outline-offset: -1px; }
+.bw-matrix tr.bw-mark td.bw-L { background: #fdba74; }
+.bw-occ { border-collapse: collapse; font-size: 11px; margin-top: 6px; }
+.bw-occ td, .bw-occ th { border: 1px solid #edf2f7; padding: 1px 6px; text-align: center; }
+.bw-occ tr.bw-row td { background: #fde68a; }
+.bw-run { background: #fde68a; border-radius: 2px; }
+.bw-click { cursor: pointer; }
+.bw-click:hover td { background: #f7fafc; }

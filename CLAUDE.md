@@ -23,6 +23,7 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `hmm.html` | HMM Explorer, three tabs + quiz: HMM basics (CpG islands / casino: generating, one path, Viterbi, Forward, posterior, counting and Baum–Welch), pair HMM (alignment as a path, Viterbi = Gotoh with log-odds scores, Forward, posterior heat map), profile HMM (Plan7 from an MSA, counting with pseudocounts, generator + HMMER file, Viterbi trellis, bit scores and simulated E-values, PSSM vs HMM, HMMER vs BLAST on a synthetic family) | `hmmBasics.js`, `hmmPair.js`, `hmmProfile.js`, `hmmQuiz.js`, `hmmApp.js`, `hmmViews.js` |
 | `kmer-spectrum.html` | k-mer Spectrum Lab: the method in 7 steps (counting k-mers on a tiny genome, histogram and C_k, genome size from the peak, errors and cut-off, heterozygous peaks and r, repeat peaks and divergence, GenomeScope-like model fit) and a free genome lab (ploidy, heterozygosity, repeats, coverage, errors, k; truth colouring, peak picking, compare k) + quiz | `kmerController.js`, `kmerViews.js`, `kmerQuiz.js` |
 | `olc.html` | OLC Assembly Lab: drag-and-flip assembly puzzle (4 levels: forward, both strands, errors, repeat), the algorithm in 5 steps (overlap matrix and pair view, orientation, overlap graph with transitive reduction, layout/unitigs, consensus), repeats (unitigs vs greedy misassembly, dotplots, mate pairs and scaffold), Lander–Waterman and N50/L50, quiz | `olcController.js`, `olcViews.js`, `olcQuiz.js` |
+| `bwt.html` | Genome Index Lab: k-mer index (seeds, voting, pigeonhole), suffix trie / suffix tree / suffix array with pattern search and binary-search trace, BWT from sorted rotations and inversion by LF-mapping, FM-index backward search step by step (C, Occ), read mapping with backtracking mismatches on both strands (unique / multi / unmapped, search cost) + quiz. Texts: DNA, BANANA$ or own | `bwtController.js`, `bwtViews.js`, `bwtQuiz.js` |
 | `assembly.html` | Assembly Explorer: building a de Bruijn graph step by step (reads → k-mers → graph → contigs, clickable k-mers), repeats (k ≥ R + 2, contigs-vs-k sweep), sequencing errors (tips/bubbles, k-mer count histogram, coverage threshold), quiz. Genome, reads, graph and contigs share one horizontal scale | `assemblyController.js`, `assemblyGraphVisualizer.js`, `assemblyQuiz.js`, `assemblyExamples.js` |
 
 `advanced-global-alignment.html`, `dotplot-demo.html`, `dotplot-explorer.html` and
@@ -61,6 +62,10 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
   unitigs (never jump between repeat copies), greedy layout, consensus,
   placement/correctness against the genome, mate pairs and scaffolding,
   Lander–Waterman, N50/L50.
+- `js/bwtEngine.js` – k-mer index and seed voting, suffix trie/tree, suffix
+  array with search trace, BWT, FM-index (C, Occ, LF, inversion, backward
+  search), backtracking approximate search, small genome/read simulation and
+  read mapping on both strands.
 - `js/msaEngine.js` – FASTA parsing, UPGMA guide tree, profile–profile
   progressive alignment, column statistics (entropy, information, PSSM,
   consensus) and PSSM scanning; `js/msaLogo.js` renders SVG logos.
