@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimizer Mapping Lab</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>Minimizer Mapping Lab <span class="dp-sub">minimizers · anchors · chaining · MAPQ</span></h1>
+            <a href="index.html" class="back-link">← Back to Portal</a>
+            <a href="bwt.html" class="back-link dp-right-link">← Genome Index Lab</a>
+        </header>
+
+        <div class="game-container">
+            <div class="main-panel at-main bl-main">
+                <div class="bl-tabs">
+                    <button class="bl-tab active" data-tab="mz">1 · Minimizers</button>
+                    <button class="bl-tab" data-tab="seed">2 · Index &amp; anchors</button>
+                    <button class="bl-tab" data-tab="chain">3 · Chaining &amp; alignment</button>
+                    <button class="bl-tab" data-tab="mapq">4 · Repeats &amp; MAPQ</button>
+                    <button class="bl-tab" data-tab="lab">5 · Mapping lab</button>
+                    <button class="bl-tab" data-tab="quiz">Quiz</button>
+                </div>
+                <section id="tab-mz" class="bl-panel"><div id="mz-content"></div></section>
+                <section id="tab-seed" class="bl-panel" hidden><div id="seed-content"></div></section>
+                <section id="tab-chain" class="bl-panel" hidden><div id="chain-content"></div></section>
+                <section id="tab-mapq" class="bl-panel" hidden><div id="mapq-content"></div></section>
+                <section id="tab-lab" class="bl-panel" hidden><div id="lab-content"></div></section>
+                <section id="tab-quiz" class="bl-panel" hidden>
+                    <p class="dp-hint">Questions with fresh numbers each time; answers are computed with the same engine. Wrong twice → the answer and an explanation.</p>
+                    <div class="dp-answer-row"><button id="quiz-new" class="primary">New questions</button><span class="dp-hint" id="quiz-seed"></span></div>
+                    <div id="quiz" class="dp-quiz"></div>
+                </section>
+            </div>
+
+            <div class="side-panel at-side">
+                <section data-for="mz seed chain mapq lab">
+                    <h2>Long reads, sparse seeds</h2>
+                    <p>Nanopore and PacBio reads are thousands of bases long but contain 1–15 % errors, many of them insertions and deletions. Exact search of a whole read (Genome Index Lab) fails; instead a mapper samples short exact <strong>seeds</strong>, finds where many of them agree, and aligns only there.</p>
+                    <p class="dp-hint">This is how minimap2 (Li, 2018) works – the standard long-read mapper, also used for assembly-to-assembly comparison and spliced RNA reads.</p>
+                </section>
+                <section data-for="seed chain mapq lab" hidden class="scoring-controls">
+                    <h2>Index settings</h2>
+                    <div class="hm-controls-1">
+                        <div class="control-group"><label for="ix-k">k (seed length): <span id="ix-k-value"></span></label><input type="range" id="ix-k" min="9" max="15" step="1"></div>
+                        <div class="control-group"><label for="ix-w">w (window): <span id="ix-w-value"></span></label><input type="range" id="ix-w" min="1" max="20" step="1"></div>
+                        <div class="control-group"><label for="ix-occ">ignore minimizers occurring more than: <span id="ix-occ-value"></span></label><input type="range" id="ix-occ" min="1" max="51" step="1"></div>
+                    </div>
+                    <div class="dp-mode"><span class="at-inline-label">order:</span><label><input type="radio" name="ix-order" value="hash" checked> hash</label><label><input type="radio" name="ix-order" value="lex"> alphabetical</label></div>
+                    <p class="dp-hint">Reference: 20 kb with three repeat families of 800 bp (two copies each, shaded) and a 40 bp poly-A run. minimap2's defaults for nanopore reads: k = 15, w = 10.</p>
+                </section>
+                <section data-for="quiz" hidden>
+                    <h2>About the quiz</h2>
+                    <p class="dp-hint">Minimizer density and the w + k − 1 guarantee, ordering, anchors and chains, gap cost, CIGAR strings, MAPQ.</p>
+                </section>
+            </div>
+        </div>
+    </div>
+    <div id="toast-stack" class="toast-stack"></div>
+
+    <script src="js/alignEngine.js"></script>
+    <script src="js/minimizerEngine.js"></script>
+    <script src="js/minimizerViews.js"></script>
+    <script src="js/minimizerQuiz.js"></script>
+    <script src="js/minimizerController.js"></script>
+</body>
+</html>
