@@ -4,8 +4,8 @@ k = 21
 
 property                      min               max
 Homozygous (a)                100%              100%
-Genome Haploid Length         2,459,328 bp      2,466,650 bp
-Genome Repeat Length          114,473 bp        114,814 bp
-Genome Unique Length          2,344,855 bp      2,351,836 bp
-Model Fit                     91.4299%          95.7314%
-Read Error Rate               0.463368%         0.463368%
+Genome Haploid Length         2,466,384 bp      2,473,761 bp
+Genome Repeat Length          120,844 bp        121,206 bp
+Genome Unique Length          2,345,540 bp      2,352,556 bp
+Model Fit                     91.1325%          95.7051%
+Read Error Rate               0.462045%         0.462045%
