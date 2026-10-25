@@ -2,8 +2,9 @@
  * K-MER SPECTRUM LAB – controller
  * ===============================
  * Tab 1 teaches the method in seven steps, each on its own simulated data
- * set with a few inline controls; tab 2 is the free genome lab; tab 3 the
- * quiz. Deep links: #principle-4, #lab, #quiz.
+ * set with a few inline controls; tab 2 is the free genome lab; tab 3 runs
+ * GenomeScope on the student's own histogram (genomeScopeTab.js); then the
+ * quiz. Deep links: #principle-4, #lab, #genomescope, #quiz.
  */
 const KM_PRESETS = [
     { name: 'Bacterium: haploid, clean', note: 'Haploid, no repeats: one clean peak – the easy case.', p: { G: 2, ploidy: 1, het: 0, rep: 0, copies: 2, div: 0, cov: 30, L: 1, err: 0.3, k: 21 } },
@@ -35,7 +36,8 @@ class KmerApp {
         this.$('step-content').addEventListener('input', e => this.onStepInput(e));
         this.$('step-content').addEventListener('change', e => this.onStepInput(e));
         this.bindLab();
-        const m = /^#(principle|lab|quiz)(?:-(\d))?$/.exec(location.hash);
+        this.gs = new GenomeScopeTab(this);
+        const m = /^#(principle|lab|genomescope|quiz)(?:-(\d))?$/.exec(location.hash);
         if (m && m[2]) this.step = +m[2];
         this.showTab(m ? m[1] : 'principle');
     }
@@ -63,10 +65,11 @@ class KmerApp {
     showTab(tab) {
         this.tab = tab;
         document.querySelectorAll('.bl-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
-        for (const t of ['principle', 'lab', 'quiz']) this.$('tab-' + t).hidden = t !== tab;
+        for (const t of ['principle', 'lab', 'genomescope', 'quiz']) this.$('tab-' + t).hidden = t !== tab;
         document.querySelectorAll('.side-panel [data-for]').forEach(s => { s.hidden = s.dataset.for !== tab; });
         if (tab === 'principle') this.showStep(this.step);
         else if (tab === 'lab') { this.syncLabControls(); this.runLab(); history.replaceState(null, '', '#lab'); }
+        else if (tab === 'genomescope') this.gs.show();
         else { this.quiz.ensure(); history.replaceState(null, '', '#quiz'); }
     }
 
@@ -264,7 +267,7 @@ jellyfish count -C -m 21 -s 1G -t 8 -o reads.jf reads_1.fastq reads_2.fastq
 jellyfish histo -h 1000000 reads.jf > reads.histo
 # fit the model (web version at genomescope.org, or the R script); -p 2 = diploid
 genomescope2 -i reads.histo -o genomescope_out -k 21 -p 2</pre>
-            ${this.lesson(`<strong>What the model needs from you:</strong> the ploidy (a homozygous diploid genome and a haploid genome give identical spectra) and a sensible k. What it cannot see: repeats that are diverged (step 6), and anything not in the reads (contamination, organelles and bacteria inflate the counts). GenomeScope reports exactly these numbers – genome size, heterozygosity, repeat content ("unique length" vs "repeat length"), error rate – and its plot looks like this one. Continue to the lab and break the model.`)}`;
+            ${this.lesson(`<strong>What the model needs from you:</strong> the ploidy (a homozygous diploid genome and a haploid genome give identical spectra) and a sensible k. What it cannot see: repeats that are diverged (step 6), and anything not in the reads (contamination, organelles and bacteria inflate the counts). GenomeScope reports exactly these numbers – genome size, heterozygosity, repeat content ("unique length" vs "repeat length"), error rate – and its plot looks like this one. Continue to the lab and break the model – then run the real GenomeScope model on your own histogram in tab 3.`)}`;
     }
 
     onStepClick(e) {

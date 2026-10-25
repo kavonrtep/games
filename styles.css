@@ -2268,3 +2268,15 @@ kbd {
 .mm-anchor:hover { r: 5; }
 .mm-cigar { word-break: break-all; font-size: 11px; }
 .mm-aln { font-size: 11px; }
+
+/* k-mer Spectrum Lab – GenomeScope tab */
+.gs-input { border: 1px dashed #d9d1c3; border-radius: 6px; padding: 8px 12px; margin: 8px 0; background: #fbf8f2; }
+.gs-input.gs-drag { border-color: #7a3e1d; background: #f5ecdf; }
+.gs-file-btn { display: inline-block; padding: 6px 12px; border: 1px solid #c9bfae; border-radius: 4px; background: #fff; cursor: pointer; font-size: 0.95em; }
+.gs-file-btn input { display: none; }
+.gs-paste-box summary { cursor: pointer; font-size: 0.9em; color: #4d4a44; margin: 6px 0; }
+.gs-paste-box textarea { width: 100%; box-sizing: border-box; font-family: 'JetBrains Mono', 'Courier New', monospace; font-size: 12px; margin-bottom: 6px; }
+.gs-loaded { font-size: 0.9em; color: #1f1e1b; min-height: 1.2em; }
+.gs-num { width: 5.5em; }
+.gs-views { margin: 6px 0; }
+.gs-summary { font-size: 12.5px; white-space: pre; overflow-x: auto; }

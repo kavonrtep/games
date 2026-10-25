@@ -21,7 +21,7 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
 | `dotplot-quiz.html` | Seeded self-assessment on dotplots (16 question types) | `dotplotQuiz.js`, `dotplotQuizGenerators.js` |
 | `blast.html` | BLAST Explorer: faithful small-scale pipeline (words/neighbourhoods, scan, two-hit, X-drop, gapped, Karlin–Altschul statistics) on databases with planted homologs, plus experiments (word size, translated search, E-value vs database size, masking, BLAST vs SW) and quiz | `blastLab.js`, `blastEngine.js` |
 | `hmm.html` | HMM Explorer, three tabs + quiz: HMM basics (CpG islands / casino: generating, one path, Viterbi, Forward, posterior, counting and Baum–Welch), pair HMM (alignment as a path, Viterbi = Gotoh with log-odds scores, Forward, posterior heat map), profile HMM (Plan7 from an MSA, counting with pseudocounts, generator + HMMER file, Viterbi trellis, bit scores and simulated E-values, PSSM vs HMM, HMMER vs BLAST on a synthetic family) | `hmmBasics.js`, `hmmPair.js`, `hmmProfile.js`, `hmmQuiz.js`, `hmmApp.js`, `hmmViews.js` |
-| `kmer-spectrum.html` | k-mer Spectrum Lab: the method in 7 steps (counting k-mers on a tiny genome, histogram and C_k, genome size from the peak, errors and cut-off, heterozygous peaks and r, repeat peaks and divergence, GenomeScope-like model fit) and a free genome lab (ploidy, heterozygosity, repeats, coverage, errors, k; truth colouring, peak picking, compare k) + quiz | `kmerController.js`, `kmerViews.js`, `kmerQuiz.js` |
+| `kmer-spectrum.html` | k-mer Spectrum Lab: the method in 7 steps (counting k-mers on a tiny genome, histogram and C_k, genome size from the peak, errors and cut-off, heterozygous peaks and r, repeat peaks and divergence, GenomeScope-like model fit) and a free genome lab (ploidy, heterozygosity, repeats, coverage, errors, k; truth colouring, peak picking, compare k) + GenomeScope tab (GenomeScope 2.0 on the student's own `jellyfish histo` file, pasted data, the practical's example or the lab spectrum: the four GenomeScope plots, summary.txt, truth for lab data) + quiz | `kmerController.js`, `kmerViews.js`, `kmerQuiz.js`, `genomeScopeTab.js` |
 | `olc.html` | OLC Assembly Lab: drag-and-flip assembly puzzle (4 levels: forward, both strands, errors, repeat), the algorithm in 5 steps (overlap matrix and pair view, orientation, overlap graph with transitive reduction, layout/unitigs, consensus), repeats (unitigs vs greedy misassembly, dotplots, mate pairs and scaffold), Lander–Waterman and N50/L50, quiz | `olcController.js`, `olcViews.js`, `olcQuiz.js` |
 | `bwt.html` | Genome Index Lab: k-mer index (seeds, voting, pigeonhole), suffix trie / suffix tree / suffix array with pattern search and binary-search trace, BWT from sorted rotations and inversion by LF-mapping, FM-index backward search step by step (C, Occ), read mapping with backtracking mismatches on both strands (unique / multi / unmapped, search cost) + quiz. Texts: DNA, BANANA$ or own | `bwtController.js`, `bwtViews.js`, `bwtQuiz.js` |
 | `minimizers.html` | Minimizer Mapping Lab (long reads, minimap2-style): (w,k)-minimizers with window stepper, density vs 2/(w+1), alphabetical vs hash order, w+k−1 guarantee; minimizer index and anchors dotplot with frequency filter; chaining DP with minimap2 gap cost and base-level alignment (AlignEngine, CIGAR); repeats and MAPQ; mapping lab with MAPQ calibration + quiz | `minimizerController.js`, `minimizerViews.js`, `minimizerQuiz.js` |
@@ -57,6 +57,15 @@ browser: no server, no bundler, no npm packages. `index.html` is the portal.
   counting in a typed-array hash (k ≤ 26 as exact numbers; the app offers
   9–25), histogram split by true copy number, peak/valley helpers and a
   ploidy-aware Poisson/NB mixture fit (genome size, heterozygosity, repeats).
+- `js/genomeScopeEngine.js` (`GenomeScope`) – port of GenomeScope 2.0 (R
+  genomescope2 2.1.0) for ploidy 1–2: NB mixture on n·h(n), four trimming
+  rounds, model choice by score, error k-mers from residuals, summary.txt
+  (min/max = ± 2 SE), R's `dnbinom` (Loader saddle point) and R's row-index
+  semantics. Fits with `js/lmdif.js` (`Lmdif`), a port of MINPACK lmdif as
+  used by minpack.lm's `nlsLM` (bound clamping, maxiter per Jacobian).
+  Example histogram in `js/genomeScopeExamples.js`. Test against saved R
+  output: `node test/genomescope/compare.js` (exercise histogram identical,
+  the rest within ~0.2 % for the genome length); re-run it after any change.
 - `js/olcEngine.js` – genome with a repeat, reads from both strands with
   substitution errors, dovetail overlaps (both orientations) and containment,
   orientation by spanning tree, overlap graph, transitive reduction, node-based

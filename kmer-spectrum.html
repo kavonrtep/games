@@ -9,7 +9,7 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>k-mer Spectrum Lab <span class="dp-sub">genome size · heterozygosity · repeats · errors</span></h1>
+            <h1>k-mer Spectrum Lab <span class="dp-sub">genome size · heterozygosity · repeats · errors · GenomeScope</span></h1>
             <a href="index.html" class="back-link">← Back to Portal</a>
             <a href="assembly.html" class="back-link dp-right-link">Assembly Explorer →</a>
         </header>
@@ -20,6 +20,7 @@
                 <div class="bl-tabs">
                     <button class="bl-tab active" data-tab="principle">1 · The principle, step by step</button>
                     <button class="bl-tab" data-tab="lab">2 · Genome lab</button>
+                    <button class="bl-tab" data-tab="genomescope">3 · Your data: GenomeScope</button>
                     <button class="bl-tab" data-tab="quiz">Check your understanding</button>
                 </div>
 
@@ -53,6 +54,40 @@
                     <div id="lab-hist" class="km-hist-wrap"></div>
                     <div id="lab-legend"></div>
                     <div id="lab-results"></div>
+                </section>
+
+                <section id="tab-genomescope" class="bl-panel" hidden>
+                    <p>Run <strong>GenomeScope 2.0</strong> on your own k-mer histogram – the <code>reads.histo</code> from <code>jellyfish histo</code>. The model is the one of genomescope.org, computed here in your browser; the numbers match the R tool.</p>
+                    <div id="gs-input" class="gs-input">
+                        <div class="dp-buttons input-controls km-toolbar">
+                            <label class="gs-file-btn">Open a histogram file… <input type="file" id="gs-file" accept=".histo,.hist,.txt,.tsv,.csv,text/plain"></label>
+                            <button id="gs-example">Example: S. aureus from the assembly practical</button>
+                            <button id="gs-from-lab">Spectrum from the Genome lab</button>
+                        </div>
+                        <details class="gs-paste-box"><summary>… or paste the histogram (two columns: count, number of k-mers)</summary>
+                            <textarea id="gs-paste" rows="6" spellcheck="false" placeholder="1 2765073&#10;2 58051&#10;3 24862&#10;…"></textarea>
+                            <button id="gs-paste-use">Use pasted data</button>
+                        </details>
+                        <p class="dp-hint">You can also drop a file here. Nothing is uploaded – the file stays in your browser.</p>
+                        <div id="gs-loaded" class="gs-loaded"></div>
+                    </div>
+                    <div class="dp-buttons input-controls km-toolbar">
+                        <label class="km-inline">k-mer length <input type="number" id="gs-k" value="21" min="5" max="64" class="gs-num"></label>
+                        <label class="km-inline">ploidy <select id="gs-p"><option value="1">1 – haploid</option><option value="2" selected>2 – diploid</option></select></label>
+                        <label class="km-inline" title="k-mers seen more often are ignored by the model (GenomeScope -m); -1 = use all">max k-mer coverage <input type="number" id="gs-m" value="-1" min="-1" class="gs-num"></label>
+                        <button id="gs-run" class="primary">Run GenomeScope</button>
+                        <button id="gs-download" disabled>Download summary.txt</button>
+                    </div>
+                    <div id="gs-status" class="km-status"></div>
+                    <div class="dp-mode gs-views"><span class="at-inline-label">plot:</span>
+                        <label><input type="radio" name="gs-view" value="linear" checked> linear</label>
+                        <label><input type="radio" name="gs-view" value="log"> log</label>
+                        <label><input type="radio" name="gs-view" value="tlinear"> transformed linear</label>
+                        <label><input type="radio" name="gs-view" value="tlog"> transformed log</label>
+                    </div>
+                    <div id="gs-plot" class="km-hist-wrap"></div>
+                    <div id="gs-summary"></div>
+                    <div id="gs-truth"></div>
                 </section>
 
                 <section id="tab-quiz" class="bl-panel" hidden>
@@ -111,6 +146,24 @@
                     <p class="dp-hint">k-mers are counted as canonical k-mers (a k-mer and its reverse complement are one), as <code>jellyfish count -C</code> does.</p>
                 </section>
 
+                <section data-for="genomescope" hidden>
+                    <h2>GenomeScope in the browser</h2>
+                    <p>A port of <strong>GenomeScope 2.0</strong> (Ranallo-Benavidez, Jaron &amp; Schatz 2020, <em>Nat. Commun.</em> 11:1432) – the same model, the same fitting procedure and the same summary as the R tool and <a href="http://genomescope.org/genomescope2.0/" target="_blank" rel="noopener">genomescope.org</a>. Use it when the website is not available.</p>
+                    <ul class="hm-list">
+                        <li>The k-mer spectrum is modelled as peaks at 1×, 2×, … the k-mer coverage (<em>kcov</em>), each a negative binomial (<em>dup</em> = its extra spread); the fit uses the transformed spectrum n·h(n).</li>
+                        <li>Errors are the k-mers on the left that the model does not explain (orange); <em>unique sequence</em> (yellow) is the part of the model from single-copy sequence.</li>
+                        <li>Haploid length = all k-mers except errors / (ploidy × kcov). <em>min</em>–<em>max</em> = estimate ± 2 standard errors.</li>
+                    </ul>
+                    <p class="dp-hint">Ploidy 1 and 2 only; for polyploids use the R tool. Small differences from R (well inside its min–max range) can occur when a parameter ends at its limit.</p>
+                </section>
+                <section data-for="genomescope" hidden>
+                    <h2>Making the histogram</h2>
+<pre class="hm-cmd">jellyfish count -C -m 21 -s 50M -t 4 \
+  -o reads.jf &lt;(zcat reads_R1.fastq.gz reads_R2.fastq.gz)
+jellyfish histo reads.jf &gt; reads.histo</pre>
+                    <p class="dp-hint">Set the k-mer length to the <code>-m</code> of <code>jellyfish count</code>. Bacteria are haploid (ploidy 1). The last line of <code>jellyfish histo</code> collects all k-mers seen ≥ 10 000 times; GenomeScope leaves it out of the fit.</p>
+                </section>
+
                 <section data-for="quiz" hidden>
                     <h2>About the quiz</h2>
                     <p class="dp-hint">k-mer coverage, genome size from the peak, errors, heterozygous and repeat peaks, and what the spectrum can and cannot tell you.</p>
@@ -123,6 +176,10 @@
     <script src="js/kmerEngine.js"></script>
     <script src="js/kmerViews.js"></script>
     <script src="js/kmerQuiz.js"></script>
+    <script src="js/lmdif.js"></script>
+    <script src="js/genomeScopeEngine.js"></script>
+    <script src="js/genomeScopeExamples.js"></script>
+    <script src="js/genomeScopeTab.js"></script>
     <script src="js/kmerController.js"></script>
 </body>
 </html>
